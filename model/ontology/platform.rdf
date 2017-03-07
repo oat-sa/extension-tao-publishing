@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<rdf:RDF 
+	xml:base="http://www.tao.lu/Ontologies/TAOLTI.rdf#" 
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" 
+	xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" 
+	xmlns:widget="http://www.tao.lu/datatypes/WidgetDefinitions.rdf#"
+>
+
+  <rdf:Description rdf:about="http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatform">
+    <rdfs:subClassOf rdf:resource="http://www.tao.lu/Ontologies/TAO.rdf#TAOObject"/>
+    <rdfs:label xml:lang="en-US"><![CDATA[TAO Environment]]></rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatformAuth">
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en-US"><![CDATA[Authentication]]></rdfs:label>
+    <rdfs:domain rdf:resource="http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatform"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2000/01/rdf-schema#Literal"/>
+    <widget:widget rdf:resource="http://www.tao.lu/datatypes/WidgetDefinitions.rdf#AuthenticationIdentity"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatformUrl">
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en-US"><![CDATA[Root URL]]></rdfs:label>
+    <rdfs:domain rdf:resource="http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatform"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2000/01/rdf-schema#Literal"/>
+    <widget:widget rdf:resource="http://www.tao.lu/datatypes/WidgetDefinitions.rdf#TextBox"/>
+  </rdf:Description>
+  
+    <!-- Model Widget --> 
+  <rdf:Description rdf:about="http://www.tao.lu/datatypes/WidgetDefinitions.rdf#AuthenticationIdentity">
+    <rdf:type rdf:resource="http://www.tao.lu/datatypes/WidgetDefinitions.rdf#WidgetClass"/>
+    <widget:identifier><![CDATA[auth]]></widget:identifier>
+    <rdfs:label xml:lang="en-US"><![CDATA[Authentication]]></rdfs:label>
+    <rdfs:comment xml:lang="en-US"><![CDATA[Identity for authentication]]></rdfs:comment>
+    <widget:rangeConstraint rdf:resource="http://www.tao.lu/datatypes/WidgetDefinitions.rdf#rangeConstraint-Resource"/>
+  </rdf:Description>
+  
+  <rdf:Description rdf:about="http://www.tao.lu/datatypes/WidgetDefinitions.rdf#AuthenticationIdentityXhtmlRenderer">
+    <rdf:type rdf:resource="http://www.tao.lu/datatypes/WidgetDefinitions.rdf#WidgetRenderer"/>
+    <widget:renderedWidget rdf:resource="http://www.tao.lu/datatypes/WidgetDefinitions.rdf#AuthenticationIdentity"/>
+  	<widget:renderMode><![CDATA[xhtml]]></widget:renderMode>
+  	<widget:implementation><![CDATA[oat\taoPublishing\model\widget\AuthWidget]]></widget:implementation>
+  </rdf:Description>
+  
+</rdf:RDF>
