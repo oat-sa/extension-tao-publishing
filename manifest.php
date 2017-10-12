@@ -34,9 +34,15 @@ return array(
         array('grant', 'http://www.tao.lu/Ontologies/generis.rdf#taoPublishingManager', array('ext'=>'taoPublishing')),
     ),
     'install' => array(
-		'rdf' => array(
-			__DIR__. '/model/ontology/platform.rdf'
-		)
+        'rdf' => array(
+            __DIR__. '/model/ontology/platform.rdf',
+            __DIR__. '/model/ontology/taodelivery.rdf',
+            __DIR__. '/model/ontology/taotest.rdf'
+        ),
+        'php' => array(
+            \oat\taoPublishing\scripts\install\RegisterPublishingService::class,
+            \oat\taoPublishing\scripts\install\RegisterListeners::class
+        )
     ),
     'uninstall' => array(
     ),
