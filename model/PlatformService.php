@@ -39,7 +39,7 @@ class PlatformService extends \tao_models_classes_ClassService
      *
      * @access public
      * @author Joel Bout, <joel.bout@tudor.lu>
-     * @return core_kernel_classes_Class
+     * @return \core_kernel_classes_Class
      */
     public function getRootClass()
     {
@@ -48,7 +48,7 @@ class PlatformService extends \tao_models_classes_ClassService
 
     /**
      * 
-     * @param unknown $platformId
+     * @param string $platformId
      * @param RequestInterface $request
      * @return ResponseInterface
      */

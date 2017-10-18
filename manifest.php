@@ -24,25 +24,33 @@ return array(
 	'label' => 'Test Publishing',
 	'description' => 'An extension to publish tests to a delivery environment',
     'license' => 'GPL-2.0',
-    'version' => '0.1',
-	'author' => 'Open Assessment Technologies SA',
-	'requires' => array(
-        'taoQtiTest' => '>=2.37.0'
+    'version' => '0.2.0',
+    'author' => 'Open Assessment Technologies SA',
+    'requires' => array(
+        'taoQtiTest' => '>=2.37.0',
+        'taoDeliveryRdf' => '>=3.13.0'
     ),
 	'managementRole' => 'http://www.tao.lu/Ontologies/generis.rdf#taoPublishingManager',
     'acl' => array(
         array('grant', 'http://www.tao.lu/Ontologies/generis.rdf#taoPublishingManager', array('ext'=>'taoPublishing')),
     ),
     'install' => array(
-		'rdf' => array(
-			__DIR__. '/model/ontology/platform.rdf'
-		)
+        'rdf' => array(
+            __DIR__. '/model/ontology/platform.rdf',
+            __DIR__. '/model/ontology/taodelivery.rdf',
+            __DIR__. '/model/ontology/taotest.rdf'
+        ),
+        'php' => array(
+            \oat\taoPublishing\scripts\install\RegisterPublishingService::class,
+            \oat\taoPublishing\scripts\install\RegisterListeners::class
+        )
     ),
     'uninstall' => array(
     ),
     'routes' => array(
         '/taoPublishing' => 'oat\\taoPublishing\\controller'
-    ),    
+    ),
+    'update' => 'oat\\taoPublishing\\scripts\\update\\Updater',
 	'constants' => array(
 	    # views directory
 	    "DIR_VIEWS" => dirname(__FILE__).DIRECTORY_SEPARATOR."views".DIRECTORY_SEPARATOR,

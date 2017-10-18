@@ -21,7 +21,10 @@
 
 namespace oat\taoPublishing\controller;
 
+use oat\taoPublishing\helpers\PublishingHelpers;
 use oat\taoPublishing\model\PlatformService;
+use oat\taoPublishing\model\publishing\PublishingService;
+
 /**
  * Sample controller
  *
@@ -37,7 +40,19 @@ class PlatformAdmin extends \tao_actions_SaSModule {
         parent::__construct();
         $this->service = $this->getClassService();
     }
-    
+
+    public function editInstance()
+    {
+        parent::editInstance();
+        $this->prepareForm();
+    }
+
+    public function addInstanceForm()
+    {
+        parent::addInstanceForm();
+        $this->prepareForm();
+    }
+
     /**
      * (non-PHPdoc)
      *
@@ -46,5 +61,26 @@ class PlatformAdmin extends \tao_actions_SaSModule {
     public function getClassService()
     {
         return PlatformService::singleton();
+    }
+
+    protected function prepareForm()
+    {
+        $class = $this->getCurrentClass();
+
+        if ($this->hasRequestParameter('uri')) {
+            $instance = $this->getCurrentInstance();
+            $myFormContainer = new \tao_actions_form_Instance($class, $instance);
+        } else {
+            $myFormContainer = new \tao_actions_form_CreateInstance(array($class), array());
+        }
+        $myForm = $myFormContainer->getForm();
+        $deliveryElementClass = \tao_helpers_Uri::encode(PublishingService::DELIVERY_FIELDS);
+        $deliveryElement = $myForm->getElement($deliveryElementClass);
+        $deliveryElement->setOptions(PublishingHelpers::getDeliveryFieldsOptions());
+
+        $myForm->removeElement($deliveryElement);
+        $myForm->addElement($deliveryElement);
+
+        $this->setData('myForm', $myForm->render());
     }
 }
