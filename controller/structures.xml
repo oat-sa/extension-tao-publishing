@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE structures SYSTEM "../doc/structures.dtd">
+<structures>
+    <structure id="tests" name="Tests" level="1" group="main">
+        <sections>
+            <section id="manage_tests" name="Manage tests" url="/taoTests/Tests/index">
+                <actions>
+                	<action id="delivery-publish" name="Publish" url="/taoPublishing/Publish/wizard" group="tree" context="instance">
+                        <icon id="icon-magicwand"/>
+                    </action>
+                </actions>
+            </section>
+        </sections>
+    </structure>
+	<structure id="settings" name="Settings" level="11" group="invisible">
+		<description />
+		<sections>
+			<section id="settings_platforms" name="Remote environments" url="/taoPublishing/PlatformAdmin/index">
+				<trees>
+					<tree name="Remote environments"
+						className="Remote environments"
+						dataUrl="/taoPublishing/PlatformAdmin/getOntologyData"
+                        rootNode="http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatform"
+                        selectClass="platform-index"
+                        selectInstance="platform-edit"
+                        delete="platform-delete"
+					/>
+				</trees>
+				<actions>
+					<action id="platform-index" name="Index" url="/taoPublishing/PlatformAdmin/index" context="class" group="none" />
+					<action id="platform-edit" name="Properties" url="/taoPublishing/PlatformAdmin/editInstance" context="instance" group="none">
+                        <icon id="icon-edit"/>
+                    </action>
+					<action id="platform-delete" name="Delete" binding="removeNode" url="/taoPublishing/PlatformAdmin/delete" context="instance" group="tree">
+                        <icon id="icon-bin"/>
+                    </action>
+					<action id="platform-new" name="Add Platform" url="/taoPublishing/PlatformAdmin/addInstanceForm" context="class" group="tree">
+                        <icon id="icon-add"/>
+                    </action>
+				</actions>
+			</section>
+		</sections>
+	</structure>
+</structures>
