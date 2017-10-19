@@ -43,14 +43,68 @@ class PlatformAdmin extends \tao_actions_SaSModule {
 
     public function editInstance()
     {
-        parent::editInstance();
-        $this->prepareForm();
+        $clazz = $this->getCurrentClass();
+        $instance = $this->getCurrentInstance();
+        $myFormContainer = new \tao_actions_form_Instance($clazz, $instance);
+
+        $myForm = $myFormContainer->getForm();
+        if($myForm->isSubmited()){
+            if($myForm->isValid()){
+
+                $values = $myForm->getValues();
+                // save properties
+                $binder = new \tao_models_classes_dataBinding_GenerisFormDataBinder($instance);
+                $instance = $binder->bind($values);
+                $message = __('Instance saved');
+
+                $this->setData('message',$message);
+                $this->setData('reload', true);
+            }
+        }
+        $deliveryElementClass = \tao_helpers_Uri::encode(PublishingService::DELIVERY_FIELDS);
+        $deliveryElement = $myForm->getElement($deliveryElementClass);
+        $deliveryElement->setOptions(PublishingHelpers::getDeliveryFieldsOptions());
+        $myForm->removeElement($deliveryElement);
+        $myForm->addElement($deliveryElement);
+
+        $this->setData('formTitle', __('Edit Instance'));
+        $this->setData('myForm', $myForm->render());
+        $this->setView('form.tpl', 'tao');
     }
 
     public function addInstanceForm()
     {
-        parent::addInstanceForm();
-        $this->prepareForm();
+        if(!\tao_helpers_Request::isAjax()){
+            throw new \Exception("wrong request mode");
+        }
+
+        $clazz = $this->getCurrentClass();
+        $formContainer = new \tao_actions_form_CreateInstance(array($clazz), array());
+        $myForm = $formContainer->getForm();
+
+        if($myForm->isSubmited()){
+            if($myForm->isValid()){
+
+                $properties = $myForm->getValues();
+                $instance = $this->createInstance(array($clazz), $properties);
+
+                $this->setData('message', __($instance->getLabel().' created'));
+                $this->setData('reload', true);
+                //return $this->redirect(_url('editInstance', null, null, array('uri' => $instance)));
+            }
+        }
+
+        $deliveryElementClass = \tao_helpers_Uri::encode(PublishingService::DELIVERY_FIELDS);
+        $deliveryElement = $myForm->getElement($deliveryElementClass);
+        $deliveryElement->setOptions(PublishingHelpers::getDeliveryFieldsOptions());
+
+        $myForm->removeElement($deliveryElement);
+        $myForm->addElement($deliveryElement);
+
+        $this->setData('formTitle', __('Create instance of ').$clazz->getLabel());
+        $this->setData('myForm', $myForm->render());
+
+        $this->setView('form.tpl', 'tao');
     }
 
     /**
@@ -61,26 +115,5 @@ class PlatformAdmin extends \tao_actions_SaSModule {
     public function getClassService()
     {
         return PlatformService::singleton();
-    }
-
-    protected function prepareForm()
-    {
-        $class = $this->getCurrentClass();
-
-        if ($this->hasRequestParameter('uri')) {
-            $instance = $this->getCurrentInstance();
-            $myFormContainer = new \tao_actions_form_Instance($class, $instance);
-        } else {
-            $myFormContainer = new \tao_actions_form_CreateInstance(array($class), array());
-        }
-        $myForm = $myFormContainer->getForm();
-        $deliveryElementClass = \tao_helpers_Uri::encode(PublishingService::DELIVERY_FIELDS);
-        $deliveryElement = $myForm->getElement($deliveryElementClass);
-        $deliveryElement->setOptions(PublishingHelpers::getDeliveryFieldsOptions());
-
-        $myForm->removeElement($deliveryElement);
-        $myForm->addElement($deliveryElement);
-
-        $this->setData('myForm', $myForm->render());
     }
 }
