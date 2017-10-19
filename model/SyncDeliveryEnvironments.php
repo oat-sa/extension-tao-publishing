@@ -65,13 +65,10 @@ class SyncDeliveryEnvironments implements Action,ServiceLocatorAwareInterface
     {
         \common_Logger::d('Sync Delivery '.$delivery->getUri().' for deployment');
         $envId = $env->getUri();
-        $remoteDeliveryUri = $this->findRemoteDelivery($envId, $delivery);
-        $request = new Request('POST', '/taoDeliveryRdf/RestDelivery/update');
+        $OriginDeliveryField = \tao_helpers_Uri::encode(PublishingService::ORIGIN_DELIVERY_ID_FIELD);
+        $request = new Request('POST', '/taoDeliveryRdf/RestDelivery/update?'.$OriginDeliveryField.'='.$delivery->getUri());
         $request = $request->withBody(
-            \GuzzleHttp\Psr7\stream_for(http_build_query([
-                    'delivery' => $remoteDeliveryUri,
-                    'delivery-params' => json_encode($this->getPropertiesForUpdating($env, $delivery))
-                ]
+            \GuzzleHttp\Psr7\stream_for(http_build_query($this->getPropertiesForUpdating($env, $delivery)
             )));
         $request = $request->withHeader('Content-Type', 'application/x-www-form-urlencoded');
 
@@ -86,29 +83,6 @@ class SyncDeliveryEnvironments implements Action,ServiceLocatorAwareInterface
             return $report;
         } else {
             return new \common_report_Report(\common_report_Report::TYPE_ERROR, __('Failed to updated %s', $delivery->getUri()));
-        }
-    }
-
-    /**
-     * @param $envId
-     * @param \core_kernel_classes_Resource $delivery
-     * @return \common_report_Report
-     */
-    protected function findRemoteDelivery($envId, \core_kernel_classes_Resource $delivery)
-    {
-
-        $OriginDeliveryField = \tao_helpers_Uri::encode(PublishingService::ORIGIN_DELIVERY_ID_FIELD);
-        $deliveryUri = \tao_helpers_Uri::encode($delivery->getUri());
-        $request = new Request('GET', '/taoDeliveryRdf/RestDelivery/search?'.$OriginDeliveryField.'='.$deliveryUri);
-        \common_Logger::d('Requesting finding of Delivery.');
-        $response = PlatformService::singleton()->callApi($envId, $request);
-        if ($response->getStatusCode() == 200) {
-            $content = $response->getBody()->getContents();
-            $data = json_decode($content, true);
-            $deliveryId = $data['data']['delivery'];
-            return $deliveryId;
-        } else {
-            return new \common_report_Report(\common_report_Report::TYPE_ERROR, __('Failed to finding delivery.'));
         }
     }
 
@@ -128,6 +102,7 @@ class SyncDeliveryEnvironments implements Action,ServiceLocatorAwareInterface
             } else {
                 $value = (string) $value;
             }
+            $deliveryProperty = \tao_helpers_Uri::encode($deliveryProperty);
             $propertiesForUpdating[$deliveryProperty] = $value;
         }
         return $propertiesForUpdating;
