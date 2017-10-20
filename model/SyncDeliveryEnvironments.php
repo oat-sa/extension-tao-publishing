@@ -66,7 +66,8 @@ class SyncDeliveryEnvironments implements Action,ServiceLocatorAwareInterface
         \common_Logger::d('Sync Delivery '.$delivery->getUri().' for deployment');
         $envId = $env->getUri();
         $OriginDeliveryField = \tao_helpers_Uri::encode(PublishingService::ORIGIN_DELIVERY_ID_FIELD);
-        $request = new Request('POST', '/taoDeliveryRdf/RestDelivery/update?'.$OriginDeliveryField.'='.$delivery->getUri());
+        $deliveryUri = \tao_helpers_Uri::encode($delivery->getUri());
+        $request = new Request('POST', '/taoDeliveryRdf/RestDelivery/updateDeferred?'.$OriginDeliveryField.'='.$deliveryUri);
         $request = $request->withBody(
             \GuzzleHttp\Psr7\stream_for(http_build_query($this->getPropertiesForUpdating($env, $delivery)
             )));
@@ -75,11 +76,8 @@ class SyncDeliveryEnvironments implements Action,ServiceLocatorAwareInterface
         \common_Logger::d('Requesting updating of Delivery '.$delivery->getUri());
         $response = PlatformService::singleton()->callApi($envId, $request);
         if ($response->getStatusCode() == 200) {
-            $content = $response->getBody()->getContents();
-            $data = json_decode($content, true);
-            $deliveryId = $data['data']['delivery'];
             $report = new \common_report_Report(\common_report_Report::TYPE_SUCCESS, __('Delivery has been updated as %s', $delivery->getUri()));
-            $report->setData($deliveryId);
+            $report->setData($delivery->getUri());
             return $report;
         } else {
             return new \common_report_Report(\common_report_Report::TYPE_ERROR, __('Failed to updated %s', $delivery->getUri()));

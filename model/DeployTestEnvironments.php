@@ -21,6 +21,8 @@
 namespace oat\taoPublishing\model;
 
 use oat\oatbox\action\Action;
+use oat\taoDeliveryRdf\controller\RestTest;
+use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
 use oat\taoPublishing\model\publishing\PublishingService;
 use Zend\ServiceManager\ServiceLocatorAwareTrait;
 use Zend\ServiceManager\ServiceLocatorAwareInterface;
@@ -49,11 +51,11 @@ class DeployTestEnvironments implements Action,ServiceLocatorAwareInterface
         $envId = array_shift($params);
         $env = $this->getResource($envId);
         $deliveryId = array_shift($params);
-
+        $delivery = new \core_kernel_classes_Resource($deliveryId);
         \common_Logger::i('Deploying '.$test->getLabel().' to '.$env->getLabel());
         $report = new \common_report_Report(\common_report_Report::TYPE_SUCCESS, __('Deployed %s to %s', $test->getLabel(), $env->getLabel()));
         
-        $subReport = $this->compileTest($envId, $test, $deliveryId);
+        $subReport = $this->compileTest($envId, $test, $delivery);
         $report->add($subReport);
         return $report;
     }
@@ -61,10 +63,10 @@ class DeployTestEnvironments implements Action,ServiceLocatorAwareInterface
     /**
      * @param $envId
      * @param $test
-     * @param $deliveryId
+     * @param $delivery
      * @return \common_report_Report
      */
-    protected function compileTest($envId, \core_kernel_classes_Resource $test, $deliveryId) {
+    protected function compileTest($envId, \core_kernel_classes_Resource $test, \core_kernel_classes_Resource $delivery) {
 
         \common_Logger::d('Exporting Test '.$test->getUri().' for deployment');
         $exporter = new \taoQtiTest_models_classes_export_TestExport();
@@ -73,18 +75,27 @@ class DeployTestEnvironments implements Action,ServiceLocatorAwareInterface
             'instances' => $test->getUri(),
         ], \tao_helpers_File::createTempDir());
         $packagePath = $exportReport->getData();
-        $body = new MultipartStream([[
-            'name'     => 'testPackage',
+        $streamData = [[
+            'name'     => RestTest::REST_FILE_NAME,
             'contents' => fopen($packagePath, 'rb'),
         ], [
-            'name'     => 'importerId',
+            'name'     => RestTest::REST_IMPORTER_ID,
             'contents' => 'taoQtiTest',
         ], [
-            'name'     => 'delivery-params',
+            'name'     => RestTest::REST_DELIVERY_PARAMS,
             'contents' => json_encode([
-                PublishingService::ORIGIN_DELIVERY_ID_FIELD => $deliveryId
+                PublishingService::ORIGIN_DELIVERY_ID_FIELD => $delivery->getUri(),
             ])
-        ]]);
+        ]];
+
+        $deliveryClass = current($delivery->getTypes());
+        if ($deliveryClass->getUri() != DeliveryAssemblyService::CLASS_URI) {
+            $streamData[] = [
+                'name'     => RestTest::REST_DELIVERY_CLASS_LABEL,
+                'contents' => $deliveryClass->getLabel()
+            ];
+        }
+        $body = new MultipartStream($streamData);
 
         $url = \tao_helpers_Uri::getPath(\tao_helpers_Uri::url('compileDeferred', 'RestTest', 'taoDeliveryRdf'));
         $request = new Request('POST', trim($url, '/'));
@@ -93,8 +104,8 @@ class DeployTestEnvironments implements Action,ServiceLocatorAwareInterface
         \common_Logger::d('Requesting comilation of Test '.$test);
         $response = PlatformService::singleton()->callApi($envId, $request);
         if ($response->getStatusCode() == 200) {
-            $report = new \common_report_Report(\common_report_Report::TYPE_SUCCESS, __('Test has been compiled as %s', $deliveryId));
-            $report->setData($deliveryId);
+            $report = new \common_report_Report(\common_report_Report::TYPE_SUCCESS, __('Test has been compiled as %s', $delivery->getUri()));
+            $report->setData($delivery->getUri());
             return $report;
         } else {
             return new \common_report_Report(\common_report_Report::TYPE_ERROR, __('Failed to compile %s', $test));
