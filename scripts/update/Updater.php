@@ -19,7 +19,7 @@
  *
  */
 
-namespace oat\taoProctoring\scripts\update;
+namespace oat\taoPublishing\scripts\update;
 
 use common_ext_ExtensionUpdater;
 use oat\oatbox\event\EventManager;
