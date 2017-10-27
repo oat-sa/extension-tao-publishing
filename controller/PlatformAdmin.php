@@ -21,7 +21,6 @@
 
 namespace oat\taoPublishing\controller;
 
-use oat\taoPublishing\helpers\PublishingHelpers;
 use oat\taoPublishing\model\PlatformService;
 use oat\taoPublishing\model\publishing\PublishingService;
 
@@ -35,6 +34,7 @@ use oat\taoPublishing\model\publishing\PublishingService;
  */
 class PlatformAdmin extends \tao_actions_SaSModule {
 
+
     public function __construct()
     {
         parent::__construct();
@@ -43,6 +43,8 @@ class PlatformAdmin extends \tao_actions_SaSModule {
 
     public function editInstance()
     {
+        /** @var PublishingService $publishingService */
+        $publishingService = $this->getServiceManager()->get(PublishingService::SERVICE_ID);
         $clazz = $this->getCurrentClass();
         $instance = $this->getCurrentInstance();
         $myFormContainer = new \tao_actions_form_Instance($clazz, $instance);
@@ -61,11 +63,11 @@ class PlatformAdmin extends \tao_actions_SaSModule {
                 $this->setData('reload', true);
             }
         }
-        $deliveryElementClass = \tao_helpers_Uri::encode(PublishingService::DELIVERY_FIELDS);
-        $deliveryElement = $myForm->getElement($deliveryElementClass);
-        $deliveryElement->setOptions(PublishingHelpers::getDeliveryFieldsOptions());
-        $myForm->removeElement($deliveryElement);
-        $myForm->addElement($deliveryElement);
+        $actionsElementClass = \tao_helpers_Uri::encode(PublishingService::PUBLISH_ACTIONS);
+        $actionsElement = $myForm->getElement($actionsElementClass);
+        $actionsElement->setOptions($publishingService->getPublishingActions());
+        $myForm->removeElement($actionsElement);
+        $myForm->addElement($actionsElement);
 
         $this->setData('formTitle', __('Edit Instance'));
         $this->setData('myForm', $myForm->render());
@@ -77,6 +79,9 @@ class PlatformAdmin extends \tao_actions_SaSModule {
         if(!\tao_helpers_Request::isAjax()){
             throw new \Exception("wrong request mode");
         }
+
+        /** @var PublishingService $publishingService */
+        $publishingService = $this->getServiceManager()->get(PublishingService::SERVICE_ID);
 
         $clazz = $this->getCurrentClass();
         $formContainer = new \tao_actions_form_CreateInstance(array($clazz), array());
@@ -94,12 +99,12 @@ class PlatformAdmin extends \tao_actions_SaSModule {
             }
         }
 
-        $deliveryElementClass = \tao_helpers_Uri::encode(PublishingService::DELIVERY_FIELDS);
-        $deliveryElement = $myForm->getElement($deliveryElementClass);
-        $deliveryElement->setOptions(PublishingHelpers::getDeliveryFieldsOptions());
+        $actionsElementClass = \tao_helpers_Uri::encode(PublishingService::PUBLISH_ACTIONS);
+        $actionsElement = $myForm->getElement($actionsElementClass);
+        $actionsElement->setOptions($publishingService->getPublishingActions());
 
-        $myForm->removeElement($deliveryElement);
-        $myForm->addElement($deliveryElement);
+        $myForm->removeElement($actionsElement);
+        $myForm->addElement($actionsElement);
 
         $this->setData('formTitle', __('Create instance of ').$clazz->getLabel());
         $this->setData('myForm', $myForm->render());

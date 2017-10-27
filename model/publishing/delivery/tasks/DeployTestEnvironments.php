@@ -18,12 +18,13 @@
  *               
  * 
  */
-namespace oat\taoPublishing\model;
+namespace oat\taoPublishing\model\publishing\delivery\tasks;
 
 use oat\oatbox\action\Action;
 use oat\taoDeliveryRdf\controller\RestTest;
 use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
-use oat\taoPublishing\model\publishing\PublishingService;
+use oat\taoPublishing\model\PlatformService;
+use oat\taoPublishing\model\publishing\delivery\PublishingDeliveryService;
 use Zend\ServiceManager\ServiceLocatorAwareTrait;
 use Zend\ServiceManager\ServiceLocatorAwareInterface;
 use oat\generis\model\OntologyAwareTrait;
@@ -84,7 +85,7 @@ class DeployTestEnvironments implements Action,ServiceLocatorAwareInterface
         ], [
             'name'     => RestTest::REST_DELIVERY_PARAMS,
             'contents' => json_encode([
-                PublishingService::ORIGIN_DELIVERY_ID_FIELD => $delivery->getUri(),
+                PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD => $delivery->getUri(),
             ])
         ]];
 
@@ -101,7 +102,7 @@ class DeployTestEnvironments implements Action,ServiceLocatorAwareInterface
         $request = new Request('POST', trim($url, '/'));
         $request = $request->withBody($body);
         
-        \common_Logger::d('Requesting comilation of Test '.$test);
+        \common_Logger::d('Requesting compilation of Test '.$test);
         $response = PlatformService::singleton()->callApi($envId, $request);
         if ($response->getStatusCode() == 200) {
             $report = new \common_report_Report(\common_report_Report::TYPE_SUCCESS, __('Test has been compiled as %s', $delivery->getUri()));

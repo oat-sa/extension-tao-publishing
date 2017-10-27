@@ -18,9 +18,11 @@
  *               
  * 
  */
-namespace oat\taoPublishing\model;
+namespace oat\taoPublishing\model\publishing\delivery\tasks;
 
 use oat\oatbox\action\Action;
+use oat\taoPublishing\model\PlatformService;
+use oat\taoPublishing\model\publishing\delivery\PublishingDeliveryService;
 use oat\taoPublishing\model\publishing\PublishingService;
 use Zend\ServiceManager\ServiceLocatorAwareTrait;
 use Zend\ServiceManager\ServiceLocatorAwareInterface;
@@ -65,9 +67,13 @@ class SyncDeliveryEnvironments implements Action,ServiceLocatorAwareInterface
     {
         \common_Logger::d('Sync Delivery '.$delivery->getUri().' for deployment');
         $envId = $env->getUri();
-        $OriginDeliveryField = \tao_helpers_Uri::encode(PublishingService::ORIGIN_DELIVERY_ID_FIELD);
+        $OriginDeliveryField = \tao_helpers_Uri::encode(PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD);
         $deliveryUri = \tao_helpers_Uri::encode($delivery->getUri());
-        $request = new Request('POST', '/taoDeliveryRdf/RestDelivery/updateDeferred?'.$OriginDeliveryField.'='.$deliveryUri);
+        $searchParams = json_encode([
+            $OriginDeliveryField => $deliveryUri
+        ]);
+        $request = new Request('POST', '/taoDeliveryRdf/RestDelivery/updateDeferred?searchParams='.$searchParams);
+
         $request = $request->withBody(
             \GuzzleHttp\Psr7\stream_for(http_build_query($this->getPropertiesForUpdating($env, $delivery)
             )));
@@ -91,7 +97,9 @@ class SyncDeliveryEnvironments implements Action,ServiceLocatorAwareInterface
      */
     protected function getPropertiesForUpdating(\core_kernel_classes_Resource $env, \core_kernel_classes_Resource $delivery)
     {
-        $deliveryProperties = $env->getPropertyValues($this->getProperty(PublishingService::DELIVERY_FIELDS));
+        /** @var PublishingDeliveryService $publishingDeliveryService */
+        $publishingDeliveryService = $this->getServiceLocator()->get(PublishingDeliveryService::SERVICE_ID);
+        $deliveryProperties = $publishingDeliveryService->getSyncFields();
         $propertiesForUpdating = [];
         foreach ($deliveryProperties as $deliveryProperty) {
             $value = $delivery->getOnePropertyValue($this->getProperty($deliveryProperty));
