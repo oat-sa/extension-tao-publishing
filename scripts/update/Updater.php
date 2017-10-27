@@ -24,9 +24,12 @@ namespace oat\taoPublishing\scripts\update;
 use common_ext_ExtensionUpdater;
 use oat\oatbox\event\EventManager;
 use oat\tao\scripts\update\OntologyUpdater;
+use oat\taoDeliveryRdf\model\ContainerRuntime;
+use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
 use oat\taoDeliveryRdf\model\event\DeliveryCreatedEvent;
 use oat\taoDeliveryRdf\model\event\DeliveryUpdatedEvent;
-use oat\taoPublishing\model\publishing\listeners\DeliveryEventsListeners;
+use oat\taoPublishing\model\publishing\delivery\listeners\DeliveryEventsListeners;
+use oat\taoPublishing\model\publishing\delivery\PublishingDeliveryService;
 use oat\taoPublishing\model\publishing\PublishingService;
 
 /**
@@ -61,8 +64,34 @@ class Updater extends common_ext_ExtensionUpdater
 
             $this->setVersion('0.2.0');
         }
+
         if ($this->isVersion('0.2.0')) {
             OntologyUpdater::syncModels();
+
+            $publishingService = $this->getServiceManager()->get(PublishingService::SERVICE_ID);
+            $actionOptions = $publishingService->getOption(PublishingService::OPTIONS_ACTIONS);
+            $actionOptions = array_merge($actionOptions, [
+                'DeliveryCreatedEvent',
+                'DeliveryUpdatedEvent'
+            ]);
+            $publishingService->setOption(PublishingService::OPTIONS_ACTIONS, $actionOptions);
+            $this->getServiceManager()->register(PublishingService::SERVICE_ID, $publishingService);
+
+            $publishingDeliveryService = new PublishingDeliveryService();
+            $deliveryFieldsOptions[PublishingService::OPTIONS_FIELDS] = [];
+            $deliveryFieldsOptions[PublishingService::OPTIONS_EXCLUDED_FIELDS] = [
+                DeliveryAssemblyService::PROPERTY_DELIVERY_DIRECTORY,
+                ContainerRuntime::PROPERTY_CONTAINER,
+                DeliveryAssemblyService::PROPERTY_DELIVERY_RUNTIME,
+                DeliveryAssemblyService::PROPERTY_DELIVERY_TIME,
+                DeliveryAssemblyService::PROPERTY_ORIGIN,
+                PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD
+
+            ];
+
+            $publishingDeliveryService->setOptions($deliveryFieldsOptions);
+            $this->getServiceManager()->register(PublishingDeliveryService::SERVICE_ID, $publishingDeliveryService);
+
             $this->setVersion('0.3.0');
         }
     }
