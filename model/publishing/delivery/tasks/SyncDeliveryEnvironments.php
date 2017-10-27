@@ -23,7 +23,6 @@ namespace oat\taoPublishing\model\publishing\delivery\tasks;
 use oat\oatbox\action\Action;
 use oat\taoPublishing\model\PlatformService;
 use oat\taoPublishing\model\publishing\delivery\PublishingDeliveryService;
-use oat\taoPublishing\model\publishing\PublishingService;
 use Zend\ServiceManager\ServiceLocatorAwareTrait;
 use Zend\ServiceManager\ServiceLocatorAwareInterface;
 use oat\generis\model\OntologyAwareTrait;

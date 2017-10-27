@@ -22,11 +22,12 @@ namespace oat\taoPublishing\model\publishing\delivery;
 use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
 use oat\oatbox\log\LoggerAwareTrait;
-use oat\oatbox\task\Queue;
 use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
 use oat\taoPublishing\model\publishing\delivery\tasks\DeployTestEnvironments;
 use oat\taoPublishing\model\publishing\PublishingService;
 use oat\taoPublishing\model\publishing\delivery\tasks\SyncDeliveryEnvironments;
+use oat\taoTaskQueue\model\QueueDispatcher;
+use oat\taoTaskQueue\model\TaskLogInterface;
 
 /**
  * Class PublishingDeliveryService
@@ -48,13 +49,15 @@ class PublishingDeliveryService extends ConfigurableService
         $testProperty = $this->getProperty(DeliveryAssemblyService::PROPERTY_ORIGIN);
         /** @var \core_kernel_classes_Resource $test */
         $test = $delivery->getOnePropertyValue($testProperty);
-
         $report = \common_report_Report::createSuccess();
-        /** @var Queue $queue */
-        $queue = $this->getServiceManager()->get(Queue::SERVICE_ID);
+        /** @var TaskLogInterface $taskLog */
+        $taskLog = $this->getServiceManager()->get(TaskLogInterface::SERVICE_ID);
+        /** @var QueueDispatcher $queueDispatcher */
+        $queueDispatcher = $this->getServiceManager()->get(QueueDispatcher::SERVICE_ID);
         foreach ($environments as $env) {
-            $task = $queue->createTask(new DeployTestEnvironments(), [$test->getUri(), $env->getUri(), $delivery->getUri()]);
-            $report->add($task->getReport());
+            $task = $queueDispatcher->createTask(new DeployTestEnvironments(), [$test->getUri(), $env->getUri(), $delivery->getUri()]);
+            $report = $taskLog->getReport($task->getId());
+            $report->add($report);
         }
         return $report;
     }
@@ -64,11 +67,16 @@ class PublishingDeliveryService extends ConfigurableService
         $environments = $this->getEnvironments();
 
         $report = \common_report_Report::createSuccess();
-        /** @var Queue $queue */
-        $queue = $this->getServiceManager()->get(Queue::SERVICE_ID);
+        /** @var QueueDispatcher $queueDispatcher */
+        $queueDispatcher = $this->getServiceManager()->get(QueueDispatcher::SERVICE_ID);
+
+        /** @var TaskLogInterface $taskLog */
+        $taskLog = $this->getServiceManager()->get(TaskLogInterface::SERVICE_ID);
+
         foreach ($environments as $env) {
-            $task = $queue->createTask(new SyncDeliveryEnvironments(), [$delivery->getUri(), $env->getUri()]);
-            $report->add($task->getReport());
+            $task = $queueDispatcher->createTask(new SyncDeliveryEnvironments(), [$delivery->getUri(), $env->getUri()]);
+            $report = $taskLog->getReport($task->getId());
+            $report->add($report);
         }
         return $report;
     }
