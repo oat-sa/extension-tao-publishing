@@ -66,8 +66,8 @@ class SyncDeliveryEnvironments implements Action,ServiceLocatorAwareInterface
     {
         \common_Logger::d('Sync Delivery '.$delivery->getUri().' for deployment');
         $envId = $env->getUri();
-        $OriginDeliveryField = \tao_helpers_Uri::encode(PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD);
-        $deliveryUri = \tao_helpers_Uri::encode($delivery->getUri());
+        $OriginDeliveryField = urlencode(PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD);
+        $deliveryUri = urlencode($delivery->getUri());
         $searchParams = json_encode([
             $OriginDeliveryField => $deliveryUri
         ]);
