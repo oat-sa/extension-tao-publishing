@@ -69,7 +69,11 @@ class Updater extends common_ext_ExtensionUpdater
             OntologyUpdater::syncModels();
 
             $publishingService = $this->getServiceManager()->get(PublishingService::SERVICE_ID);
-            $actionOptions = $publishingService->getOption(PublishingService::OPTIONS_ACTIONS);
+
+            $actionOptions = $publishingService->hasOption(PublishingService::OPTIONS_ACTIONS)
+                ? $publishingService->getOption(PublishingService::OPTIONS_ACTIONS)
+                : [];
+
             $actionOptions = array_merge($actionOptions, [
                 'DeliveryCreatedEvent',
                 'DeliveryUpdatedEvent'
