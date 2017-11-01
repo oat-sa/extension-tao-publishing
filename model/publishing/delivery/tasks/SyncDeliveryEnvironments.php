@@ -1,22 +1,22 @@
 <?php
-/**
+/**  
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; under version 2
  * of the License (non-upgradable).
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *
+ * 
  * Copyright (c) 2017 (original work) Open Assessment Technologies SA;
- *
- *
+ *               
+ * 
  */
 namespace oat\taoPublishing\model\publishing\delivery\tasks;
 
@@ -64,29 +64,34 @@ class SyncDeliveryEnvironments implements Action,ServiceLocatorAwareInterface
      */
     protected function updateDelivery(\core_kernel_classes_Resource $env, \core_kernel_classes_Resource $delivery)
     {
-        \common_Logger::d('Sync Delivery '.$delivery->getUri().' for deployment');
-        $envId = $env->getUri();
-        $OriginDeliveryField = PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD;
-        $deliveryUri = $delivery->getUri();
-        $searchParams = json_encode([
-            $OriginDeliveryField => $deliveryUri
-        ]);
+        try {
+            \common_Logger::d('Sync Delivery '.$delivery->getUri().' for deployment');
+            $envId = $env->getUri();
+            $OriginDeliveryField = PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD;
+            $deliveryUri = $delivery->getUri();
+            $searchParams = json_encode([
+                $OriginDeliveryField => $deliveryUri
+            ]);
 
-        $request = new Request('POST', '/taoDeliveryRdf/RestDelivery/updateDeferred?'.http_build_query(['searchParams' => $searchParams]));
-        $request = $request->withBody(
-            \GuzzleHttp\Psr7\stream_for(http_build_query($this->getPropertiesForUpdating($env, $delivery)
-            )));
-        $request = $request->withHeader('Content-Type', 'application/x-www-form-urlencoded');
+            $request = new Request('POST', '/taoDeliveryRdf/RestDelivery/updateDeferred?'.http_build_query(['searchParams' => $searchParams]));
+            $request = $request->withBody(
+                \GuzzleHttp\Psr7\stream_for(http_build_query($this->getPropertiesForUpdating($env, $delivery)
+                )));
+            $request = $request->withHeader('Content-Type', 'application/x-www-form-urlencoded');
 
-        \common_Logger::d('Requesting updating of Delivery '.$delivery->getUri());
-        $response = PlatformService::singleton()->callApi($envId, $request);
-        if ($response->getStatusCode() == 200) {
-            $report = new \common_report_Report(\common_report_Report::TYPE_SUCCESS, __('Delivery has been updated as %s', $delivery->getUri()));
-            $report->setData($delivery->getUri());
-            return $report;
-        } else {
-            return new \common_report_Report(\common_report_Report::TYPE_ERROR, __('Failed to updated %s', $delivery->getUri()));
+            \common_Logger::d('Requesting updating of Delivery '.$delivery->getUri());
+            $response = PlatformService::singleton()->callApi($envId, $request);
+            if ($response->getStatusCode() == 200) {
+                $report = new \common_report_Report(\common_report_Report::TYPE_SUCCESS, __('Delivery has been updated as %s', $delivery->getUri()));
+                $report->setData($delivery->getUri());
+                return $report;
+            } else {
+                return new \common_report_Report(\common_report_Report::TYPE_ERROR, __('Failed to updated %s on remote env with message: %s', $delivery->getUri(), $response->getBody()->getContents()));
+            }
+        } catch (\Exception $e) {
+            return new \common_report_Report(\common_report_Report::TYPE_ERROR, __('Failed to updated %s on remote env with message: %s', $delivery, $e->getMessage()));
         }
+
     }
 
     /**

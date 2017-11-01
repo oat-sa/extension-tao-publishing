@@ -75,8 +75,8 @@ class Updater extends common_ext_ExtensionUpdater
                 : [];
 
             $actionOptions = array_merge($actionOptions, [
-                'DeliveryCreatedEvent',
-                'DeliveryUpdatedEvent'
+                DeliveryCreatedEvent::class,
+                DeliveryUpdatedEvent::class
             ]);
             $publishingService->setOption(PublishingService::OPTIONS_ACTIONS, $actionOptions);
             $this->getServiceManager()->register(PublishingService::SERVICE_ID, $publishingService);

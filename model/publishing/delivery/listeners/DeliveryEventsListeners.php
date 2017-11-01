@@ -82,8 +82,6 @@ class DeliveryEventsListeners
      */
     protected static function checkActions($name)
     {
-        $array = explode('\\', $name);
-        $name = end($array);
         /** @var PublishingService $publishService */
         $publishService = ServiceManager::getServiceManager()->get(PublishingService::SERVICE_ID);
         $actions = $publishService->getOption(PublishingService::OPTIONS_ACTIONS);

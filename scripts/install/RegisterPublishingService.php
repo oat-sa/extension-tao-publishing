@@ -5,6 +5,8 @@ namespace oat\taoPublishing\scripts\install;
 use oat\oatbox\extension\InstallAction;
 use oat\taoDeliveryRdf\model\ContainerRuntime;
 use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
+use oat\taoDeliveryRdf\model\event\DeliveryCreatedEvent;
+use oat\taoDeliveryRdf\model\event\DeliveryUpdatedEvent;
 use oat\taoPublishing\model\publishing\delivery\PublishingDeliveryService;
 use oat\taoPublishing\model\publishing\PublishingService;
 
@@ -14,8 +16,8 @@ class RegisterPublishingService extends InstallAction
     {
         $service = new PublishingService();
         $service->setOption(PublishingService::OPTIONS_ACTIONS, [
-            'DeliveryCreatedEvent',
-            'DeliveryUpdatedEvent'
+            DeliveryCreatedEvent::class,
+            DeliveryUpdatedEvent::class
         ]);
         $this->registerService(PublishingService::SERVICE_ID, $service);
 

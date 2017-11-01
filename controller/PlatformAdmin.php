@@ -1,22 +1,22 @@
 <?php
-/**  
+/**
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; under version 2
  * of the License (non-upgradable).
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- * 
+ *
  * Copyright (c) 2016 (original work) Open Assessment Technologies SA;
- *               
- * 
+ *
+ *
  */
 
 namespace oat\taoPublishing\controller;
@@ -53,10 +53,12 @@ class PlatformAdmin extends \tao_actions_SaSModule {
         if($myForm->isSubmited()){
             if($myForm->isValid()){
 
-                $values = $myForm->getValues();
+                // For treeBox component we need to add slashes for rdf value before saving
+                $values = $publishingService->addSlashes($myForm->getValues());
+
                 // save properties
                 $binder = new \tao_models_classes_dataBinding_GenerisFormDataBinder($instance);
-                $instance = $binder->bind($values);
+                $binder->bind($values);
                 $message = __('Instance saved');
 
                 $this->setData('message',$message);
@@ -90,12 +92,12 @@ class PlatformAdmin extends \tao_actions_SaSModule {
         if($myForm->isSubmited()){
             if($myForm->isValid()){
 
-                $properties = $myForm->getValues();
+                // For treeBox component we need to add slashes for rdf value before saving
+                $properties = $publishingService->addSlashes($myForm->getValues());
                 $instance = $this->createInstance(array($clazz), $properties);
 
                 $this->setData('message', __($instance->getLabel().' created'));
                 $this->setData('reload', true);
-                //return $this->redirect(_url('editInstance', null, null, array('uri' => $instance)));
             }
         }
 

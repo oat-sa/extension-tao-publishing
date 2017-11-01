@@ -42,7 +42,7 @@ class PublishingService extends ConfigurableService
     const OPTIONS_EXCLUDED_FIELDS = 'excluded_fields';
 
     /**
-     * @return array|mixed
+     * @return array
      */
     public function getEnvironments()
     {
@@ -51,13 +51,16 @@ class PublishingService extends ConfigurableService
         return $environments;
     }
 
+    /**
+     * @return array
+     */
     public function getPublishingActions()
     {
         $actions = $this->getOption(self::OPTIONS_ACTIONS);
         $options = [];
         foreach ($actions as $action) {
             $options[] = [
-                'data' => $action,
+                'data' => (new \ReflectionClass($action))->getShortName(),
                 'parent' => 0,
                 'attributes' => [
                     'id' => $action,
@@ -66,5 +69,23 @@ class PublishingService extends ConfigurableService
             ];
         }
         return $options;
+    }
+
+    /**
+     * @param $values
+     * @return array
+     */
+    public function addSlashes($values)
+    {
+        if (isset($values[PublishingService::PUBLISH_ACTIONS])) {
+            if (is_array($values[PublishingService::PUBLISH_ACTIONS])) {
+                $values[PublishingService::PUBLISH_ACTIONS] = array_map(function($item) {
+                    return addslashes($item);
+                }, $values[PublishingService::PUBLISH_ACTIONS]);
+            } else {
+                $values[PublishingService::PUBLISH_ACTIONS] = addslashes($values[PublishingService::PUBLISH_ACTIONS]);
+            }
+        }
+        return $values;
     }
 }
