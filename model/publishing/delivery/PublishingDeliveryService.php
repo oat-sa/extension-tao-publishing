@@ -77,18 +77,16 @@ class PublishingDeliveryService extends ConfigurableService
     {
         $environments = $this->getEnvironments();
 
-        $report = \common_report_Report::createSuccess();
         /** @var QueueDispatcher $queueDispatcher */
         $queueDispatcher = $this->getServiceManager()->get(QueueDispatcher::SERVICE_ID);
 
-        /** @var TaskLogInterface $taskLog */
-        $taskLog = $this->getServiceManager()->get(TaskLogInterface::SERVICE_ID);
-
+        $report = \common_report_Report::createInfo('Updating remote delivery ' . $delivery->getUri());
         foreach ($environments as $env) {
             if ($this->checkActionForEnvironment(DeliveryUpdatedEvent::class, $env)) {
                 $task = $queueDispatcher->createTask(new SyncDeliveryEnvironments(), [$delivery->getUri(), $env->getUri()]);
-                $report = $taskLog->getReport($task->getId());
-                $report->add($report);
+                $message = DeployTestEnvironments::class . "task created; Task id: " . $task->getId();
+                $report->add(\common_report_Report::createSuccess($message));
+                $this->logNotice($message);
             }
         }
         return $report;
