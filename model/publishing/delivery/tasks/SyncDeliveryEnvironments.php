@@ -18,10 +18,11 @@
  *               
  * 
  */
-namespace oat\taoPublishing\model;
+namespace oat\taoPublishing\model\publishing\delivery\tasks;
 
 use oat\oatbox\action\Action;
-use oat\taoPublishing\model\publishing\PublishingService;
+use oat\taoPublishing\model\PlatformService;
+use oat\taoPublishing\model\publishing\delivery\PublishingDeliveryService;
 use Zend\ServiceManager\ServiceLocatorAwareTrait;
 use Zend\ServiceManager\ServiceLocatorAwareInterface;
 use oat\generis\model\OntologyAwareTrait;
@@ -63,53 +64,34 @@ class SyncDeliveryEnvironments implements Action,ServiceLocatorAwareInterface
      */
     protected function updateDelivery(\core_kernel_classes_Resource $env, \core_kernel_classes_Resource $delivery)
     {
-        \common_Logger::d('Sync Delivery '.$delivery->getUri().' for deployment');
-        $envId = $env->getUri();
-        $remoteDeliveryUri = $this->findRemoteDelivery($envId, $delivery);
-        $request = new Request('POST', '/taoDeliveryRdf/RestDelivery/update');
-        $request = $request->withBody(
-            \GuzzleHttp\Psr7\stream_for(http_build_query([
-                    'delivery' => $remoteDeliveryUri,
-                    'delivery-params' => json_encode($this->getPropertiesForUpdating($env, $delivery))
-                ]
-            )));
-        $request = $request->withHeader('Content-Type', 'application/x-www-form-urlencoded');
+        try {
+            \common_Logger::d('Sync Delivery '.$delivery->getUri().' for deployment');
+            $envId = $env->getUri();
+            $OriginDeliveryField = PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD;
+            $deliveryUri = $delivery->getUri();
+            $searchParams = json_encode([
+                $OriginDeliveryField => $deliveryUri
+            ]);
 
-        \common_Logger::d('Requesting updating of Delivery '.$delivery->getUri());
-        $response = PlatformService::singleton()->callApi($envId, $request);
-        if ($response->getStatusCode() == 200) {
-            $content = $response->getBody()->getContents();
-            $data = json_decode($content, true);
-            $deliveryId = $data['data']['delivery'];
-            $report = new \common_report_Report(\common_report_Report::TYPE_SUCCESS, __('Delivery has been updated as %s', $delivery->getUri()));
-            $report->setData($deliveryId);
-            return $report;
-        } else {
-            return new \common_report_Report(\common_report_Report::TYPE_ERROR, __('Failed to updated %s', $delivery->getUri()));
+            $request = new Request('POST', '/taoDeliveryRdf/RestDelivery/updateDeferred?'.http_build_query(['searchParams' => $searchParams]));
+            $request = $request->withBody(
+                \GuzzleHttp\Psr7\stream_for(http_build_query($this->getPropertiesForUpdating($env, $delivery)
+                )));
+            $request = $request->withHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+            \common_Logger::d('Requesting updating of Delivery '.$delivery->getUri());
+            $response = PlatformService::singleton()->callApi($envId, $request);
+            if ($response->getStatusCode() == 200) {
+                $report = new \common_report_Report(\common_report_Report::TYPE_SUCCESS, __('Delivery has been updated as %s', $delivery->getUri()));
+                $report->setData($delivery->getUri());
+                return $report;
+            } else {
+                return new \common_report_Report(\common_report_Report::TYPE_ERROR, __('Failed to updated %s on remote env with message: %s', $delivery->getUri(), $response->getBody()->getContents()));
+            }
+        } catch (\Exception $e) {
+            return new \common_report_Report(\common_report_Report::TYPE_ERROR, __('Failed to updated %s on remote env with message: %s', $delivery, $e->getMessage()));
         }
-    }
 
-    /**
-     * @param $envId
-     * @param \core_kernel_classes_Resource $delivery
-     * @return \common_report_Report
-     */
-    protected function findRemoteDelivery($envId, \core_kernel_classes_Resource $delivery)
-    {
-
-        $OriginDeliveryField = \tao_helpers_Uri::encode(PublishingService::ORIGIN_DELIVERY_ID_FIELD);
-        $deliveryUri = \tao_helpers_Uri::encode($delivery->getUri());
-        $request = new Request('GET', '/taoDeliveryRdf/RestDelivery/search?'.$OriginDeliveryField.'='.$deliveryUri);
-        \common_Logger::d('Requesting finding of Delivery.');
-        $response = PlatformService::singleton()->callApi($envId, $request);
-        if ($response->getStatusCode() == 200) {
-            $content = $response->getBody()->getContents();
-            $data = json_decode($content, true);
-            $deliveryId = $data['data']['delivery'];
-            return $deliveryId;
-        } else {
-            return new \common_report_Report(\common_report_Report::TYPE_ERROR, __('Failed to finding delivery.'));
-        }
     }
 
     /**
@@ -119,7 +101,9 @@ class SyncDeliveryEnvironments implements Action,ServiceLocatorAwareInterface
      */
     protected function getPropertiesForUpdating(\core_kernel_classes_Resource $env, \core_kernel_classes_Resource $delivery)
     {
-        $deliveryProperties = $env->getPropertyValues($this->getProperty(PublishingService::DELIVERY_FIELDS));
+        /** @var PublishingDeliveryService $publishingDeliveryService */
+        $publishingDeliveryService = $this->getServiceLocator()->get(PublishingDeliveryService::SERVICE_ID);
+        $deliveryProperties = $publishingDeliveryService->getSyncFields();
         $propertiesForUpdating = [];
         foreach ($deliveryProperties as $deliveryProperty) {
             $value = $delivery->getOnePropertyValue($this->getProperty($deliveryProperty));
@@ -128,6 +112,7 @@ class SyncDeliveryEnvironments implements Action,ServiceLocatorAwareInterface
             } else {
                 $value = (string) $value;
             }
+            $deliveryProperty = \tao_helpers_Uri::encode($deliveryProperty);
             $propertiesForUpdating[$deliveryProperty] = $value;
         }
         return $propertiesForUpdating;

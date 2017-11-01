@@ -6,7 +6,7 @@ use oat\oatbox\event\EventManager;
 use oat\oatbox\extension\InstallAction;
 use oat\taoDeliveryRdf\model\event\DeliveryCreatedEvent;
 use oat\taoDeliveryRdf\model\event\DeliveryUpdatedEvent;
-use oat\taoPublishing\model\publishing\listeners\DeliveryEventsListeners;
+use oat\taoPublishing\model\publishing\delivery\listeners\DeliveryEventsListeners;
 
 /**
  * Class RegisterListeners

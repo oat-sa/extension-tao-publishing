@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE structures SYSTEM "../doc/structures.dtd">
 <structures>
-    <structure id="tests" name="Tests" level="1" group="main">
-        <sections>
-            <section id="manage_tests" name="Manage tests" url="/taoTests/Tests/index">
-                <actions>
-                	<action id="delivery-publish" name="Publish" url="/taoPublishing/Publish/wizard" group="tree" context="instance">
-                        <icon id="icon-magicwand"/>
-                    </action>
-                </actions>
-            </section>
-        </sections>
-    </structure>
+    <!--<structure id="tests" name="Tests" level="1" group="main">-->
+        <!--<sections>-->
+            <!--<section id="manage_tests" name="Manage tests" url="/taoTests/Tests/index">-->
+                <!--<actions>-->
+                	<!--<action id="delivery-publish" name="Publish" url="/taoPublishing/Publish/wizard" group="tree" context="instance">-->
+                        <!--<icon id="icon-magicwand"/>-->
+                    <!--</action>-->
+                <!--</actions>-->
+            <!--</section>-->
+        <!--</sections>-->
+    <!--</structure>-->
 	<structure id="settings" name="Settings" level="11" group="invisible">
 		<description />
 		<sections>

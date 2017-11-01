@@ -18,11 +18,12 @@
  *
  */
 
-namespace oat\taoPublishing\model\publishing\listeners;
+namespace oat\taoPublishing\model\publishing\delivery\listeners;
 
 use oat\oatbox\service\ServiceManager;
 use oat\taoDeliveryRdf\model\event\DeliveryCreatedEvent;
 use oat\taoDeliveryRdf\model\event\DeliveryUpdatedEvent;
+use oat\taoPublishing\model\publishing\delivery\PublishingDeliveryService;
 use oat\taoPublishing\model\publishing\PublishingService;
 
 /**
@@ -33,13 +34,18 @@ use oat\taoPublishing\model\publishing\PublishingService;
 class DeliveryEventsListeners
 {
 
+    /**
+     * @param DeliveryCreatedEvent $event
+     * @return \common_report_Report
+     */
     public static function createdDeliveryEvent(DeliveryCreatedEvent $event)
     {
         $delivery = new \core_kernel_classes_Resource($event->getDeliveryUri());
         try {
-            /** @var PublishingService $publishService */
-            $publishService = ServiceManager::getServiceManager()->get(PublishingService::SERVICE_ID);
-            $report = $publishService->publishDelivery($delivery);
+            /** @var PublishingDeliveryService $publishDeliveryService */
+            $publishDeliveryService = ServiceManager::getServiceManager()->get(PublishingDeliveryService::SERVICE_ID);
+            self::checkActions($event->getName());
+            $report = $publishDeliveryService->publishDelivery($delivery);
 
         } catch (\Exception $e) {
             $report = new \common_report_Report(\common_report_Report::TYPE_ERROR, __('Delivery cannot be published. Please contact your administrator'));
@@ -49,13 +55,18 @@ class DeliveryEventsListeners
 
     }
 
+    /**
+     * @param DeliveryUpdatedEvent $event
+     * @return \common_report_Report
+     */
     public static function updatedDeliveryEvent(DeliveryUpdatedEvent $event)
     {
         $delivery = new \core_kernel_classes_Resource($event->getDeliveryUri());
         try {
-            /** @var PublishingService $publishService */
-            $publishService = ServiceManager::getServiceManager()->get(PublishingService::SERVICE_ID);
-            $report = $publishService->syncDelivery($delivery);
+            /** @var PublishingDeliveryService $publishDeliveryService */
+            $publishDeliveryService = ServiceManager::getServiceManager()->get(PublishingDeliveryService::SERVICE_ID);
+            self::checkActions($event->getName());
+            $report = $publishDeliveryService->syncDelivery($delivery);
 
         } catch (\Exception $e) {
             $report = new \common_report_Report(\common_report_Report::TYPE_ERROR, __('Delivery cannot be updated. Please contact your administrator'));
@@ -63,6 +74,20 @@ class DeliveryEventsListeners
 
         return $report;
 
+    }
+
+    /**
+     * @param $name
+     * @throws \common_exception_NotFound
+     */
+    protected static function checkActions($name)
+    {
+        /** @var PublishingService $publishService */
+        $publishService = ServiceManager::getServiceManager()->get(PublishingService::SERVICE_ID);
+        $actions = $publishService->getOption(PublishingService::OPTIONS_ACTIONS);
+        if (!in_array($name, $actions)) {
+            throw new \common_exception_NotFound();
+        }
     }
 
 }
