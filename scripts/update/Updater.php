@@ -96,6 +96,27 @@ class Updater extends common_ext_ExtensionUpdater
             $publishingDeliveryService->setOptions($deliveryFieldsOptions);
             $this->getServiceManager()->register(PublishingDeliveryService::SERVICE_ID, $publishingDeliveryService);
 
+            $eventManager = $this->getServiceManager()->get(EventManager::SERVICE_ID);
+
+            $eventManager->detach(
+                'oat\\taoDeliveryRdf\\model\\event\\DeliveryCreatedEvent',
+                ['oat\\taoPublishing\\model\\publishing\\listeners\\DeliveryEventsListeners', 'createdDeliveryEvent']
+            );
+            $eventManager->detach(
+                'oat\\taoDeliveryRdf\\model\\event\\DeliveryUpdatedEvent',
+                ['oat\\taoPublishing\\model\\publishing\\listeners\\DeliveryEventsListeners', 'updatedDeliveryEvent']
+            );
+            $eventManager->attach(
+                DeliveryCreatedEvent::class,
+                [DeliveryEventsListeners::class, 'createdDeliveryEvent']
+            );
+            $eventManager->attach(
+                DeliveryUpdatedEvent::class,
+                [DeliveryEventsListeners::class, 'updatedDeliveryEvent']
+            );
+
+            $this->getServiceManager()->register(EventManager::SERVICE_ID, $eventManager);
+
             $this->setVersion('0.3.0');
         }
     }

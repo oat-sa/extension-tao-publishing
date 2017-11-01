@@ -55,16 +55,15 @@ class PublishingDeliveryService extends ConfigurableService
         $testProperty = $this->getProperty(DeliveryAssemblyService::PROPERTY_ORIGIN);
         /** @var \core_kernel_classes_Resource $test */
         $test = $delivery->getOnePropertyValue($testProperty);
-        $report = \common_report_Report::createSuccess();
-        /** @var TaskLogInterface $taskLog */
-        $taskLog = $this->getServiceManager()->get(TaskLogInterface::SERVICE_ID);
         /** @var QueueDispatcher $queueDispatcher */
         $queueDispatcher = $this->getServiceManager()->get(QueueDispatcher::SERVICE_ID);
+        $report = \common_report_Report::createInfo('Publishing delivery '.$delivery->getUri());
         foreach ($environments as $env) {
             if ($this->checkActionForEnvironment(DeliveryCreatedEvent::class, $env)) {
                 $task = $queueDispatcher->createTask(new DeployTestEnvironments(), [$test->getUri(), $env->getUri(), $delivery->getUri()]);
-                $report = $taskLog->getReport($task->getId());
-                $report->add($report);
+                $message = DeployTestEnvironments::class . "task created; Task id: " . $task->getId();
+                $report->add(\common_report_Report::createSuccess($message));
+                $this->logNotice($message);
             }
         }
         return $report;
