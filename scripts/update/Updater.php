@@ -22,6 +22,8 @@
 namespace oat\taoPublishing\scripts\update;
 
 use common_ext_ExtensionUpdater;
+use oat\taoDeliveryRdf\model\DeliveryPublishing;
+use oat\taoPublishing\model\lti\LtiLaunchDataService;
 use oat\oatbox\event\EventManager;
 use oat\tao\scripts\update\OntologyUpdater;
 use oat\taoDeliveryRdf\model\ContainerRuntime;
@@ -118,6 +120,33 @@ class Updater extends common_ext_ExtensionUpdater
             $this->getServiceManager()->register(EventManager::SERVICE_ID, $eventManager);
 
             $this->setVersion('0.3.0');
+        }
+
+        if ($this->isVersion('0.3.0')) {
+            OntologyUpdater::syncModels();
+            $ltiLaunchDataService = $this->getServiceManager()->get(LtiLaunchDataService::SERVICE_ID);
+            $options = $ltiLaunchDataService->getOptions();
+            $this->getServiceManager()->register(LtiLaunchDataService::SERVICE_ID, new LtiLaunchDataService($options));
+
+            $deliveryPublishingService = $this->getServiceManager()->get(DeliveryPublishing::SERVICE_ID);
+            $publishingOptions = $deliveryPublishingService->getOption(DeliveryPublishing::OPTION_PUBLISH_OPTIONS);
+            $publishingOptions[DeliveryPublishing::OPTION_PUBLISH_OPTIONS_ELEMENTS] = [
+                PublishingDeliveryService::DELIVERY_REMOTE_SYNC_FIELD => [
+                    'description' => _('Publish to remote environments'),
+                    'value' => PublishingDeliveryService::DELIVERY_REMOTE_SYNC_COMPILE_ENABLED
+                ]
+            ];
+            $deliveryPublishingService->setOption(DeliveryPublishing::OPTION_PUBLISH_OPTIONS, $publishingOptions);
+            $this->getServiceManager()->register(DeliveryPublishing::SERVICE_ID, $deliveryPublishingService);
+
+            $publishingDeliveryService = $this->getServiceManager()->get(PublishingDeliveryService::SERVICE_ID);
+            $deliveryFieldsOptions = $publishingDeliveryService->getOption(PublishingService::OPTIONS_EXCLUDED_FIELDS);
+            $deliveryFieldsOptions[] = PublishingDeliveryService::DELIVERY_REMOTE_SYNC_FIELD;
+
+            $publishingDeliveryService->setOptions($deliveryFieldsOptions);
+            $this->getServiceManager()->register(PublishingDeliveryService::SERVICE_ID, $publishingDeliveryService);
+
+            $this->setVersion('0.4.0');
         }
     }
 }
