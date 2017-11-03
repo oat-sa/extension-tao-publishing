@@ -42,6 +42,7 @@ class DeliveryEventsListeners
     {
         $delivery = new \core_kernel_classes_Resource($event->getDeliveryUri());
         try {
+            self::checkSyncProperty($delivery);
             /** @var PublishingDeliveryService $publishDeliveryService */
             $publishDeliveryService = ServiceManager::getServiceManager()->get(PublishingDeliveryService::SERVICE_ID);
             self::checkActions($event->getName());
@@ -63,6 +64,7 @@ class DeliveryEventsListeners
     {
         $delivery = new \core_kernel_classes_Resource($event->getDeliveryUri());
         try {
+            self::checkSyncProperty($delivery);
             /** @var PublishingDeliveryService $publishDeliveryService */
             $publishDeliveryService = ServiceManager::getServiceManager()->get(PublishingDeliveryService::SERVICE_ID);
             self::checkActions($event->getName());
@@ -86,6 +88,19 @@ class DeliveryEventsListeners
         $publishService = ServiceManager::getServiceManager()->get(PublishingService::SERVICE_ID);
         $actions = $publishService->getOption(PublishingService::OPTIONS_ACTIONS);
         if (!in_array($name, $actions)) {
+            throw new \common_exception_NotFound();
+        }
+    }
+
+    /**
+     * @param \core_kernel_classes_Resource $delivery
+     * @throws \common_exception_NotFound
+     */
+    protected static function checkSyncProperty(\core_kernel_classes_Resource $delivery)
+    {
+        $property = new \core_kernel_classes_Property(PublishingDeliveryService::DELIVERY_REMOTE_SYNC_FIELD);
+        $sync = $delivery->getPropertyValues($property);
+        if (!current($sync)) {
             throw new \common_exception_NotFound();
         }
     }
