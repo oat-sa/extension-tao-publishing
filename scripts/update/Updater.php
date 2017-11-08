@@ -129,15 +129,16 @@ class Updater extends common_ext_ExtensionUpdater
             $this->getServiceManager()->register(LtiLaunchDataService::SERVICE_ID, new LtiLaunchDataService($options));
 
             $deliveryPublishingService = $this->getServiceManager()->get(DeliveryPublishing::SERVICE_ID);
-            $publishingOptions = $deliveryPublishingService->getOption(DeliveryPublishing::OPTION_PUBLISH_OPTIONS);
-            $publishingOptions[DeliveryPublishing::OPTION_PUBLISH_OPTIONS_ELEMENTS] = [
+            $publishingOptions = $deliveryPublishingService->getOptions();
+            $publishingOptions[DeliveryPublishing::OPTION_PUBLISH_OPTIONS][DeliveryPublishing::OPTION_PUBLISH_OPTIONS_ELEMENTS] = [
                 PublishingDeliveryService::DELIVERY_REMOTE_SYNC_FIELD => [
                     'description' => _('Publish to remote environments'),
                     'value' => PublishingDeliveryService::DELIVERY_REMOTE_SYNC_COMPILE_ENABLED
                 ]
             ];
-            $deliveryPublishingService->setOption(DeliveryPublishing::OPTION_PUBLISH_OPTIONS, $publishingOptions);
-            $this->getServiceManager()->register(DeliveryPublishing::SERVICE_ID, $deliveryPublishingService);
+            $newDeliveryPublishingService = new \oat\taoPublishing\model\delivery\DeliveryPublishing();
+            $newDeliveryPublishingService->setOptions($publishingOptions);
+            $this->getServiceManager()->register(DeliveryPublishing::SERVICE_ID, $newDeliveryPublishingService);
 
             $publishingDeliveryService = $this->getServiceManager()->get(PublishingDeliveryService::SERVICE_ID);
             $deliveryFieldsOptions = $publishingDeliveryService->getOption(PublishingService::OPTIONS_EXCLUDED_FIELDS);
