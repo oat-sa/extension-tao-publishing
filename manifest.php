@@ -27,10 +27,8 @@ return array(
     'version' => '0.4.0',
     'author' => 'Open Assessment Technologies SA',
     'requires' => array(
-        'taoQtiTest' => '>=2.37.0',
         'taoDeliveryRdf' => '>=3.17.0',
-        'taoTaskQueue' => '>=0.4.0',
-        'ltiDeliveryProvider' => '>=3.8.0',
+        'taoTaskQueue' => '>=0.4.0'
     ),
 	'managementRole' => 'http://www.tao.lu/Ontologies/generis.rdf#taoPublishingManager',
     'acl' => array(
@@ -45,7 +43,7 @@ return array(
         'php' => array(
             \oat\taoPublishing\scripts\install\RegisterPublishingService::class,
             \oat\taoPublishing\scripts\install\RegisterListeners::class,
-            \oat\taoPublishing\scripts\install\UpdateConfigDeliveryPublishingService::class
+            \oat\taoPublishing\scripts\install\UpdateConfigDeliveryFactoryService::class
         )
     ),
     'uninstall' => array(

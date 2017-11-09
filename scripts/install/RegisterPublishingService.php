@@ -29,7 +29,8 @@ class RegisterPublishingService extends InstallAction
             DeliveryAssemblyService::PROPERTY_DELIVERY_RUNTIME,
             DeliveryAssemblyService::PROPERTY_DELIVERY_TIME,
             DeliveryAssemblyService::PROPERTY_ORIGIN,
-            PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD
+            PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD,
+            PublishingDeliveryService::DELIVERY_REMOTE_SYNC_FIELD
         ];
         $publishingDeliveryService->setOptions($deliveryFieldsOptions);
         $this->registerService(PublishingDeliveryService::SERVICE_ID, $publishingDeliveryService);

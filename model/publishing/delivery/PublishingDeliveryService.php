@@ -47,6 +47,8 @@ class PublishingDeliveryService extends ConfigurableService
     const DELIVERY_REMOTE_SYNC_FIELD = 'http://www.tao.lu/Ontologies/TAOPublisher.rdf#RemoteSync';
     const DELIVERY_REMOTE_SYNC_COMPILE_ENABLED = 'http://www.tao.lu/Ontologies/TAODelivery.rdf#ComplyEnabled';
 
+    const DELIVERY_REMOTE_SYNC_REST_OPTION = 'remote-publish';
+
     /**
      * @param \core_kernel_classes_Resource $delivery
      * @return \common_report_Report|null

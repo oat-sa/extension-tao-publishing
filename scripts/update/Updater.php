@@ -22,6 +22,7 @@
 namespace oat\taoPublishing\scripts\update;
 
 use common_ext_ExtensionUpdater;
+use oat\taoDeliveryRdf\model\DeliveryFactory;
 use oat\taoDeliveryRdf\model\DeliveryPublishing;
 use oat\oatbox\event\EventManager;
 use oat\tao\scripts\update\OntologyUpdater;
@@ -124,17 +125,12 @@ class Updater extends common_ext_ExtensionUpdater
         if ($this->isVersion('0.3.0')) {
             OntologyUpdater::syncModels();
 
-            $deliveryPublishingService = $this->getServiceManager()->get(DeliveryPublishing::SERVICE_ID);
-            $publishingOptions = $deliveryPublishingService->getOptions();
-            $publishingOptions[DeliveryPublishing::OPTION_PUBLISH_OPTIONS][DeliveryPublishing::OPTION_PUBLISH_OPTIONS_ELEMENTS] = [
-                PublishingDeliveryService::DELIVERY_REMOTE_SYNC_FIELD => [
-                    'description' => _('Publish to remote environments'),
-                    'value' => PublishingDeliveryService::DELIVERY_REMOTE_SYNC_COMPILE_ENABLED
-                ]
-            ];
-            $newDeliveryPublishingService = new \oat\taoPublishing\model\delivery\DeliveryPublishing();
-            $newDeliveryPublishingService->setOptions($publishingOptions);
-            $this->getServiceManager()->register(DeliveryPublishing::SERVICE_ID, $newDeliveryPublishingService);
+            $deliveryFactoryService = $this->getServiceManager()->get(DeliveryFactory::SERVICE_ID);
+            $publishingOptions = $deliveryFactoryService->getOptions();
+            $publishingOptions[DeliveryFactory::OPTION_INITIAL_PROPERTIES][] = PublishingDeliveryService::DELIVERY_REMOTE_SYNC_FIELD;
+            $publishingOptions[DeliveryFactory::OPTION_INITIAL_PROPERTIES_MAP][] = [PublishingDeliveryService::DELIVERY_REMOTE_SYNC_REST_OPTION => PublishingDeliveryService::DELIVERY_REMOTE_SYNC_FIELD];
+            $deliveryFactoryService->setOptions($publishingOptions);
+            $this->getServiceManager()->register(DeliveryFactory::SERVICE_ID, $deliveryFactoryService);
 
             $publishingDeliveryService = $this->getServiceManager()->get(PublishingDeliveryService::SERVICE_ID);
             $deliveryFieldsOptions = $publishingDeliveryService->getOption(PublishingService::OPTIONS_EXCLUDED_FIELDS);
