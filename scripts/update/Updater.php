@@ -23,7 +23,6 @@ namespace oat\taoPublishing\scripts\update;
 
 use common_ext_ExtensionUpdater;
 use oat\taoDeliveryRdf\model\DeliveryPublishing;
-use oat\taoPublishing\model\lti\LtiLaunchDataService;
 use oat\oatbox\event\EventManager;
 use oat\tao\scripts\update\OntologyUpdater;
 use oat\taoDeliveryRdf\model\ContainerRuntime;
@@ -124,9 +123,6 @@ class Updater extends common_ext_ExtensionUpdater
 
         if ($this->isVersion('0.3.0')) {
             OntologyUpdater::syncModels();
-            $ltiLaunchDataService = $this->getServiceManager()->get(LtiLaunchDataService::SERVICE_ID);
-            $options = $ltiLaunchDataService->getOptions();
-            $this->getServiceManager()->register(LtiLaunchDataService::SERVICE_ID, new LtiLaunchDataService($options));
 
             $deliveryPublishingService = $this->getServiceManager()->get(DeliveryPublishing::SERVICE_ID);
             $publishingOptions = $deliveryPublishingService->getOptions();
