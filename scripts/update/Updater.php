@@ -22,6 +22,8 @@
 namespace oat\taoPublishing\scripts\update;
 
 use common_ext_ExtensionUpdater;
+use oat\taoDeliveryRdf\model\DeliveryFactory;
+use oat\taoDeliveryRdf\model\DeliveryPublishing;
 use oat\oatbox\event\EventManager;
 use oat\tao\scripts\update\OntologyUpdater;
 use oat\taoDeliveryRdf\model\ContainerRuntime;
@@ -118,6 +120,33 @@ class Updater extends common_ext_ExtensionUpdater
             $this->getServiceManager()->register(EventManager::SERVICE_ID, $eventManager);
 
             $this->setVersion('0.3.0');
+        }
+
+        if ($this->isVersion('0.3.0')) {
+            OntologyUpdater::syncModels();
+
+            $deliveryFactoryService = $this->getServiceManager()->get(DeliveryFactory::SERVICE_ID);
+            $publishingOptions = $deliveryFactoryService->getOptions();
+            $publishingOptions[DeliveryFactory::OPTION_INITIAL_PROPERTIES][] = PublishingDeliveryService::DELIVERY_REMOTE_SYNC_FIELD;
+            $publishingOptions[DeliveryFactory::OPTION_INITIAL_PROPERTIES_MAP] = [
+                PublishingDeliveryService::DELIVERY_REMOTE_SYNC_REST_OPTION => [
+                    DeliveryFactory::OPTION_INITIAL_PROPERTIES_MAP_URI => PublishingDeliveryService::DELIVERY_REMOTE_SYNC_FIELD,
+                    DeliveryFactory::OPTION_INITIAL_PROPERTIES_MAP_VALUES => [
+                        'true' => PublishingDeliveryService::DELIVERY_REMOTE_SYNC_COMPILE_ENABLED
+                    ]
+                ]
+            ];
+            $deliveryFactoryService->setOptions($publishingOptions);
+            $this->getServiceManager()->register(DeliveryFactory::SERVICE_ID, $deliveryFactoryService);
+
+            $publishingDeliveryService = $this->getServiceManager()->get(PublishingDeliveryService::SERVICE_ID);
+            $deliveryFieldsOptions = $publishingDeliveryService->getOption(PublishingService::OPTIONS_EXCLUDED_FIELDS);
+            $deliveryFieldsOptions[] = PublishingDeliveryService::DELIVERY_REMOTE_SYNC_FIELD;
+
+            $publishingDeliveryService->setOptions($deliveryFieldsOptions);
+            $this->getServiceManager()->register(PublishingDeliveryService::SERVICE_ID, $publishingDeliveryService);
+
+            $this->setVersion('0.4.0');
         }
     }
 }

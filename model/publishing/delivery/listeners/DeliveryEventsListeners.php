@@ -41,12 +41,14 @@ class DeliveryEventsListeners
     public static function createdDeliveryEvent(DeliveryCreatedEvent $event)
     {
         $delivery = new \core_kernel_classes_Resource($event->getDeliveryUri());
+        $report = \common_report_Report::createSuccess();
         try {
-            /** @var PublishingDeliveryService $publishDeliveryService */
-            $publishDeliveryService = ServiceManager::getServiceManager()->get(PublishingDeliveryService::SERVICE_ID);
-            self::checkActions($event->getName());
-            $report = $publishDeliveryService->publishDelivery($delivery);
-
+            if (self::checkSyncProperty($delivery)) {
+                /** @var PublishingDeliveryService $publishDeliveryService */
+                $publishDeliveryService = ServiceManager::getServiceManager()->get(PublishingDeliveryService::SERVICE_ID);
+                self::checkActions($event->getName());
+                $report = $publishDeliveryService->publishDelivery($delivery);
+            }
         } catch (\Exception $e) {
             $report = new \common_report_Report(\common_report_Report::TYPE_ERROR, __('Delivery cannot be published. Please contact your administrator'));
         }
@@ -62,11 +64,14 @@ class DeliveryEventsListeners
     public static function updatedDeliveryEvent(DeliveryUpdatedEvent $event)
     {
         $delivery = new \core_kernel_classes_Resource($event->getDeliveryUri());
+        $report = \common_report_Report::createSuccess();
         try {
-            /** @var PublishingDeliveryService $publishDeliveryService */
-            $publishDeliveryService = ServiceManager::getServiceManager()->get(PublishingDeliveryService::SERVICE_ID);
-            self::checkActions($event->getName());
-            $report = $publishDeliveryService->syncDelivery($delivery);
+            if (self::checkSyncProperty($delivery)) {
+                /** @var PublishingDeliveryService $publishDeliveryService */
+                $publishDeliveryService = ServiceManager::getServiceManager()->get(PublishingDeliveryService::SERVICE_ID);
+                self::checkActions($event->getName());
+                $report = $publishDeliveryService->syncDelivery($delivery);
+            }
 
         } catch (\Exception $e) {
             $report = new \common_report_Report(\common_report_Report::TYPE_ERROR, __('Delivery cannot be updated. Please contact your administrator'));
@@ -88,6 +93,20 @@ class DeliveryEventsListeners
         if (!in_array($name, $actions)) {
             throw new \common_exception_NotFound();
         }
+    }
+
+    /**
+     * @param \core_kernel_classes_Resource $delivery
+     * @return bool
+     */
+    protected static function checkSyncProperty(\core_kernel_classes_Resource $delivery)
+    {
+        $property = new \core_kernel_classes_Property(PublishingDeliveryService::DELIVERY_REMOTE_SYNC_FIELD);
+        $sync = $delivery->getPropertyValues($property);
+        if (!current($sync)) {
+            return false;
+        }
+        return true;
     }
 
 }
