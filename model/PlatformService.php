@@ -56,6 +56,8 @@ class PlatformService extends \tao_models_classes_ClassService
     {
         $platform = $this->getResource($platformId);
         $rootUrl = $platform->getUniquePropertyValue($this->getProperty(self::PROPERTY_ROOT_URL));
+        $rootUrl = rtrim($rootUrl,"/").'/';
+
         $auth = (string)$platform->getUniquePropertyValue($this->getProperty(self::PROPERTY_AUTHENTICATION));
         list($user,$password) = explode(':', $auth, 2);
         

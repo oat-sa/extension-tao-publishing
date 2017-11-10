@@ -19,14 +19,19 @@
  *
  */
 
-namespace oat\taoProctoring\scripts\update;
+namespace oat\taoPublishing\scripts\update;
 
 use common_ext_ExtensionUpdater;
+use oat\taoDeliveryRdf\model\DeliveryFactory;
+use oat\taoDeliveryRdf\model\DeliveryPublishing;
 use oat\oatbox\event\EventManager;
 use oat\tao\scripts\update\OntologyUpdater;
+use oat\taoDeliveryRdf\model\ContainerRuntime;
+use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
 use oat\taoDeliveryRdf\model\event\DeliveryCreatedEvent;
 use oat\taoDeliveryRdf\model\event\DeliveryUpdatedEvent;
-use oat\taoPublishing\model\publishing\listeners\DeliveryEventsListeners;
+use oat\taoPublishing\model\publishing\delivery\listeners\DeliveryEventsListeners;
+use oat\taoPublishing\model\publishing\delivery\PublishingDeliveryService;
 use oat\taoPublishing\model\publishing\PublishingService;
 
 /**
@@ -60,6 +65,88 @@ class Updater extends common_ext_ExtensionUpdater
             $this->getServiceManager()->register(PublishingService::SERVICE_ID, $service);
 
             $this->setVersion('0.2.0');
+        }
+
+        if ($this->isVersion('0.2.0')) {
+            OntologyUpdater::syncModels();
+
+            $publishingService = $this->getServiceManager()->get(PublishingService::SERVICE_ID);
+
+            $actionOptions = $publishingService->hasOption(PublishingService::OPTIONS_ACTIONS)
+                ? $publishingService->getOption(PublishingService::OPTIONS_ACTIONS)
+                : [];
+
+            $actionOptions = array_merge($actionOptions, [
+                DeliveryCreatedEvent::class,
+                DeliveryUpdatedEvent::class
+            ]);
+            $publishingService->setOption(PublishingService::OPTIONS_ACTIONS, $actionOptions);
+            $this->getServiceManager()->register(PublishingService::SERVICE_ID, $publishingService);
+
+            $publishingDeliveryService = new PublishingDeliveryService();
+            $deliveryFieldsOptions[PublishingService::OPTIONS_FIELDS] = [];
+            $deliveryFieldsOptions[PublishingService::OPTIONS_EXCLUDED_FIELDS] = [
+                DeliveryAssemblyService::PROPERTY_DELIVERY_DIRECTORY,
+                ContainerRuntime::PROPERTY_CONTAINER,
+                DeliveryAssemblyService::PROPERTY_DELIVERY_RUNTIME,
+                DeliveryAssemblyService::PROPERTY_DELIVERY_TIME,
+                DeliveryAssemblyService::PROPERTY_ORIGIN,
+                PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD
+
+            ];
+
+            $publishingDeliveryService->setOptions($deliveryFieldsOptions);
+            $this->getServiceManager()->register(PublishingDeliveryService::SERVICE_ID, $publishingDeliveryService);
+
+            $eventManager = $this->getServiceManager()->get(EventManager::SERVICE_ID);
+
+            $eventManager->detach(
+                'oat\\taoDeliveryRdf\\model\\event\\DeliveryCreatedEvent',
+                ['oat\\taoPublishing\\model\\publishing\\listeners\\DeliveryEventsListeners', 'createdDeliveryEvent']
+            );
+            $eventManager->detach(
+                'oat\\taoDeliveryRdf\\model\\event\\DeliveryUpdatedEvent',
+                ['oat\\taoPublishing\\model\\publishing\\listeners\\DeliveryEventsListeners', 'updatedDeliveryEvent']
+            );
+            $eventManager->attach(
+                DeliveryCreatedEvent::class,
+                [DeliveryEventsListeners::class, 'createdDeliveryEvent']
+            );
+            $eventManager->attach(
+                DeliveryUpdatedEvent::class,
+                [DeliveryEventsListeners::class, 'updatedDeliveryEvent']
+            );
+
+            $this->getServiceManager()->register(EventManager::SERVICE_ID, $eventManager);
+
+            $this->setVersion('0.3.0');
+        }
+
+        if ($this->isVersion('0.3.0')) {
+            OntologyUpdater::syncModels();
+
+            $deliveryFactoryService = $this->getServiceManager()->get(DeliveryFactory::SERVICE_ID);
+            $publishingOptions = $deliveryFactoryService->getOptions();
+            $publishingOptions[DeliveryFactory::OPTION_INITIAL_PROPERTIES][] = PublishingDeliveryService::DELIVERY_REMOTE_SYNC_FIELD;
+            $publishingOptions[DeliveryFactory::OPTION_INITIAL_PROPERTIES_MAP] = [
+                PublishingDeliveryService::DELIVERY_REMOTE_SYNC_REST_OPTION => [
+                    DeliveryFactory::OPTION_INITIAL_PROPERTIES_MAP_URI => PublishingDeliveryService::DELIVERY_REMOTE_SYNC_FIELD,
+                    DeliveryFactory::OPTION_INITIAL_PROPERTIES_MAP_VALUES => [
+                        'true' => PublishingDeliveryService::DELIVERY_REMOTE_SYNC_COMPILE_ENABLED
+                    ]
+                ]
+            ];
+            $deliveryFactoryService->setOptions($publishingOptions);
+            $this->getServiceManager()->register(DeliveryFactory::SERVICE_ID, $deliveryFactoryService);
+
+            $publishingDeliveryService = $this->getServiceManager()->get(PublishingDeliveryService::SERVICE_ID);
+            $deliveryFieldsOptions = $publishingDeliveryService->getOption(PublishingService::OPTIONS_EXCLUDED_FIELDS);
+            $deliveryFieldsOptions[] = PublishingDeliveryService::DELIVERY_REMOTE_SYNC_FIELD;
+
+            $publishingDeliveryService->setOptions($deliveryFieldsOptions);
+            $this->getServiceManager()->register(PublishingDeliveryService::SERVICE_ID, $publishingDeliveryService);
+
+            $this->setVersion('0.4.0');
         }
     }
 }

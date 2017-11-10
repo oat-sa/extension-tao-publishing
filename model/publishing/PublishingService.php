@@ -22,11 +22,7 @@ namespace oat\taoPublishing\model\publishing;
 use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
 use oat\oatbox\log\LoggerAwareTrait;
-use oat\oatbox\task\Queue;
-use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
-use oat\taoPublishing\model\DeployTestEnvironments;
 use oat\taoPublishing\model\PlatformService;
-use oat\taoPublishing\model\SyncDeliveryEnvironments;
 
 /**
  * Class PublishingService
@@ -39,13 +35,14 @@ class PublishingService extends ConfigurableService
     use OntologyAwareTrait;
 
     const SERVICE_ID = 'taoPublishing/PublishingService';
-    const ORIGIN_DELIVERY_ID_FIELD = 'http://www.tao.lu/Ontologies/TAOPublisher.rdf#OriginDeliveryID';
-    const ORIGIN_TEST_ID_FIELD = 'http://www.tao.lu/Ontologies/TAOPublisher.rdf#OriginTestID';
+    const PUBLISH_ACTIONS = 'http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatformPublishAction';
 
-    const DELIVERY_FIELDS = 'http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatformDeliveryFields';
+    const OPTIONS_ACTIONS = 'actions';
+    const OPTIONS_FIELDS = 'fields';
+    const OPTIONS_EXCLUDED_FIELDS = 'excluded_fields';
 
     /**
-     * @return array|mixed
+     * @return array
      */
     public function getEnvironments()
     {
@@ -54,35 +51,41 @@ class PublishingService extends ConfigurableService
         return $environments;
     }
 
-    public function publishDelivery(\core_kernel_classes_Resource $delivery)
+    /**
+     * @return array
+     */
+    public function getPublishingActions()
     {
-        $environments = $this->getEnvironments();
-
-        $testProperty = $this->getProperty(DeliveryAssemblyService::PROPERTY_ORIGIN);
-        /** @var \core_kernel_classes_Resource $test */
-        $test = $delivery->getOnePropertyValue($testProperty);
-
-        $report = \common_report_Report::createSuccess();
-        /** @var Queue $queue */
-        $queue = $this->getServiceManager()->get(Queue::SERVICE_ID);
-        foreach ($environments as $env) {
-            $task = $queue->createTask(new DeployTestEnvironments(), [$test->getUri(), $env->getUri(), $delivery->getUri()]);
-            $report->add($task->getReport());
+        $actions = $this->getOption(self::OPTIONS_ACTIONS);
+        $options = [];
+        foreach ($actions as $action) {
+            $options[] = [
+                'data' => (new \ReflectionClass($action))->getShortName(),
+                'parent' => 0,
+                'attributes' => [
+                    'id' => $action,
+                    'class' => 'node-instance'
+                ]
+            ];
         }
-        return $report;
+        return $options;
     }
 
-    public function syncDelivery(\core_kernel_classes_Resource $delivery)
+    /**
+     * @param $values
+     * @return array
+     */
+    public function addSlashes($values)
     {
-        $environments = $this->getEnvironments();
-        $report = \common_report_Report::createSuccess();
-        /** @var Queue $queue */
-        $queue = $this->getServiceManager()->get(Queue::SERVICE_ID);
-        foreach ($environments as $env) {
-            $task = $queue->createTask(new SyncDeliveryEnvironments(), [$delivery->getUri(), $env->getUri()]);
-            $report->add($task->getReport());
+        if (isset($values[PublishingService::PUBLISH_ACTIONS])) {
+            if (is_array($values[PublishingService::PUBLISH_ACTIONS])) {
+                $values[PublishingService::PUBLISH_ACTIONS] = array_map(function($item) {
+                    return addslashes($item);
+                }, $values[PublishingService::PUBLISH_ACTIONS]);
+            } else {
+                $values[PublishingService::PUBLISH_ACTIONS] = addslashes($values[PublishingService::PUBLISH_ACTIONS]);
+            }
         }
-        return $report;
+        return $values;
     }
-
 }
