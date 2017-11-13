@@ -148,5 +148,29 @@ class Updater extends common_ext_ExtensionUpdater
 
             $this->setVersion('0.4.0');
         }
+
+        if ($this->isVersion('0.4.0')) {
+            $service = new PublishingService();
+            $service->setOption(PublishingService::OPTIONS_ACTIONS, [
+                DeliveryCreatedEvent::class,
+                DeliveryUpdatedEvent::class
+            ]);
+            $this->getServiceManager()->register(PublishingService::SERVICE_ID, $service);
+
+            $publishingDeliveryService = new PublishingDeliveryService();
+            $deliveryFieldsOptions[PublishingService::OPTIONS_FIELDS] = [];
+            $deliveryFieldsOptions[PublishingService::OPTIONS_EXCLUDED_FIELDS] = [
+                DeliveryAssemblyService::PROPERTY_DELIVERY_DIRECTORY,
+                ContainerRuntime::PROPERTY_CONTAINER,
+                DeliveryAssemblyService::PROPERTY_DELIVERY_RUNTIME,
+                DeliveryAssemblyService::PROPERTY_DELIVERY_TIME,
+                DeliveryAssemblyService::PROPERTY_ORIGIN,
+                PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD,
+                PublishingDeliveryService::DELIVERY_REMOTE_SYNC_FIELD
+            ];
+            $publishingDeliveryService->setOptions($deliveryFieldsOptions);
+            $this->getServiceManager()->register(PublishingDeliveryService::SERVICE_ID, $publishingDeliveryService);
+            $this->setVersion('0.4.1');
+        }
     }
 }
