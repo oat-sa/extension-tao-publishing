@@ -170,7 +170,7 @@ class Updater extends common_ext_ExtensionUpdater
             ];
             $publishingDeliveryService->setOptions($deliveryFieldsOptions);
             $this->getServiceManager()->register(PublishingDeliveryService::SERVICE_ID, $publishingDeliveryService);
-            $this->isVersion('0.4.1');
+            $this->setVersion('0.4.1');
         }
     }
 }
