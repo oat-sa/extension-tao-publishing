@@ -172,5 +172,17 @@ class Updater extends common_ext_ExtensionUpdater
             $this->getServiceManager()->register(PublishingDeliveryService::SERVICE_ID, $publishingDeliveryService);
             $this->setVersion('0.4.1');
         }
+
+        if ($this->isVersion('0.4.1')) {
+            $service = $this->getServiceManager()->get(PublishingDeliveryService::SERVICE_ID);
+            $deliveryExcludedFieldsOptions = $service->getOption(PublishingService::OPTIONS_EXCLUDED_FIELDS);
+
+            // Using strings for ignoring taoClientRestricted in require
+            $deliveryExcludedFieldsOptions[] = 'http://www.tao.lu/Ontologies/TAODelivery.rdf#RestrictBrowserUsage';
+            $deliveryExcludedFieldsOptions[] = 'http://www.tao.lu/Ontologies/TAODelivery.rdf#RestrictOSUsage';
+            $service->setOption(PublishingService::OPTIONS_EXCLUDED_FIELDS, $deliveryExcludedFieldsOptions);
+            $this->getServiceManager()->register(PublishingDeliveryService::SERVICE_ID, $service);
+            $this->setVersion('0.4.2');
+        }
     }
 }
