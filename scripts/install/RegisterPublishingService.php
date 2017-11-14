@@ -30,7 +30,11 @@ class RegisterPublishingService extends InstallAction
             DeliveryAssemblyService::PROPERTY_DELIVERY_TIME,
             DeliveryAssemblyService::PROPERTY_ORIGIN,
             PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD,
-            PublishingDeliveryService::DELIVERY_REMOTE_SYNC_FIELD
+            PublishingDeliveryService::DELIVERY_REMOTE_SYNC_FIELD,
+
+            // Using strings for ignoring taoClientRestricted in require
+            'http://www.tao.lu/Ontologies/TAODelivery.rdf#RestrictBrowserUsage',
+            'http://www.tao.lu/Ontologies/TAODelivery.rdf#RestrictOSUsage'
         ];
         $publishingDeliveryService->setOptions($deliveryFieldsOptions);
         $this->registerService(PublishingDeliveryService::SERVICE_ID, $publishingDeliveryService);
