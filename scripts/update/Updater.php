@@ -33,6 +33,7 @@ use oat\taoDeliveryRdf\model\event\DeliveryUpdatedEvent;
 use oat\taoPublishing\model\publishing\delivery\listeners\DeliveryEventsListeners;
 use oat\taoPublishing\model\publishing\delivery\PublishingDeliveryService;
 use oat\taoPublishing\model\publishing\PublishingService;
+use oat\taoTaskQueue\model\Event\TaskLogCompletedEvent;
 
 /**
  * Class Updater
@@ -184,5 +185,7 @@ class Updater extends common_ext_ExtensionUpdater
             $this->getServiceManager()->register(PublishingDeliveryService::SERVICE_ID, $service);
             $this->setVersion('0.4.2');
         }
+
+        $this->skip('0.4.1', '0.5.0');
     }
 }
