@@ -28,6 +28,7 @@ use oat\taoDeliveryRdf\model\event\DeliveryUpdatedEvent;
 use oat\taoPublishing\model\publishing\delivery\tasks\DeployTestEnvironments;
 use oat\taoPublishing\model\publishing\PublishingService;
 use oat\taoPublishing\model\publishing\delivery\tasks\SyncDeliveryEnvironments;
+use oat\taoTaskQueue\model\Entity\TaskLogEntity;
 use oat\taoTaskQueue\model\QueueDispatcher;
 use oat\taoTaskQueue\model\TaskLogInterface;
 
@@ -59,12 +60,11 @@ class PublishingDeliveryService extends ConfigurableService
         $testProperty = $this->getProperty(DeliveryAssemblyService::PROPERTY_ORIGIN);
         /** @var \core_kernel_classes_Resource $test */
         $test = $delivery->getOnePropertyValue($testProperty);
-        /** @var QueueDispatcher $queueDispatcher */
-        $queueDispatcher = $this->getServiceManager()->get(QueueDispatcher::SERVICE_ID);
+        $queueDispatcher = $this->getDispatcher($delivery);
         $report = \common_report_Report::createInfo('Publishing delivery '.$delivery->getUri());
         foreach ($environments as $env) {
             if ($this->checkActionForEnvironment(DeliveryCreatedEvent::class, $env)) {
-                $task = $queueDispatcher->createTask(new DeployTestEnvironments(), [$test->getUri(), $env->getUri(), $delivery->getUri()]);
+                $task = $queueDispatcher->createTask(new DeployTestEnvironments(), [$test->getUri(), $env->getUri(), $delivery->getUri(), $queueDispatcher->getOption('parentTaskId')]);
                 $message = DeployTestEnvironments::class . "task created; Task id: " . $task->getId();
                 $report->add(\common_report_Report::createSuccess($message));
                 $this->logNotice($message);
@@ -80,10 +80,7 @@ class PublishingDeliveryService extends ConfigurableService
     public function syncDelivery(\core_kernel_classes_Resource $delivery)
     {
         $environments = $this->getEnvironments();
-
-        /** @var QueueDispatcher $queueDispatcher */
-        $queueDispatcher = $this->getServiceManager()->get(QueueDispatcher::SERVICE_ID);
-
+        $queueDispatcher = $this->getDispatcher($delivery);
         $report = \common_report_Report::createInfo('Updating remote delivery ' . $delivery->getUri());
         foreach ($environments as $env) {
             if ($this->checkActionForEnvironment(DeliveryUpdatedEvent::class, $env)) {
@@ -119,6 +116,25 @@ class PublishingDeliveryService extends ConfigurableService
             }
         }
         return $deliveryFieldsOptions;
+    }
+
+    /**
+     * @param $delivery
+     * @return QueueDispatcher
+     */
+    public function getDispatcher($delivery)
+    {
+        /** @var QueueDispatcher $queueDispatcher */
+        $queueDispatcher = $this->getServiceManager()->get(QueueDispatcher::SERVICE_ID);
+        if ($taskResource = $queueDispatcher->getTaskResource($delivery) ) {
+            /** @var TaskLogInterface $taskLogService */
+            $taskLogService = $this->getServiceManager()->get(TaskLogInterface::SERVICE_ID);
+            /** @var TaskLogEntity $taskLog */
+            $taskLog = $taskLogService->getById($taskResource->getUri());
+            $queueDispatcher->setOwner($taskLog->getOwner());
+            $queueDispatcher->setOption('parentTaskId', $taskLog->getId());
+        }
+        return $queueDispatcher;
     }
 
     /**

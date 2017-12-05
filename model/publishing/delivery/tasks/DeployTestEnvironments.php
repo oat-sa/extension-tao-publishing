@@ -25,6 +25,7 @@ use oat\taoDeliveryRdf\controller\RestTest;
 use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
 use oat\taoPublishing\model\PlatformService;
 use oat\taoPublishing\model\publishing\delivery\PublishingDeliveryService;
+use oat\taoTaskQueue\model\QueueDispatcher;
 use Zend\ServiceManager\ServiceLocatorAwareTrait;
 use Zend\ServiceManager\ServiceLocatorAwareInterface;
 use oat\generis\model\OntologyAwareTrait;
@@ -40,23 +41,24 @@ class DeployTestEnvironments implements Action,ServiceLocatorAwareInterface
     use OntologyAwareTrait;
     
     /**
-     * 
-     * @param array $params
+     * @param $params
+     * @return \common_report_Report
+     * @throws \common_exception_MissingParameter
      */
-    public function __invoke($params) {
-
-        if (count($params) != 3) {
+    public function __invoke($params)
+    {
+        if (count($params) != 4) {
             throw new \common_exception_MissingParameter();
         }
         $test = $this->getResource(array_shift($params));
         $envId = array_shift($params);
         $env = $this->getResource($envId);
         $deliveryId = array_shift($params);
-        $delivery = new \core_kernel_classes_Resource($deliveryId);
+        $taskId = array_shift($params);
+        $delivery = $this->getResource($deliveryId);
         \common_Logger::i('Deploying '.$test->getLabel().' to '.$env->getLabel());
         $report = new \common_report_Report(\common_report_Report::TYPE_SUCCESS, __('Deployed %s to %s', $test->getLabel(), $env->getLabel()));
-        
-        $subReport = $this->compileTest($envId, $test, $delivery);
+        $subReport = $this->compileTest($envId, $test, $delivery, $taskId);
         $report->add($subReport);
         return $report;
     }
@@ -67,7 +69,8 @@ class DeployTestEnvironments implements Action,ServiceLocatorAwareInterface
      * @param $delivery
      * @return \common_report_Report
      */
-    protected function compileTest($envId, \core_kernel_classes_Resource $test, \core_kernel_classes_Resource $delivery) {
+    protected function compileTest($envId, \core_kernel_classes_Resource $test, \core_kernel_classes_Resource $delivery, $parentId)
+    {
         try {
             \common_Logger::d('Exporting Test '.$test->getUri().' for deployment');
             $exporter = new \taoQtiTest_models_classes_export_TestExport();
@@ -106,6 +109,14 @@ class DeployTestEnvironments implements Action,ServiceLocatorAwareInterface
 
             $response = PlatformService::singleton()->callApi($envId, $request);
             if ($response->getStatusCode() == 200) {
+                $content = json_decode($response->getBody()->getContents(), true);
+                if (isset($content['success']) && $content['success']) {
+                    $data = $content['data'];
+                    $taskId = $data['reference_id'];
+                    /** @var QueueDispatcher $queueDispatcher reference_id*/
+                    $queueDispatcher = $this->getServiceLocator()->get(QueueDispatcher::SERVICE_ID);
+                    $queueDispatcher->createTask(new DeliveryRemoteEnvironments(), [$taskId, $envId], __('Publishing delivery %s in the remote environment %s', $delivery->getUri(), $envId), $parentId, true);
+                }
                 $report = new \common_report_Report(\common_report_Report::TYPE_SUCCESS, __('Test has been compiled as %s', $delivery->getUri()));
                 $report->setData($delivery->getUri());
                 return $report;

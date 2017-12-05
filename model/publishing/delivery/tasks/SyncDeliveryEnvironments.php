@@ -23,6 +23,7 @@ namespace oat\taoPublishing\model\publishing\delivery\tasks;
 use oat\oatbox\action\Action;
 use oat\taoPublishing\model\PlatformService;
 use oat\taoPublishing\model\publishing\delivery\PublishingDeliveryService;
+use oat\taoTaskQueue\model\QueueDispatcher;
 use Zend\ServiceManager\ServiceLocatorAwareTrait;
 use Zend\ServiceManager\ServiceLocatorAwareInterface;
 use oat\generis\model\OntologyAwareTrait;
@@ -35,14 +36,15 @@ class SyncDeliveryEnvironments implements Action,ServiceLocatorAwareInterface
 {
     use ServiceLocatorAwareTrait;
     use OntologyAwareTrait;
-    
-    /**
-     * 
-     * @param array $params
-     */
-    public function __invoke($params) {
 
-        if (count($params) < 2) {
+    /**
+     * @param $params
+     * @return \common_report_Report
+     * @throws \common_exception_MissingParameter
+     */
+    public function __invoke($params)
+    {
+        if (count($params) != 2) {
             throw new \common_exception_MissingParameter();
         }
         $delivery = $this->getResource(array_shift($params));
@@ -82,6 +84,14 @@ class SyncDeliveryEnvironments implements Action,ServiceLocatorAwareInterface
             \common_Logger::d('Requesting updating of Delivery '.$delivery->getUri());
             $response = PlatformService::singleton()->callApi($envId, $request);
             if ($response->getStatusCode() == 200) {
+                $content = json_decode($response->getBody()->getContents(), true);
+                if (isset($content['success']) && $content['success']) {
+                    $data = $content['data'];
+                    $taskId = $data['reference_id'];
+                    /** @var QueueDispatcher $queueDispatcher reference_id*/
+                    $queueDispatcher = $this->getServiceLocator()->get(QueueDispatcher::SERVICE_ID);
+                    $queueDispatcher->createTask(new DeliveryRemoteEnvironments(), [$taskId, $envId], __('Updating delivery %s in the remote environment %s', $delivery->getUri(), $envId), null, true);
+                }
                 $report = new \common_report_Report(\common_report_Report::TYPE_SUCCESS, __('Delivery has been updated as %s', $delivery->getUri()));
                 $report->setData($delivery->getUri());
                 return $report;
