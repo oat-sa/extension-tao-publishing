@@ -184,5 +184,10 @@ class Updater extends common_ext_ExtensionUpdater
             $this->getServiceManager()->register(PublishingDeliveryService::SERVICE_ID, $service);
             $this->setVersion('0.4.2');
         }
+
+        if ($this->isVersion('0.4.2')) {
+            OntologyUpdater::syncModels();
+            $this->setVersion('0.4.3');
+        }
     }
 }
