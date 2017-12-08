@@ -98,8 +98,7 @@ class DeployTestEnvironments implements Action,ServiceLocatorAwareInterface
             }
             $body = new MultipartStream($streamData);
 
-            $url = \tao_helpers_Uri::getPath(\tao_helpers_Uri::url('compileDeferred', 'RestTest', 'taoDeliveryRdf'));
-            $request = new Request('POST', trim($url, '/'));
+            $request = new Request('POST', '/taoDeliveryRdf/RestTest/compileDeferred');
             $request = $request->withBody($body);
 
             \common_Logger::d('Requesting compilation of Test '.$test);
