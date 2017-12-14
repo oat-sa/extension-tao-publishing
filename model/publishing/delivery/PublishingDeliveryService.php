@@ -74,7 +74,6 @@ class PublishingDeliveryService extends ConfigurableService
         /** @var \core_kernel_classes_Resource $env */
         foreach ($environments as $env) {
             if ($this->checkActionForEnvironment(DeliveryCreatedEvent::class, $env)) {
-                \common_Logger::i($queueDispatcher->getOwner());
                 $callBackTask = new CallbackTask($taskLog->getId(), $taskLog->getOwner());
                 $task = $queueDispatcher->createTask(new DeployTestEnvironments(), [$test->getUri(), $env->getUri(), $delivery->getUri()], __('Publishing %s to remote env %s', $delivery->getLabel(), $env->getLabel()), $callBackTask);
                 $message = DeployTestEnvironments::class . "task created; Task id: " . $task->getId();
