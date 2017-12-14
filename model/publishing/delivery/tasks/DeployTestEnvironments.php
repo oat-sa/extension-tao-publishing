@@ -119,14 +119,12 @@ class DeployTestEnvironments implements Action,ServiceLocatorAwareInterface,Chil
 
                     /** @var QueueDispatcher $queueDispatcher reference_id*/
                     $queueDispatcher = $this->getServiceLocator()->get(QueueDispatcher::SERVICE_ID);
-                    $thisTask = $this->getTask();
-                    $thisTask->setOwner('');
 
                     $queueDispatcher->createTask(
                         new RemoteTaskStatusSynchroniser(),
                         [$taskId, $env->getUri()],
                         __('Remote status synchronisation for %s from %s', $delivery->getLabel(), $env->getLabel()),
-                        $thisTask
+                        $this->getTask()
                     );
                     $this->addChildId($taskId);
                 }

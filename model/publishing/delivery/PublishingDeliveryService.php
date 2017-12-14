@@ -92,11 +92,10 @@ class PublishingDeliveryService extends ConfigurableService
      */
     public function syncDelivery(\core_kernel_classes_Resource $delivery)
     {
+        $this->getServiceLocator()->get(\common_ext_ExtensionsManager::SERVICE_ID)->getExtensionById('taoDeliveryRdf');
         $environments = $this->getEnvironments();
         /** @var QueueDispatcher $queueDispatcher */
         $queueDispatcher = $this->getServiceManager()->get(QueueDispatcher::SERVICE_ID);
-        $taskLog = $this->getTaskLogFromDelivery($delivery);
-        $queueDispatcher->setOwner($taskLog->getOwner());
         $report = \common_report_Report::createInfo('Updating remote delivery ' . $delivery->getUri());
         foreach ($environments as $env) {
             if ($this->checkActionForEnvironment(DeliveryUpdatedEvent::class, $env)) {
