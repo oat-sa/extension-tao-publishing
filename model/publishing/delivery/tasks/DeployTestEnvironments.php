@@ -25,6 +25,11 @@ use oat\taoDeliveryRdf\controller\RestTest;
 use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
 use oat\taoPublishing\model\PlatformService;
 use oat\taoPublishing\model\publishing\delivery\PublishingDeliveryService;
+use oat\taoTaskQueue\model\QueueDispatcher;
+use oat\taoTaskQueue\model\Task\ChildTaskAwareInterface;
+use oat\taoTaskQueue\model\Task\ChildTaskAwareTrait;
+use oat\taoTaskQueue\model\Task\TaskAwareInterface;
+use oat\taoTaskQueue\model\Task\TaskAwareTrait;
 use Zend\ServiceManager\ServiceLocatorAwareTrait;
 use Zend\ServiceManager\ServiceLocatorAwareInterface;
 use oat\generis\model\OntologyAwareTrait;
@@ -34,11 +39,13 @@ use GuzzleHttp\Psr7\MultipartStream;
 /**
  * Deploys a test to environments
  */
-class DeployTestEnvironments implements Action,ServiceLocatorAwareInterface
+class DeployTestEnvironments implements Action,ServiceLocatorAwareInterface,ChildTaskAwareInterface,TaskAwareInterface
 {
     use ServiceLocatorAwareTrait;
     use OntologyAwareTrait;
-    
+    use TaskAwareTrait;
+    use ChildTaskAwareTrait;
+
     /**
      * 
      * @param array $params
@@ -52,22 +59,22 @@ class DeployTestEnvironments implements Action,ServiceLocatorAwareInterface
         $envId = array_shift($params);
         $env = $this->getResource($envId);
         $deliveryId = array_shift($params);
-        $delivery = new \core_kernel_classes_Resource($deliveryId);
+        $delivery = $this->getResource($deliveryId);
         \common_Logger::i('Deploying '.$test->getLabel().' to '.$env->getLabel());
         $report = new \common_report_Report(\common_report_Report::TYPE_SUCCESS, __('Deployed %s to %s', $test->getLabel(), $env->getLabel()));
         
-        $subReport = $this->compileTest($envId, $test, $delivery);
+        $subReport = $this->compileTest($env, $test, $delivery);
         $report->add($subReport);
         return $report;
     }
 
     /**
-     * @param $envId
-     * @param $test
-     * @param $delivery
+     * @param \core_kernel_classes_Resource $env
+     * @param \core_kernel_classes_Resource $test
+     * @param \core_kernel_classes_Resource $delivery
      * @return \common_report_Report
      */
-    protected function compileTest($envId, \core_kernel_classes_Resource $test, \core_kernel_classes_Resource $delivery) {
+    protected function compileTest(\core_kernel_classes_Resource $env, \core_kernel_classes_Resource $test, \core_kernel_classes_Resource $delivery) {
         try {
             \common_Logger::d('Exporting Test '.$test->getUri().' for deployment');
             $exporter = new \taoQtiTest_models_classes_export_TestExport();
@@ -103,8 +110,24 @@ class DeployTestEnvironments implements Action,ServiceLocatorAwareInterface
 
             \common_Logger::d('Requesting compilation of Test '.$test);
 
-            $response = PlatformService::singleton()->callApi($envId, $request);
+            $response = PlatformService::singleton()->callApi($env->getUri(), $request);
             if ($response->getStatusCode() == 200) {
+                $content = json_decode($response->getBody()->getContents(), true);
+                if (isset($content['success']) && $content['success']) {
+                    $data = $content['data'];
+                    $taskId = $data['reference_id'];
+
+                    /** @var QueueDispatcher $queueDispatcher reference_id*/
+                    $queueDispatcher = $this->getServiceLocator()->get(QueueDispatcher::SERVICE_ID);
+
+                    $queueDispatcher->createTask(
+                        new RemoteTaskStatusSynchroniser(),
+                        [$taskId, $env->getUri()],
+                        __('Remote status synchronisation for %s from %s', $delivery->getLabel(), $env->getLabel()),
+                        $this->getTask()
+                    );
+                    $this->addChildId($taskId);
+                }
                 $report = new \common_report_Report(\common_report_Report::TYPE_SUCCESS, __('Test has been compiled as %s', $delivery->getUri()));
                 $report->setData($delivery->getUri());
                 return $report;

@@ -23,12 +23,15 @@ use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
 use oat\oatbox\log\LoggerAwareTrait;
 use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
+use oat\taoDeliveryRdf\model\DeliveryFactory;
 use oat\taoDeliveryRdf\model\event\DeliveryCreatedEvent;
 use oat\taoDeliveryRdf\model\event\DeliveryUpdatedEvent;
 use oat\taoPublishing\model\publishing\delivery\tasks\DeployTestEnvironments;
 use oat\taoPublishing\model\publishing\PublishingService;
 use oat\taoPublishing\model\publishing\delivery\tasks\SyncDeliveryEnvironments;
+use oat\taoTaskQueue\model\Entity\TaskLogEntity;
 use oat\taoTaskQueue\model\QueueDispatcher;
+use oat\taoTaskQueue\model\Task\CallbackTask;
 use oat\taoTaskQueue\model\TaskLogInterface;
 
 /**
@@ -51,20 +54,28 @@ class PublishingDeliveryService extends ConfigurableService
 
     /**
      * @param \core_kernel_classes_Resource $delivery
-     * @return \common_report_Report|null
+     * @return \common_report_Report
+     * @throws \common_exception_Error
+     * @throws \common_exception_NotFound
+     * @throws \core_kernel_persistence_Exception
      */
     public function publishDelivery(\core_kernel_classes_Resource $delivery)
     {
-        $environments = $this->getEnvironments();
         $testProperty = $this->getProperty(DeliveryAssemblyService::PROPERTY_ORIGIN);
+        $environments = $this->getEnvironments();
+
         /** @var \core_kernel_classes_Resource $test */
         $test = $delivery->getOnePropertyValue($testProperty);
         /** @var QueueDispatcher $queueDispatcher */
         $queueDispatcher = $this->getServiceManager()->get(QueueDispatcher::SERVICE_ID);
+        $taskLog = $this->getTaskLogFromDelivery($delivery);
+
         $report = \common_report_Report::createInfo('Publishing delivery '.$delivery->getUri());
+        /** @var \core_kernel_classes_Resource $env */
         foreach ($environments as $env) {
             if ($this->checkActionForEnvironment(DeliveryCreatedEvent::class, $env)) {
-                $task = $queueDispatcher->createTask(new DeployTestEnvironments(), [$test->getUri(), $env->getUri(), $delivery->getUri()]);
+                $callBackTask = new CallbackTask($taskLog->getId(), $taskLog->getOwner());
+                $task = $queueDispatcher->createTask(new DeployTestEnvironments(), [$test->getUri(), $env->getUri(), $delivery->getUri()], __('Publishing %s to remote env %s', $delivery->getLabel(), $env->getLabel()), $callBackTask);
                 $message = DeployTestEnvironments::class . "task created; Task id: " . $task->getId();
                 $report->add(\common_report_Report::createSuccess($message));
                 $this->logNotice($message);
@@ -75,19 +86,19 @@ class PublishingDeliveryService extends ConfigurableService
 
     /**
      * @param \core_kernel_classes_Resource $delivery
-     * @return \common_report_Report|null
+     * @return \common_report_Report
+     * @throws \common_exception_Error
+     * @throws \common_exception_NotFound
      */
     public function syncDelivery(\core_kernel_classes_Resource $delivery)
     {
         $environments = $this->getEnvironments();
-
         /** @var QueueDispatcher $queueDispatcher */
         $queueDispatcher = $this->getServiceManager()->get(QueueDispatcher::SERVICE_ID);
-
         $report = \common_report_Report::createInfo('Updating remote delivery ' . $delivery->getUri());
         foreach ($environments as $env) {
             if ($this->checkActionForEnvironment(DeliveryUpdatedEvent::class, $env)) {
-                $task = $queueDispatcher->createTask(new SyncDeliveryEnvironments(), [$delivery->getUri(), $env->getUri()]);
+                $task = $queueDispatcher->createTask(new SyncDeliveryEnvironments(), [$delivery->getUri(), $env->getUri()], __('Updating %s to remote env %s', $delivery->getLabel(), $env->getLabel()));
                 $message = DeployTestEnvironments::class . "task created; Task id: " . $task->getId();
                 $report->add(\common_report_Report::createSuccess($message));
                 $this->logNotice($message);
@@ -119,6 +130,27 @@ class PublishingDeliveryService extends ConfigurableService
             }
         }
         return $deliveryFieldsOptions;
+    }
+
+    /**
+     * @param \core_kernel_classes_Resource $delivery
+     * @return TaskLogEntity
+     * @throws \common_exception_NotFound
+     */
+    private function getTaskLogFromDelivery(\core_kernel_classes_Resource $delivery)
+    {
+        try {
+            $deliveryCompileTaskProperty = $this->getProperty(DeliveryFactory::PROPERTY_DELIVERY_COMPILE_TASK);
+            /** @var \core_kernel_classes_Resource $compileTask */
+            $compileTask = $delivery->getOnePropertyValue($deliveryCompileTaskProperty);
+            /** @var TaskLogInterface $taskLogService */
+            $taskLogService = $this->getServiceManager()->get(TaskLogInterface::SERVICE_ID);
+            /** @var TaskLogEntity $taskLog */
+            $taskLog = $taskLogService->getById($compileTask->getUri());
+            return $taskLog;
+        } catch (\Exception $e) {
+            throw new \common_exception_NotFound();
+        }
     }
 
     /**
