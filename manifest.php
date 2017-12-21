@@ -29,7 +29,7 @@ return array(
     'requires' => array(
         'taoDeliveryRdf' => '>=3.20.0',
         'taoTaskQueue' => '>=0.13.1',
-        'tao' => '>=14.15.0'
+        'tao' => '>=14.16.0'
     ),
 	'managementRole' => 'http://www.tao.lu/Ontologies/generis.rdf#taoPublishingManager',
     'acl' => array(
