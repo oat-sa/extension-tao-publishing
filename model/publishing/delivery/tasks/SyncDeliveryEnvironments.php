@@ -41,10 +41,10 @@ class SyncDeliveryEnvironments implements Action,ServiceLocatorAwareInterface
      * @param array $params
      */
     public function __invoke($params) {
-
         if (count($params) < 2) {
             throw new \common_exception_MissingParameter();
         }
+        $this->getServiceLocator()->get(\common_ext_ExtensionsManager::SERVICE_ID)->getExtensionById('taoDeliveryRdf');
         $delivery = $this->getResource(array_shift($params));
         $envId = array_shift($params);
         $env = $this->getResource($envId);
