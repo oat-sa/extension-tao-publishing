@@ -20,6 +20,7 @@
  */
 namespace oat\taoPublishing\model\publishing\delivery\tasks;
 
+use oat\generis\model\OntologyRdfs;
 use oat\oatbox\action\Action;
 use oat\taoDeliveryRdf\controller\RestTest;
 use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
@@ -93,6 +94,7 @@ class DeployTestEnvironments implements Action,ServiceLocatorAwareInterface,Chil
                 'name'     => RestTest::REST_DELIVERY_PARAMS,
                 'contents' => json_encode([
                     PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD => $delivery->getUri(),
+                    OntologyRdfs::RDFS_LABEL => $delivery->getLabel()
                 ])
             ]];
 

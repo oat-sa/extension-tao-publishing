@@ -13,7 +13,7 @@
     <rdfs:label xml:lang="en-US"><![CDATA[Origin delivery id]]></rdfs:label>
     <rdfs:comment xml:lang="en-US"><![CDATA[Origin delivery id from master server]]></rdfs:comment>
     <rdfs:domain rdf:resource="http://www.tao.lu/Ontologies/TAODelivery.rdf#Delivery"/>
-    <widget:widget rdf:resource="http://www.tao.lu/datatypes/WidgetDefinitions.rdf#TextBox"/>
+    <widget:widget rdf:resource="http://www.tao.lu/datatypes/WidgetDefinitions.rdf#ReadonlyLiteral"/>
     <generis:is_language_dependent rdf:resource="http://www.tao.lu/Ontologies/generis.rdf#False"/>
     <tao:TAOGUIOrder><![CDATA[1]]></tao:TAOGUIOrder>
   </rdf:Description>
