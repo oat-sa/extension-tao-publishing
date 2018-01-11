@@ -117,7 +117,7 @@ class PublishingDeliveryService extends ConfigurableService
             ? $this->getOption(PublishingService::OPTIONS_EXCLUDED_FIELDS)
             : [];
         if (!$deliveryFieldsOptions) {
-            $deliveryClass = new \core_kernel_classes_Class(CLASS_COMPILEDDELIVERY);
+            $deliveryClass = new \core_kernel_classes_Class(DeliveryAssemblyService::CLASS_URI);
             $deliveryProperties = \tao_helpers_form_GenerisFormFactory::getClassProperties($deliveryClass);
             $defaultProperties = \tao_helpers_form_GenerisFormFactory::getDefaultProperties();
             $deliveryProperties = array_merge($defaultProperties, $deliveryProperties);
