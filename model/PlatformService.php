@@ -17,6 +17,7 @@
  * Copyright (c) 2016 (original work) Open Assessment Technologies SA
  */
 namespace oat\taoPublishing\model;
+use oat\tao\model\BasicAuth;
 use Psr\Http\Message\RequestInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Uri;
@@ -29,9 +30,7 @@ use Psr\Http\Message\ResponseInterface;
 class PlatformService extends \tao_models_classes_ClassService
 {
     const CLASS_URI = 'http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatform';
-    
-    const PROPERTY_AUTHENTICATION = 'http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatformAuth';
-    
+    const PROPERTY_AUTH_TYPE = 'http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatformAuthType';
     const PROPERTY_ROOT_URL = 'http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatformUrl';
     
     /**
@@ -47,10 +46,11 @@ class PlatformService extends \tao_models_classes_ClassService
     }
 
     /**
-     * 
-     * @param string $platformId
+     * @param $platformId
      * @param RequestInterface $request
-     * @return ResponseInterface
+     * @return mixed|ResponseInterface
+     * @throws \common_Exception
+     * @throws \core_kernel_classes_EmptyProperty
      */
     public function callApi($platformId, RequestInterface $request)
     {
@@ -58,13 +58,21 @@ class PlatformService extends \tao_models_classes_ClassService
         $rootUrl = $platform->getUniquePropertyValue($this->getProperty(self::PROPERTY_ROOT_URL));
         $rootUrl = rtrim($rootUrl,"/").'/';
 
-        $auth = (string)$platform->getUniquePropertyValue($this->getProperty(self::PROPERTY_AUTHENTICATION));
-        list($user,$password) = explode(':', $auth, 2);
-        
+        $authType = (string)$platform->getUniquePropertyValue($this->getProperty(self::PROPERTY_AUTH_TYPE));
+
+        if ($authType == BasicAuth::CLASS_BASIC_AUTH) {
+            $user = (string)$platform->getUniquePropertyValue($this->getProperty(BasicAuth::LOGIN));
+            $password = (string)$platform->getUniquePropertyValue($this->getProperty(BasicAuth::PASSWORD));
+        }
+
         $relUrl = $request->getUri()->__toString();
         $absUrl = $rootUrl.ltrim($relUrl,'/');
         $request = $request->withUri(new Uri($absUrl)); 
-        
+
+        if (!isset($user) || empty($user) || !isset($password) || empty($password)) {
+            throw new \common_Exception('Remote Publishing can not be used without credentials');
+        }
+
         $client = new Client();
         $response = $client->send($request, ['auth' => [$user, $password], 'verify' => false]);
         return $response;

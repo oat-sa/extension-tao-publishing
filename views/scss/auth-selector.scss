@@ -1,0 +1,17 @@
+.auth-selector-component {
+  .auth-type-container {
+    margin-bottom: 10px;
+    .auth-type-selector {
+      float: right;
+    }
+  }
+  .authenticator-settings {
+    margin-bottom: 10px;
+    .login-container {
+      margin-bottom: 10px;
+    }
+    .credential-field {
+      float: right;
+    }
+  }
+}

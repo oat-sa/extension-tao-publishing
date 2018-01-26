@@ -1,0 +1,9 @@
+{
+	"version": 3,
+	"file": "auth-selector.css",
+	"sources": [
+		"../scss/auth-selector.scss"
+	],
+	"names": [],
+	"mappings": "AAAA,AACE,wBADsB,CACtB,oBAAoB,AAAC,CACnB,aAAa,CAAE,IAAI,CAIpB,AANH,AAGI,wBAHoB,CACtB,oBAAoB,CAElB,mBAAmB,AAAC,CAClB,KAAK,CAAE,KAAK,CACb,AALL,AAOE,wBAPsB,CAOtB,uBAAuB,AAAC,CACtB,aAAa,CAAE,IAAI,CAOpB,AAfH,AASI,wBAToB,CAOtB,uBAAuB,CAErB,gBAAgB,AAAC,CACf,aAAa,CAAE,IAAI,CACpB,AAXL,AAYI,wBAZoB,CAOtB,uBAAuB,CAKrB,iBAAiB,AAAC,CAChB,KAAK,CAAE,KAAK,CACb"
+}

@@ -33,6 +33,7 @@ use oat\taoDeliveryRdf\model\event\DeliveryUpdatedEvent;
 use oat\taoPublishing\model\publishing\delivery\listeners\DeliveryEventsListeners;
 use oat\taoPublishing\model\publishing\delivery\PublishingDeliveryService;
 use oat\taoPublishing\model\publishing\PublishingService;
+use oat\taoPublishing\scripts\update\v0_6_0\UpdateAuthFieldAction;
 
 /**
  * Class Updater
@@ -198,5 +199,12 @@ class Updater extends common_ext_ExtensionUpdater
         }
 
         $this->skip('0.5.1', '0.5.2');
+
+        if ($this->isVersion('0.5.2')) {
+            OntologyUpdater::syncModels();
+            $updFieldAction = new UpdateAuthFieldAction();
+            $updFieldAction([]);
+            $this->setVersion('0.6.0');
+        }
     }
 }

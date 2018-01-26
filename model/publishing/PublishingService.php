@@ -36,6 +36,7 @@ class PublishingService extends ConfigurableService
 
     const SERVICE_ID = 'taoPublishing/PublishingService';
     const PUBLISH_ACTIONS = 'http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatformPublishAction';
+    const AUTH_TYPE = 'http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatformAuthType';
 
     const OPTIONS_ACTIONS = 'actions';
     const OPTIONS_FIELDS = 'fields';
