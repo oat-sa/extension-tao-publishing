@@ -24,7 +24,7 @@ namespace oat\taoPublishing\scripts\update\v0_6_0;
 
 use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\extension\AbstractAction;
-use oat\tao\model\BasicAuth;
+use oat\tao\model\auth\BasicAuth;
 use oat\taoPublishing\model\PlatformService;
 
 /**
@@ -47,8 +47,8 @@ class UpdateAuthFieldAction extends AbstractAction
         $authTypeProp = $this->getProperty(PlatformService::PROPERTY_AUTH_TYPE);
         $deprecatedProp = $this->getProperty('http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatformAuth');
 
-        $basicLoginProp = $this->getProperty(BasicAuth::LOGIN);
-        $basicPasswordProp = $this->getProperty(BasicAuth::PASSWORD);
+        $basicLoginProp = $this->getProperty(BasicAuth::PROPERTY_LOGIN);
+        $basicPasswordProp = $this->getProperty(BasicAuth::PROPERTY_PASSWORD);
 
         /** @var \core_kernel_classes_Resource $platform */
         foreach ($platforms as $platform) {

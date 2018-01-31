@@ -3,7 +3,7 @@ define(function(){
         'PlatformAdmin': {
             'css': 'auth-selector',
             'actions': {
-                'addInstance': 'controller/PlatformAdmin/editor',
+                'addInstanceForm': 'controller/PlatformAdmin/editor',
                 'editInstance': 'controller/PlatformAdmin/editor'
             }
         }

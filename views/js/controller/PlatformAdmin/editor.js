@@ -22,9 +22,8 @@ define([
     'jquery',
     'i18n',
     'layout/loading-bar',
-    'taoPublishing/component/authSelector/authSelector',
     'taoPublishing/provider/authSelector'
-], function ($, __, loadingBar, authSelectorFactory, authSelectorProvider) {
+], function ($, __, loadingBar, authSelectorProvider) {
     'use strict';
 
     /**
@@ -44,13 +43,19 @@ define([
     return {
         start: function start() {
             var $container = getAuthContainer();
-            var authSelectorComponent;
+            var $elId = $('#id');
+            var params = {};
+            if($elId.length) {
+                params = {uri: $elId.val()}
+            }
+
             loadingBar.start();
-            authSelectorProvider.getConfig({uri: $('#id').val()})
-                .then(function (config) {
+            authSelectorProvider.getHtml(params)
+                .then(function (html) {
+                    var $html;
                     loadingBar.stop();
-                    authSelectorComponent = authSelectorFactory(config);
-                    authSelectorComponent.render($container);
+                    $html = $(html);
+                    $container.append($html);
                 }).catch(function() {
                     loadingBar.stop();
                     throw new Error( __('Publishing auth configuration can not be loaded'));

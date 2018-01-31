@@ -22,6 +22,8 @@
 namespace oat\taoPublishing\scripts\update;
 
 use common_ext_ExtensionUpdater;
+use oat\tao\model\auth\AbstractAuthService;
+use oat\tao\model\auth\BasicAuthType;
 use oat\taoDeliveryRdf\model\DeliveryFactory;
 use oat\taoDeliveryRdf\model\DeliveryPublishing;
 use oat\oatbox\event\EventManager;
@@ -32,6 +34,7 @@ use oat\taoDeliveryRdf\model\event\DeliveryCreatedEvent;
 use oat\taoDeliveryRdf\model\event\DeliveryUpdatedEvent;
 use oat\taoPublishing\model\publishing\delivery\listeners\DeliveryEventsListeners;
 use oat\taoPublishing\model\publishing\delivery\PublishingDeliveryService;
+use oat\taoPublishing\model\publishing\PublishingAuthService;
 use oat\taoPublishing\model\publishing\PublishingService;
 use oat\taoPublishing\scripts\update\v0_6_0\UpdateAuthFieldAction;
 
@@ -42,6 +45,11 @@ use oat\taoPublishing\scripts\update\v0_6_0\UpdateAuthFieldAction;
 class Updater extends common_ext_ExtensionUpdater
 {
 
+    /**
+     * @param $initialVersion
+     * @return string|void
+     * @throws \common_Exception
+     */
     public function update($initialVersion)
     {
         if ($this->isVersion('0.1')) {
@@ -201,9 +209,23 @@ class Updater extends common_ext_ExtensionUpdater
         $this->skip('0.5.1', '0.5.2');
 
         if ($this->isVersion('0.5.2')) {
+            // new ontology
             OntologyUpdater::syncModels();
+
+            // new authentication fields for the publishing
             $updFieldAction = new UpdateAuthFieldAction();
             $updFieldAction([]);
+
+            // new publishing authentication service
+            $service = new PublishingAuthService([
+                AbstractAuthService::OPTION_DEFAULT_TYPE => new BasicAuthType(),
+                AbstractAuthService::OPTION_TYPES => [
+                    new BasicAuthType(),
+                ]
+            ]);
+
+            $this->getServiceManager()->register(PublishingDeliveryService::SERVICE_ID, $service);
+
             $this->setVersion('0.6.0');
         }
     }

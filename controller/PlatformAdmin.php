@@ -23,9 +23,11 @@ namespace oat\taoPublishing\controller;
 
 use common_ext_ExtensionsManager;
 use oat\generis\model\OntologyAwareTrait;
-use oat\tao\model\BasicAuth;
+use oat\tao\model\auth\AbstractAuthType;
+use oat\tao\model\auth\BasicAuth;
 use oat\tao\model\oauth\DataStore;
 use oat\taoPublishing\model\PlatformService;
+use oat\taoPublishing\model\publishing\PublishingAuthService;
 use oat\taoPublishing\model\publishing\PublishingService;
 
 /**
@@ -67,16 +69,20 @@ class PlatformAdmin extends \tao_actions_SaSModule
 
         if($myForm->isSubmited()){
             if($myForm->isValid()){
-
+                /** @var PublishingAuthService $publishingAuthService */
+                $publishingAuthService = $this->getServiceLocator()->get(PublishingAuthService::SERVICE_ID);
                 // For treeBox component we need to add slashes for rdf value before saving
                 $values = $publishingService->addSlashes($myForm->getValues());
 
+                /** @var AbstractAuthType $authType */
+                $authType = $publishingAuthService->getAuthType(
+                    $this->getResource($this->getRequest()->getParameter(\tao_helpers_Uri::encode(PlatformService::PROPERTY_AUTH_TYPE)))
+                );
+
                 // according to the auth type we need to add properties for the authenticator
-                $authType = $this->getRequest()->getParameter('taoPlatformAuthType');
-                if ($authType == BasicAuth::CLASS_BASIC_AUTH) {
-                    $values[PlatformService::PROPERTY_AUTH_TYPE] = $authType;
-                    $values[BasicAuth::LOGIN] = $this->getRequest()->getParameter('login');
-                    $values[BasicAuth::PASSWORD] = $this->getRequest()->getParameter('password');
+                $values[PlatformService::PROPERTY_AUTH_TYPE] = $authType->getAuthClass()->getUri();
+                foreach ($authType->getAuthProperties() as $authProperty) {
+                    $values[$authProperty->getUri()] = $this->getRequest()->getParameter(\tao_helpers_Uri::encode($authProperty->getUri()));
                 }
 
                 $message = __('Undefined Instance can not be saved');
@@ -118,51 +124,39 @@ class PlatformAdmin extends \tao_actions_SaSModule
     }
 
     /**
+     * @throws \common_Exception
      * @throws \core_kernel_persistence_Exception
      * @throws \tao_models_classes_MissingRequestParameterException
      */
-    public function authConfiguration()
+    public function authTpl()
     {
-        $instance = $this->getCurrentInstance();
-        $authType = $instance->getOnePropertyValue($this->getProperty(PlatformService::PROPERTY_AUTH_TYPE));
+        /** @var PublishingAuthService $publishingAuthService */
+        $publishingAuthService = $this->getServiceLocator()->get(PublishingAuthService::SERVICE_ID);
 
-        /** @var common_ext_ExtensionsManager $extensionManagerService */
-        $extensionManagerService = $this->getServiceLocator()->get(common_ext_ExtensionsManager::SERVICE_ID);
-        $authClass = $this->getClass(BasicAuth::CLASS_BASIC_AUTH);
+        /** @var AbstractAuthType $authType */
+        $authType = null;
+        if ($this->hasRequestParameter('uri') && $this->getRequestParameter('uri')) {
+            $instance = $this->getCurrentInstance();
+            $authType = $publishingAuthService->getAuthType(
+                $instance->getOnePropertyValue($this->getProperty(PlatformService::PROPERTY_AUTH_TYPE))
+            );
 
-        $credentials = [
-            'type' => BasicAuth::CLASS_BASIC_AUTH,
-            'allowedTypes' => [BasicAuth::CLASS_BASIC_AUTH => [
-                'label' => $authClass->getLabel(),
-                'selected' => false,
-            ]],
-            'login' => '',
-            'password' => '',
-        ];
-
-        if ($authType) {
-            switch ($authType->getUri()) {
-                case BasicAuth::CLASS_BASIC_AUTH:
-                    $credentials['login'] = $instance->getOnePropertyValue($this->getProperty(BasicAuth::LOGIN))->literal;
-                    $credentials['password'] = $instance->getOnePropertyValue($this->getProperty(BasicAuth::PASSWORD))->literal;
-                    $credentials['allowedTypes'][BasicAuth::CLASS_BASIC_AUTH]['selected'] = true;
-                    break;
-                case 'oauth2':
-                    break;
-            }
+            $authType->setInstance($instance);
+        } else {
+            $authType = $publishingAuthService->getAuthType();
         }
 
-        // oAuth 1.0 // needs to be changed to taoOauth 2.0
-        if ($extensionManagerService->isInstalled('taoOauth')) {
-            $oAuthClass = $this->getClass(DataStore::CLASS_URI_OAUTH_CONSUMER);
-            $credentials['allowedTypes'] = array_merge($credentials['allowedTypes'],
-                [DataStore::CLASS_URI_OAUTH_CONSUMER => ['label' => $oAuthClass->getLabel(), 'selected' => false]]);
-        }
+        $this->setData('authType', $authType);
+        $this->setData('allowedTypes', $publishingAuthService->getTypes());
+        $this->setView('auth/form.tpl');
 
         $this->returnJson([
-            'data' => $credentials,
+            'data' => $this->getRenderer()->render(),
             'success' => true,
         ]);
+
+        // prevent further render
+        $this->renderer = null;
     }
 
     /**

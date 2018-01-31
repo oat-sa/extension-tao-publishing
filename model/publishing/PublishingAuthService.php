@@ -1,3 +1,4 @@
+<?php
 /**
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,12 +19,12 @@
  * @author Alexander Zagovorichev <olexander.zagovorychev@1pt.com>
  */
 
-define(['util/url', 'core/dataProvider/request'], function (urlUtil, request) {
+namespace oat\taoPublishing\model\publishing;
 
-    return {
-        getHtml: function (params) {
-            var url = urlUtil.route('authTpl', 'PlatformAdmin', 'taoPublishing');
-            return request(url, params, 'POST');
-        }
-    };
-});
+
+use oat\tao\model\auth\AbstractAuthService;
+
+class PublishingAuthService extends AbstractAuthService
+{
+    const SERVICE_ID = 'taoPublishing/PublishingAuthService';
+}

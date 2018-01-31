@@ -54,6 +54,7 @@ class PublishingService extends ConfigurableService
 
     /**
      * @return array
+     * @throws \ReflectionException
      */
     public function getPublishingActions()
     {
@@ -81,10 +82,11 @@ class PublishingService extends ConfigurableService
         if (isset($values[PublishingService::PUBLISH_ACTIONS])) {
             if (is_array($values[PublishingService::PUBLISH_ACTIONS])) {
                 $values[PublishingService::PUBLISH_ACTIONS] = array_map(function($item) {
-                    return addslashes($item);
+                    $a = addslashes($item);
+                    return str_replace('\\\\\\\\', '\\\\', addslashes($item));
                 }, $values[PublishingService::PUBLISH_ACTIONS]);
             } else {
-                $values[PublishingService::PUBLISH_ACTIONS] = addslashes($values[PublishingService::PUBLISH_ACTIONS]);
+                $values[PublishingService::PUBLISH_ACTIONS] = str_replace('\\\\\\\\', '\\\\', addslashes($values[PublishingService::PUBLISH_ACTIONS]));
             }
         }
         return $values;

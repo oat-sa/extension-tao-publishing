@@ -17,7 +17,8 @@
  * Copyright (c) 2016 (original work) Open Assessment Technologies SA
  */
 namespace oat\taoPublishing\model;
-use oat\tao\model\BasicAuth;
+use oat\tao\model\auth\BasicAuth;
+use oat\taoPublishing\model\publishing\PublishingAuthService;
 use Psr\Http\Message\RequestInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Uri;
@@ -58,23 +59,19 @@ class PlatformService extends \tao_models_classes_ClassService
         $rootUrl = $platform->getUniquePropertyValue($this->getProperty(self::PROPERTY_ROOT_URL));
         $rootUrl = rtrim($rootUrl,"/").'/';
 
-        $authType = (string)$platform->getUniquePropertyValue($this->getProperty(self::PROPERTY_AUTH_TYPE));
-
-        if ($authType == BasicAuth::CLASS_BASIC_AUTH) {
-            $user = (string)$platform->getUniquePropertyValue($this->getProperty(BasicAuth::LOGIN));
-            $password = (string)$platform->getUniquePropertyValue($this->getProperty(BasicAuth::PASSWORD));
-        }
+        /** @var PublishingAuthService $publishingAuthService */
+        $publishingAuthService = $this->getServiceLocator()->get(PublishingAuthService::SERVICE_ID);
+        $authType = $publishingAuthService->getAuthType(
+            $platform->getOnePropertyValue($this->getProperty(PlatformService::PROPERTY_AUTH_TYPE))
+        );
+        $authType->setInstance($platform);
 
         $relUrl = $request->getUri()->__toString();
         $absUrl = $rootUrl.ltrim($relUrl,'/');
-        $request = $request->withUri(new Uri($absUrl)); 
-
-        if (!isset($user) || empty($user) || !isset($password) || empty($password)) {
-            throw new \common_Exception('Remote Publishing can not be used without credentials');
-        }
+        $request = $request->withUri(new Uri($absUrl));
 
         $client = new Client();
-        $response = $client->send($request, ['auth' => [$user, $password], 'verify' => false]);
+        $response = $client->send($request, ['auth' => $authType->getCredentials(), 'verify' => false]);
         return $response;
     }
 }
