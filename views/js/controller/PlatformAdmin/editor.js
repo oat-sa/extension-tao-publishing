@@ -22,8 +22,9 @@ define([
     'jquery',
     'i18n',
     'layout/loading-bar',
-    'taoPublishing/provider/authSelector'
-], function ($, __, loadingBar, authSelectorProvider) {
+    'taoPublishing/provider/authSelector',
+    'tpl!taoPublishing/controller/PlatformAdmin/tpl/authContainer'
+], function ($, __, loadingBar, authSelectorProvider, authContainerTpl) {
     'use strict';
 
     /**
@@ -35,7 +36,7 @@ define([
         if($propertyContainer.length) {
             return $propertyContainer;
         }
-        $propertyContainer  = $('<div>', { 'class' : 'auth-container' });
+        $propertyContainer  = $(authContainerTpl());
         $('.content-block .form-toolbar').before($propertyContainer);
         return $propertyContainer;
     }
@@ -52,10 +53,8 @@ define([
             loadingBar.start();
             authSelectorProvider.getHtml(params)
                 .then(function (html) {
-                    var $html;
                     loadingBar.stop();
-                    $html = $(html);
-                    $container.append($html);
+                    $container.html(html);
                 }).catch(function() {
                     loadingBar.stop();
                     throw new Error( __('Publishing auth configuration can not be loaded'));
