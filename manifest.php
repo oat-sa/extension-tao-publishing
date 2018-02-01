@@ -42,7 +42,6 @@ return array(
             __DIR__. '/model/ontology/taotest.rdf'
         ),
         'php' => array(
-            \oat\taoPublishing\scripts\install\RegisterPublishingService::class,
             \oat\taoPublishing\scripts\install\RegisterListeners::class,
             \oat\taoPublishing\scripts\install\UpdateConfigDeliveryFactoryService::class
         )

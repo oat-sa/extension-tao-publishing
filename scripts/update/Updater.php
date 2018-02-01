@@ -25,7 +25,6 @@ use common_ext_ExtensionUpdater;
 use oat\tao\model\auth\AbstractAuthService;
 use oat\tao\model\auth\BasicAuthType;
 use oat\taoDeliveryRdf\model\DeliveryFactory;
-use oat\taoDeliveryRdf\model\DeliveryPublishing;
 use oat\oatbox\event\EventManager;
 use oat\tao\scripts\update\OntologyUpdater;
 use oat\taoDeliveryRdf\model\ContainerRuntime;
@@ -224,7 +223,7 @@ class Updater extends common_ext_ExtensionUpdater
                 ]
             ]);
 
-            $this->getServiceManager()->register(PublishingDeliveryService::SERVICE_ID, $service);
+            $this->getServiceManager()->register(PublishingAuthService::SERVICE_ID, $service);
 
             $this->setVersion('0.6.0');
         }
