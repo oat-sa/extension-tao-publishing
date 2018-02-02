@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <rdf:RDF 
-	xml:base="http://www.tao.lu/Ontologies/TAOLTI.rdf#" 
+	xml:base="http://www.tao.lu/Ontologies/TaoPlatform.rdf#"
 	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" 
 	xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" 
 	xmlns:widget="http://www.tao.lu/datatypes/WidgetDefinitions.rdf#"
-	xmlns:generis="http://www.tao.lu/Ontologies/generis.rdf#"
+    xmlns:tao="http://www.tao.lu/Ontologies/TAO.rdf#"
 >
 
   <rdf:Description rdf:about="http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatform">
@@ -12,31 +12,39 @@
     <rdfs:label xml:lang="en-US"><![CDATA[TAO Environment]]></rdfs:label>
   </rdf:Description>
 
-  <rdf:Description rdf:about="http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatformAuth">
-    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
-    <rdfs:label xml:lang="en-US"><![CDATA[Authentication (login:password)]]></rdfs:label>
-    <rdfs:domain rdf:resource="http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatform"/>
-    <rdfs:range rdf:resource="http://www.w3.org/2000/01/rdf-schema#Literal"/>
-    <widget:widget rdf:resource="http://www.tao.lu/datatypes/WidgetDefinitions.rdf#AuthenticationIdentity"/>
-    <widget:widget rdf:resource="http://www.tao.lu/datatypes/WidgetDefinitions.rdf#HiddenBox"/>
-  </rdf:Description>
   <rdf:Description rdf:about="http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatformUrl">
     <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
     <rdfs:label xml:lang="en-US"><![CDATA[Root URL]]></rdfs:label>
     <rdfs:domain rdf:resource="http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatform"/>
     <rdfs:range rdf:resource="http://www.w3.org/2000/01/rdf-schema#Literal"/>
     <widget:widget rdf:resource="http://www.tao.lu/datatypes/WidgetDefinitions.rdf#TextBox"/>
+    <tao:TAOGUIOrder><![CDATA[50]]></tao:TAOGUIOrder>
   </rdf:Description>
 
    <rdf:Description rdf:about="http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatformPublishAction">
-      <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
-      <rdfs:label xml:lang="en-US"><![CDATA[Publish Actions]]></rdfs:label>
-      <rdfs:domain rdf:resource="http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatform"/>
-      <rdfs:range rdf:resource="http://www.w3.org/2000/01/rdf-schema#Literal"/>
-      <widget:widget rdf:resource="http://www.tao.lu/datatypes/WidgetDefinitions.rdf#TreeBox"/>
-    </rdf:Description>
+     <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+     <rdfs:label xml:lang="en-US"><![CDATA[Publish Actions]]></rdfs:label>
+     <rdfs:domain rdf:resource="http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatform"/>
+     <rdfs:range rdf:resource="http://www.w3.org/2000/01/rdf-schema#Literal"/>
+     <widget:widget rdf:resource="http://www.tao.lu/datatypes/WidgetDefinitions.rdf#TreeBox"/>
+     <tao:TAOGUIOrder><![CDATA[40]]></tao:TAOGUIOrder>
+   </rdf:Description>
 
-    <!-- Model Widget --> 
+  <rdf:Description rdf:about="http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatformAuthType">
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en-US"><![CDATA[Auth type]]></rdfs:label>
+    <rdfs:comment xml:lang="en-US"><![CDATA[Type of the authenticator]]></rdfs:comment>
+    <rdfs:domain rdf:resource="http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatform"/>
+    <rdfs:range rdf:resource="http://www.tao.lu/Ontologies/TaoPlatform.rdf#AuthType"/>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://www.tao.lu/Ontologies/TaoPlatform.rdf#AuthType">
+    <rdfs:label xml:lang="en-US"><![CDATA[Authentication Type]]></rdfs:label>
+    <rdfs:comment xml:lang="en-US"><![CDATA[the type of the authorizations]]></rdfs:comment>
+    <rdfs:subClassOf rdf:resource="http://www.tao.lu/Ontologies/TAO.rdf#TAOObject"/>
+  </rdf:Description>
+
+  <!-- Model Widget -->
   <rdf:Description rdf:about="http://www.tao.lu/datatypes/WidgetDefinitions.rdf#AuthenticationIdentity">
     <rdf:type rdf:resource="http://www.tao.lu/datatypes/WidgetDefinitions.rdf#WidgetClass"/>
     <widget:identifier><![CDATA[auth]]></widget:identifier>
@@ -51,5 +59,5 @@
   	<widget:renderMode><![CDATA[xhtml]]></widget:renderMode>
   	<widget:implementation><![CDATA[oat\taoPublishing\model\widget\AuthWidget]]></widget:implementation>
   </rdf:Description>
-  
+
 </rdf:RDF>
