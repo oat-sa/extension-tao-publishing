@@ -21,6 +21,7 @@
 
 namespace oat\taoPublishing\controller;
 
+use oat\taoDeliveryRdf\model\NoTestsException;
 use oat\taoPublishing\view\form\WizardForm;
 use oat\generis\model\OntologyAwareTrait;
 use oat\taoPublishing\model\DeployTest;
@@ -61,5 +62,4 @@ class Publish extends \tao_actions_CommonModule {
             $this->setView('DeliveryMgmt/wizard_error.tpl');
         }
     }
-    
 }
