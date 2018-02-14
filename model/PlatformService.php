@@ -16,13 +16,14 @@
  * 
  * Copyright (c) 2016 (original work) Open Assessment Technologies SA
  */
+
 namespace oat\taoPublishing\model;
-use oat\tao\model\auth\BasicAuth;
+
 use oat\taoPublishing\model\publishing\PublishingAuthService;
 use Psr\Http\Message\RequestInterface;
-use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Uri;
 use Psr\Http\Message\ResponseInterface;
+
 /**
  * Service methods to manage the Platforms
  *
@@ -61,17 +62,15 @@ class PlatformService extends \tao_models_classes_ClassService
 
         /** @var PublishingAuthService $publishingAuthService */
         $publishingAuthService = $this->getServiceLocator()->get(PublishingAuthService::SERVICE_ID);
-        $authType = $publishingAuthService->getAuthType(
+        $authenticator = $publishingAuthService->getAuthType(
             $platform->getOnePropertyValue($this->getProperty(PlatformService::PROPERTY_AUTH_TYPE))
         );
-        $authType->setInstance($platform);
+        $authenticator->setInstance($platform);
 
         $relUrl = $request->getUri()->__toString();
         $absUrl = $rootUrl.ltrim($relUrl,'/');
         $request = $request->withUri(new Uri($absUrl));
 
-        $client = new Client();
-        $response = $client->send($request, ['auth' => $authType->getCredentials(), 'verify' => false]);
-        return $response;
+        return $authenticator->call($request);
     }
 }
