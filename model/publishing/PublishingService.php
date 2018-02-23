@@ -23,6 +23,8 @@ use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
 use oat\oatbox\log\LoggerAwareTrait;
 use oat\taoPublishing\model\PlatformService;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class PublishingService
@@ -54,7 +56,6 @@ class PublishingService extends ConfigurableService
 
     /**
      * @return array
-     * @throws \ReflectionException
      */
     public function getPublishingActions()
     {
@@ -71,6 +72,40 @@ class PublishingService extends ConfigurableService
             ];
         }
         return $options;
+    }
+
+    /**
+     * Send a $request to environment associated to the given $action
+     *
+     * @param $action
+     * @param RequestInterface $request
+     * @return ResponseInterface
+     * @throws \common_Exception
+     * @throws \common_exception_NotFound
+     * @throws \core_kernel_classes_EmptyProperty
+     */
+    public function callEnvironment($action, RequestInterface $request)
+    {
+        $environments = $this->getEnvironments();
+        if (empty($environments)) {
+            throw new \common_exception_NotFound('No environment has been set.');
+        }
+
+        /** @var \core_kernel_classes_Resource $environment */
+        foreach ($environments as $environment) {
+            $actionProperties = $environment->getPropertyValues($this->getProperty(PublishingService::PUBLISH_ACTIONS));
+            foreach ($actionProperties as $actionProperty) {
+                if ($actionProperty) {
+                    $actionProperty = preg_replace('/(\/|\\\\)+/', '\\', $actionProperty);
+                    $action = preg_replace('/(\/|\\\\)+/', '\\', $action);
+                    if ($actionProperty == $action) {
+                        return PlatformService::singleton()->callApi($environment->getUri(), $request);
+                    }
+                }
+            }
+        }
+
+        throw new \common_exception_NotFound('No environment found for action "' . $action . '".');
     }
 
     /**
