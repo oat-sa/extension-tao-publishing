@@ -65,6 +65,7 @@ class PlatformService extends \tao_models_classes_ClassService
         $authenticator = $publishingAuthService->getAuthType(
             $platform->getOnePropertyValue($this->getProperty(PlatformService::PROPERTY_AUTH_TYPE))
         );
+        $this->getServiceManager()->propagate($authenticator);
         $authenticator->setInstance($platform);
 
         $relUrl = $request->getUri()->__toString();
