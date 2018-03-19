@@ -55,12 +55,33 @@ define([
             }
 
             /**
+             * Enable/disable fields
+             * @param {jQuery} $fields - selection of fields
+             * @param {Boolean} enabled - enable or disable the fields
+             */
+            function toggleFields($fields, enabled) {
+                if (enabled) {
+                    $fields.removeAttr('disabled').removeProp('disabled');
+                } else {
+                    $fields.attr('disabled', true).prop('disabled', true);
+                }
+            }
+
+            /**
              * Display the auth form part that complies to the selected auth method.
              * Will be applied on the auth method selection combo box.
              */
             function showAuthFormPart() {
-                hider.hide($container.find('.auth-form-part'));
-                hider.show($container.find('[data-auth-method="' + this.value + '"]'));
+                var $allForms = $container.find('.auth-form-part');
+                var $selectedForm = $container.find('[data-auth-method="' + this.value + '"]');
+
+                // switch form visibility
+                hider.hide($allForms);
+                hider.show($selectedForm);
+
+                // switch sendable fields
+                toggleFields($allForms.find(':input'), false);
+                toggleFields($selectedForm.find(':input'), true);
             }
 
             loadingBar.start();
