@@ -109,6 +109,35 @@ class PublishingService extends ConfigurableService
     }
 
     /**
+     * @param $actionSearch
+     * @return \core_kernel_classes_Resource|mixed|null
+     * @throws \common_exception_NotFound
+     */
+    public function findByAction($actionSearch)
+    {
+        $environments = $this->getEnvironments();
+        if (empty($environments)) {
+            throw new \common_exception_NotFound('No environment has been set.');
+        }
+        $environmentsFound = [];
+
+        /** @var \core_kernel_classes_Resource $environment */
+        foreach ($environments as $environment) {
+            $actionProperties = $environment->getPropertyValues($this->getProperty(PublishingService::PUBLISH_ACTIONS));
+            foreach ($actionProperties as $actionProperty) {
+                if ($actionProperty) {
+                    $actionProperty = preg_replace('/(\/|\\\\)+/', '\\', $actionProperty);
+                    $action = preg_replace('/(\/|\\\\)+/', '\\', $actionSearch);
+                    if ($actionProperty == $action) {
+                        $environmentsFound[] = $environment;
+                    }
+                }
+            }
+        }
+
+        return $environmentsFound;
+    }
+    /**
      * @param $values
      * @return array
      */
