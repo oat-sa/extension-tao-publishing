@@ -22,9 +22,10 @@ define([
     'jquery',
     'i18n',
     'layout/loading-bar',
+    'ui/hider',
     'taoPublishing/provider/authSelector',
     'tpl!taoPublishing/controller/PlatformAdmin/tpl/authContainer'
-], function ($, __, loadingBar, authSelectorProvider, authContainerTpl) {
+], function ($, __, loadingBar, hider, authSelectorProvider, authContainerTpl) {
     'use strict';
 
     /**
@@ -46,19 +47,37 @@ define([
             var $container = getAuthContainer();
             var $elId = $('#id');
             var params = {};
+
             if($elId.length) {
-                params = {uri: $elId.val()}
+                params = {
+                    uri: $elId.val()
+                };
+            }
+
+            /**
+             * Display the auth form part that complies to the selected auth method.
+             * Will be applied on the auth method selection combo box.
+             */
+            function showAuthFormPart() {
+                hider.hide($container.find('.auth-form-part'));
+                hider.show($container.find('[data-auth-method="' + this.value + '"]'));
             }
 
             loadingBar.start();
             authSelectorProvider.getHtml(params)
                 .then(function (html) {
-                    loadingBar.stop();
+                    // show the form, will all auth methods
                     $container.html(html);
+
+                    // display the form parts according to the selected auth method
+                    $container.find('.auth-type-selector')
+                        .each(showAuthFormPart)
+                        .on('change', showAuthFormPart);
                 }).catch(function() {
-                    loadingBar.stop();
                     throw new Error( __('Publishing auth configuration can not be loaded'));
+                }).then(function () {
+                    loadingBar.stop();
                 });
         }
-    }
+    };
 });
