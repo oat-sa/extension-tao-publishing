@@ -86,10 +86,24 @@ class PublishingService extends ConfigurableService
      */
     public function callEnvironment($action, RequestInterface $request)
     {
-        $environments = $this->getEnvironments();
-        if (empty($environments)) {
-            throw new \common_exception_NotFound('No environment has been set.');
+        $environmentsFound = $this->findByAction($action);
+        if (count($environmentsFound) === 0){
+            throw new \common_exception_NotFound('No environment found for action "' . $action . '".');
         }
+
+        $environment = $environmentsFound[0];
+        return PlatformService::singleton()->callApi($environment->getUri(), $request);
+    }
+
+    /**
+     * @param $actionSearch
+     * @return \core_kernel_classes_Resource|mixed|null
+     * @throws \common_exception_NotFound
+     */
+    public function findByAction($actionSearch)
+    {
+        $environments = $this->getEnvironments();
+        $environmentsFound = [];
 
         /** @var \core_kernel_classes_Resource $environment */
         foreach ($environments as $environment) {
@@ -97,17 +111,16 @@ class PublishingService extends ConfigurableService
             foreach ($actionProperties as $actionProperty) {
                 if ($actionProperty) {
                     $actionProperty = preg_replace('/(\/|\\\\)+/', '\\', $actionProperty);
-                    $action = preg_replace('/(\/|\\\\)+/', '\\', $action);
+                    $action = preg_replace('/(\/|\\\\)+/', '\\', $actionSearch);
                     if ($actionProperty == $action) {
-                        return PlatformService::singleton()->callApi($environment->getUri(), $request);
+                        $environmentsFound[] = $environment;
                     }
                 }
             }
         }
 
-        throw new \common_exception_NotFound('No environment found for action "' . $action . '".');
+        return $environmentsFound;
     }
-
     /**
      * @param $values
      * @return array
