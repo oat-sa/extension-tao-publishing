@@ -22,9 +22,10 @@ define([
     'jquery',
     'i18n',
     'layout/loading-bar',
+    'ui/hider',
     'taoPublishing/provider/authSelector',
     'tpl!taoPublishing/controller/PlatformAdmin/tpl/authContainer'
-], function ($, __, loadingBar, authSelectorProvider, authContainerTpl) {
+], function ($, __, loadingBar, hider, authSelectorProvider, authContainerTpl) {
     'use strict';
 
     /**
@@ -46,19 +47,58 @@ define([
             var $container = getAuthContainer();
             var $elId = $('#id');
             var params = {};
+
             if($elId.length) {
-                params = {uri: $elId.val()}
+                params = {
+                    uri: $elId.val()
+                };
+            }
+
+            /**
+             * Enable/disable fields
+             * @param {jQuery} $fields - selection of fields
+             * @param {Boolean} enabled - enable or disable the fields
+             */
+            function toggleFields($fields, enabled) {
+                if (enabled) {
+                    $fields.removeAttr('disabled').removeProp('disabled');
+                } else {
+                    $fields.attr('disabled', true).prop('disabled', true);
+                }
+            }
+
+            /**
+             * Display the auth form part that complies to the selected auth method.
+             * Will be applied on the auth method selection combo box.
+             */
+            function showAuthFormPart() {
+                var $allForms = $container.find('.auth-form-part');
+                var $selectedForm = $container.find('[data-auth-method="' + this.value + '"]');
+
+                // switch form visibility
+                hider.hide($allForms);
+                hider.show($selectedForm);
+
+                // switch sendable fields
+                toggleFields($allForms.find(':input'), false);
+                toggleFields($selectedForm.find(':input'), true);
             }
 
             loadingBar.start();
             authSelectorProvider.getHtml(params)
                 .then(function (html) {
-                    loadingBar.stop();
+                    // show the form, will all auth methods
                     $container.html(html);
+
+                    // display the form parts according to the selected auth method
+                    $container.find('.auth-type-selector')
+                        .each(showAuthFormPart)
+                        .on('change', showAuthFormPart);
                 }).catch(function() {
-                    loadingBar.stop();
                     throw new Error( __('Publishing auth configuration can not be loaded'));
+                }).then(function () {
+                    loadingBar.stop();
                 });
         }
-    }
+    };
 });

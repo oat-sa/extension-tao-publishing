@@ -16,7 +16,7 @@ $allowedTypes = get_data('allowedTypes');
     </div>
     <div class="authenticator-settings">
         <?php foreach ($allowedTypes as $allowedType) :?>
-            <div<?php if ($allowedType->getAuthClass()->getUri() != $authType->getAuthClass()->getUri()) :?> class="hidden"<?php endif; ?>>
+            <div data-auth-method="<?= $allowedType->getAuthClass()->getUri(); ?>" class="auth-form-part<?php if ($allowedType->getAuthClass()->getUri() != $authType->getAuthClass()->getUri()) :?> hidden<?php endif; ?>">
             <?=$allowedType->getTemplate()?>
             </div>
         <?php endforeach; ?>
