@@ -103,9 +103,6 @@ class PublishingService extends ConfigurableService
     public function findByAction($actionSearch)
     {
         $environments = $this->getEnvironments();
-        if (empty($environments)) {
-            throw new \common_exception_NotFound('No environment has been set.');
-        }
         $environmentsFound = [];
 
         /** @var \core_kernel_classes_Resource $environment */
