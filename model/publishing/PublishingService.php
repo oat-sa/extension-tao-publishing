@@ -86,23 +86,10 @@ class PublishingService extends ConfigurableService
      */
     public function callEnvironment($action, RequestInterface $request)
     {
-        $environments = $this->getEnvironments();
-        if (empty($environments)) {
-            throw new \common_exception_NotFound('No environment has been set.');
-        }
-
-        /** @var \core_kernel_classes_Resource $environment */
-        foreach ($environments as $environment) {
-            $actionProperties = $environment->getPropertyValues($this->getProperty(PublishingService::PUBLISH_ACTIONS));
-            foreach ($actionProperties as $actionProperty) {
-                if ($actionProperty) {
-                    $actionProperty = preg_replace('/(\/|\\\\)+/', '\\', $actionProperty);
-                    $action = preg_replace('/(\/|\\\\)+/', '\\', $action);
-                    if ($actionProperty == $action) {
-                        return PlatformService::singleton()->callApi($environment->getUri(), $request);
-                    }
-                }
-            }
+        $environmentsFound = $this->findByAction($action);
+        if (count($environmentsFound) === 1){
+            $environment = $environmentsFound[0];
+            return PlatformService::singleton()->callApi($environment->getUri(), $request);
         }
 
         throw new \common_exception_NotFound('No environment found for action "' . $action . '".');
