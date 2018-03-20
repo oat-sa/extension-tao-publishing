@@ -87,12 +87,12 @@ class PublishingService extends ConfigurableService
     public function callEnvironment($action, RequestInterface $request)
     {
         $environmentsFound = $this->findByAction($action);
-        if (count($environmentsFound) === 1){
-            $environment = $environmentsFound[0];
-            return PlatformService::singleton()->callApi($environment->getUri(), $request);
+        if (count($environmentsFound) === 0){
+            throw new \common_exception_NotFound('No environment found for action "' . $action . '".');
         }
 
-        throw new \common_exception_NotFound('No environment found for action "' . $action . '".');
+        $environment = $environmentsFound[0];
+        return PlatformService::singleton()->callApi($environment->getUri(), $request);
     }
 
     /**
