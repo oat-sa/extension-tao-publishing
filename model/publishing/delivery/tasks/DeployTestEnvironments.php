@@ -22,15 +22,15 @@ namespace oat\taoPublishing\model\publishing\delivery\tasks;
 
 use oat\generis\model\OntologyRdfs;
 use oat\oatbox\action\Action;
+use oat\tao\model\taskQueue\QueueDispatcherInterface;
+use oat\tao\model\taskQueue\Task\ChildTaskAwareInterface;
+use oat\tao\model\taskQueue\Task\ChildTaskAwareTrait;
+use oat\tao\model\taskQueue\Task\TaskAwareInterface;
+use oat\tao\model\taskQueue\Task\TaskAwareTrait;
 use oat\taoDeliveryRdf\controller\RestTest;
 use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
 use oat\taoPublishing\model\PlatformService;
 use oat\taoPublishing\model\publishing\delivery\PublishingDeliveryService;
-use oat\taoTaskQueue\model\QueueDispatcher;
-use oat\taoTaskQueue\model\Task\ChildTaskAwareInterface;
-use oat\taoTaskQueue\model\Task\ChildTaskAwareTrait;
-use oat\taoTaskQueue\model\Task\TaskAwareInterface;
-use oat\taoTaskQueue\model\Task\TaskAwareTrait;
 use Zend\ServiceManager\ServiceLocatorAwareTrait;
 use Zend\ServiceManager\ServiceLocatorAwareInterface;
 use oat\generis\model\OntologyAwareTrait;
@@ -40,7 +40,7 @@ use GuzzleHttp\Psr7\MultipartStream;
 /**
  * Deploys a test to environments
  */
-class DeployTestEnvironments implements Action,ServiceLocatorAwareInterface,ChildTaskAwareInterface,TaskAwareInterface
+class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, ChildTaskAwareInterface, TaskAwareInterface
 {
     use ServiceLocatorAwareTrait;
     use OntologyAwareTrait;
@@ -119,8 +119,8 @@ class DeployTestEnvironments implements Action,ServiceLocatorAwareInterface,Chil
                     $data = $content['data'];
                     $taskId = $data['reference_id'];
 
-                    /** @var QueueDispatcher $queueDispatcher reference_id*/
-                    $queueDispatcher = $this->getServiceLocator()->get(QueueDispatcher::SERVICE_ID);
+                    /** @var QueueDispatcherInterface $queueDispatcher reference_id*/
+                    $queueDispatcher = $this->getServiceLocator()->get(QueueDispatcherInterface::SERVICE_ID);
 
                     $queueDispatcher->createTask(
                         new RemoteTaskStatusSynchroniser(),

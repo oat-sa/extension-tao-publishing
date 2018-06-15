@@ -4,8 +4,8 @@ namespace oat\taoPublishing\model\publishing\delivery\tasks;
 
 use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\action\Action;
+use oat\tao\model\taskQueue\Task\RemoteTaskSynchroniserInterface;
 use oat\taoPublishing\model\PlatformService;
-use oat\taoTaskQueue\model\Task\RemoteTaskSynchroniserInterface;
 use Zend\ServiceManager\ServiceLocatorAwareTrait;
 use Zend\ServiceManager\ServiceLocatorAwareInterface;
 use GuzzleHttp\Psr7\Request;
@@ -39,7 +39,7 @@ class RemoteTaskStatusSynchroniser implements Action,ServiceLocatorAwareInterfac
         $taskId = array_shift($params);
         $envId = array_shift($params);
 
-        $url = '/taoTaskQueue/TaskQueueRestApi/getStatus';
+        $url = '/tao/TaskQueue/getStatus';
         $request = new Request('GET', trim($url, '/').'?'.http_build_query(['id' => $taskId]));
         $response = PlatformService::singleton()->callApi($envId, $request);
 
