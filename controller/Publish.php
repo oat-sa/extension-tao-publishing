@@ -22,6 +22,7 @@
 namespace oat\taoPublishing\controller;
 
 use oat\tao\model\taskQueue\QueueDispatcher;
+use oat\tao\model\taskQueue\TaskLogActionTrait;
 use oat\taoDeliveryRdf\model\NoTestsException;
 use oat\taoPublishing\view\form\WizardForm;
 use oat\generis\model\OntologyAwareTrait;
@@ -35,6 +36,7 @@ use oat\taoPublishing\model\DeployTest;
 class Publish extends \tao_actions_CommonModule
 {
     use OntologyAwareTrait;
+    use TaskLogActionTrait;
 
     public function wizard()
     {
@@ -53,6 +55,8 @@ class Publish extends \tao_actions_CommonModule
                     [$test->getUri(), $env->getUri()],
                     __('Publishing of "%s" to a delivery environment', $test->getUri())
                 );
+
+                //TODO: instead of report a special json string should be returned: $this->returnTaskJson()
                 $this->returnReport(
                     \common_report_Report::createSuccess('The deployment of your test has been scheduled')
                 );
