@@ -24,6 +24,8 @@ namespace oat\taoPublishing\scripts\update;
 use common_ext_ExtensionUpdater;
 use oat\tao\model\auth\AbstractAuthService;
 use oat\tao\model\auth\BasicAuthType;
+use oat\tao\model\search\Search;
+use oat\tao\model\search\strategy\GenerisSearch;
 use oat\taoDeliveryRdf\model\DeliveryFactory;
 use oat\oatbox\event\EventManager;
 use oat\tao\scripts\update\OntologyUpdater;
@@ -229,5 +231,15 @@ class Updater extends common_ext_ExtensionUpdater
         }
 
         $this->skip('0.6.0', '1.0.0');
+
+        if ($this->isVersion('1.0.0')) {
+            $searchService = $this->getServiceManager()->get(Search::SERVICE_ID);
+            if ($searchService instanceof GenerisSearch) {
+                $newSearchService = new \oat\taoPublishing\model\search\GenerisSearch($searchService->getOptions());
+                $this->getServiceManager()->register(Search::SERVICE_ID, $newSearchService);
+            }
+            OntologyUpdater::syncModels();
+            $this->setVersion('1.1.0');
+        }
     }
 }
