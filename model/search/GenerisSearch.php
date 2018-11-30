@@ -36,28 +36,25 @@ class GenerisSearch extends OriginGenerisSearch
      * @see \oat\tao\model\search\Search::query()
      */
     public function query($queryString, $type, $start = 0, $count = 10, $order = 'id', $dir = 'DESC') {
-        /** @var ResultSet $result */
-        $result = parent::query($queryString, $type, $start, $count, $order, $dir);
-        if (!$result->count()) {
-            $rootClass = $this->getClass($type);
-            $results = $rootClass->searchInstances([
-                PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD => $queryString,
-                PublishingDeliveryService::ORIGIN_TEST_ID_FIELD => $queryString,
-            ], array(
-                'recursive' => true,
-                'like'      => true,
-                'chaining' => 'or',
-                'offset'    => $start,
-                'limit'     => $count,
-            ));
-            $ids = array();
-            foreach ($results as $resource) {
-                $ids[] = $resource->getUri();
-            }
 
-            return new ResultSet($ids, $this->getTotalCount($queryString, $rootClass));
+        $rootClass = $this->getClass($type);
+        $results = $rootClass->searchInstances([
+            OntologyRdfs::RDFS_LABEL => $queryString,
+            PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD => $queryString,
+            PublishingDeliveryService::ORIGIN_TEST_ID_FIELD => $queryString,
+        ], [
+            'recursive' => true,
+            'like'      => true,
+            'chaining' => 'or',
+            'offset'    => $start,
+            'limit'     => $count,
+        ]);
+        $ids = array();
+        foreach ($results as $resource) {
+            $ids[] = $resource->getUri();
         }
-        return $result;
+
+        return new ResultSet($ids, $this->getTotalCount($queryString, $rootClass));
     }
 
     /**
@@ -71,15 +68,16 @@ class GenerisSearch extends OriginGenerisSearch
     private function getTotalCount($queryString, $rootClass = null )
     {
         return $rootClass->countInstances(
-            array(
+            [
+                OntologyRdfs::RDFS_LABEL => $queryString,
                 PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD => $queryString,
                 PublishingDeliveryService::ORIGIN_TEST_ID_FIELD => $queryString,
-            ),
-            array(
+            ],
+            [
                 'recursive' => true,
                 'like'      => true,
                 'chaining' => 'or'
-            )
+            ]
         );
     }
 }
