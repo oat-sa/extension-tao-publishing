@@ -91,7 +91,16 @@ class PublishingService extends ConfigurableService
             throw new \common_exception_NotFound('No environment found for action "' . $action . '".');
         }
 
+        /** @var \core_kernel_classes_Resource $environment */
         $environment = $environmentsFound[0];
+        try {
+            $boxId = $environment->getUniquePropertyValue($this->getProperty(PlatformService::PROPERTY_SENDING_BOX_ID));
+        } catch (\core_kernel_classes_EmptyProperty $e) {
+            $boxId = $this->setBoxId($environment);
+        }
+
+        $request = $request->withHeader('x-tao-box-id', $boxId->literal);
+
         return PlatformService::singleton()->callApi($environment->getUri(), $request);
     }
 
@@ -138,5 +147,21 @@ class PublishingService extends ConfigurableService
             }
         }
         return $values;
+    }
+
+    /**
+     * Set unique boc identifier for given environment
+     *
+     * @param \core_kernel_classes_Resource $environment
+     * @return \core_kernel_classes_Container
+     * @throws \common_Exception
+     * @throws \core_kernel_classes_EmptyProperty
+     */
+    private function setBoxId(\core_kernel_classes_Resource $environment)
+    {
+        $boxId = uniqid();
+        $boxIdProp = $this->getProperty(PlatformService::PROPERTY_SENDING_BOX_ID);
+        $environment->setPropertyValue($this->getProperty(PlatformService::PROPERTY_SENDING_BOX_ID), $boxId);
+        return $environment->getUniquePropertyValue($boxIdProp);
     }
 }
