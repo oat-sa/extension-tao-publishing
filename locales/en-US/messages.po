@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: TAO 3.1.0-sprint27\n"
-"PO-Revision-Date: 2016-05-25T13:58:18\n"
+"Project-Id-Version: TAO 3.3.0-sprint91\n"
+"PO-Revision-Date: 2018-12-14T13:45:47\n"
 "Last-Translator: TAO Translation Team <translation@tao.lu>\n"
 "MIME-Version: 1.0\n"
 "Language: en-US\n"
@@ -13,14 +13,105 @@ msgstr ""
 "X-Poedit-KeywordsList: __\n"
 "X-Poedit-SearchPath-0: .\n"
 
-msgid "Hello World"
+#, tao-public
+msgid "Add Platform"
+msgstr ""
+
+msgid "Auth type"
+msgstr ""
+
+msgid "Create instance"
 msgstr ""
 
 #, tao-public
-msgid "Template"
+msgid "Delete"
+msgstr ""
+
+msgid "Delivery available: %s"
+msgstr ""
+
+msgid "Delivery cannot be published. Please contact your administrator"
+msgstr ""
+
+msgid "Delivery cannot be updated. Please contact your administrator"
+msgstr ""
+
+msgid "Delivery has been updated as %s"
+msgstr ""
+
+msgid "Delivery not available as LTI"
+msgstr ""
+
+msgid "Deployed %s as %s"
+msgstr ""
+
+msgid "Deployed %s to %s"
+msgstr ""
+
+msgid "Edit Instance"
+msgstr ""
+
+msgid "Failed to compile %s"
+msgstr ""
+
+msgid "Failed to compile %s with message: %s"
+msgstr ""
+
+msgid "Failed to updated %s on remote env with message: %s"
 msgstr ""
 
 #, tao-public
-msgid "Test Publishing"
+msgid "Index"
+msgstr ""
+
+msgid "Instance created"
+msgstr ""
+
+msgid "Instance saved"
+msgstr ""
+
+#, tao-public
+msgid "Properties"
+msgstr ""
+
+msgid "Publish to a delivery environment"
+msgstr ""
+
+msgid "Publishing %s to remote env %s"
+msgstr ""
+
+msgid "Publishing auth configuration can not be loaded"
+msgstr ""
+
+msgid "Recheck is failed"
+msgstr ""
+
+#, tao-public
+msgid "Remote environments"
+msgstr ""
+
+msgid "Remote status synchronisation for %s from %s"
+msgstr ""
+
+#, tao-public
+msgid "Settings"
+msgstr ""
+
+msgid "Status from remote successfully received."
+msgstr ""
+
+msgid "Tao Environments"
+msgstr ""
+
+msgid "Test has been compiled as %s"
+msgstr ""
+
+msgid "Unable to deploy $1%s, server response: $2%s"
+msgstr ""
+
+msgid "Undefined Instance can not be saved"
+msgstr ""
+
+msgid "Updating %s to remote env %s"
 msgstr ""
 
