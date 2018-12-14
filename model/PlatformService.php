@@ -34,7 +34,8 @@ class PlatformService extends \tao_models_classes_ClassService
     const CLASS_URI = 'http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatform';
     const PROPERTY_AUTH_TYPE = 'http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatformAuthType';
     const PROPERTY_ROOT_URL = 'http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatformUrl';
-    
+    const PROPERTY_SENDING_BOX_ID = 'http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatformSendingBoxId';
+
     /**
      * return the group top level class
      *
