@@ -108,9 +108,7 @@ class PublishingService extends ConfigurableService
             throw new \common_exception_NotFound('No environment found for action "' . $action . '".');
         }
 
-        /** @var \core_kernel_classes_Resource $environment */
-        $environment = $environmentsFound[0];
-        return $environment;
+        return $environmentsFound[0];
     }
 
     /**
@@ -162,7 +160,7 @@ class PublishingService extends ConfigurableService
      * Get environment box ID by action.
      *
      * @param $action
-     * @return \core_kernel_classes_Container
+     * @return string
      * @throws \common_Exception
      * @throws \common_exception_NotFound
      * @throws \core_kernel_classes_EmptyProperty
@@ -171,7 +169,7 @@ class PublishingService extends ConfigurableService
     {
         $environment = $this->findOneEnvironmentByAction($action);
 
-        return $this->getEnvironmentBoxId($environment);
+        return $this->getEnvironmentBoxId($environment)->literal;
     }
 
     /**
