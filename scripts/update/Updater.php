@@ -246,5 +246,7 @@ class Updater extends common_ext_ExtensionUpdater
             OntologyUpdater::syncModels();
             $this->setVersion('1.2.0');
         }
+
+        $this->skip('1.2.0', '1.3.0');
     }
 }
