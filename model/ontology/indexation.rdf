@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+	xml:base="http://www.tao.lu/Ontologies/TAODelivery.rdf#"
+	xmlns:tao="http://www.tao.lu/Ontologies/TAO.rdf#"
+>
+
+  <!-- Item content index -->
+  <rdf:Description rdf:about="http://www.tao.lu/Ontologies/TAODelivery.rdf#OriginDeliveyIdIndex">
+  	<rdf:type rdf:resource="http://www.tao.lu/Ontologies/TAO.rdf#Index"/>
+  	<rdfs:label xml:lang="en-US"><![CDATA[Delivery Origin ID Index]]></rdfs:label>
+  	<tao:IndexIdentifier><![CDATA[origin_id]]></tao:IndexIdentifier>
+  	<tao:IndexTokenizer rdf:resource="http://www.tao.lu/Ontologies/TAO.rdf#RawValueTokenizer"/>
+  	<tao:IndexFuzzyMatching rdf:resource="http://www.tao.lu/Ontologies/generis.rdf#False" />
+  	<tao:IndexDefaultSearch rdf:resource="http://www.tao.lu/Ontologies/generis.rdf#True" />
+  </rdf:Description>
+  
+  <rdf:Description rdf:about="http://www.tao.lu/Ontologies/TAOPublisher.rdf#OriginDeliveryID">
+  	<tao:PropertyIndex rdf:resource="http://www.tao.lu/Ontologies/TAODelivery.rdf#OriginDeliveyIdIndex"/>
+  </rdf:Description>
+  
+</rdf:RDF>
