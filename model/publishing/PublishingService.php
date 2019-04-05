@@ -84,14 +84,14 @@ class PublishingService extends ConfigurableService
      * @throws \common_exception_NotFound
      * @throws \core_kernel_classes_EmptyProperty
      */
-    public function callEnvironment($action, RequestInterface $request)
+    public function callEnvironment($action, RequestInterface $request, array $clientOprions = [])
     {
         $environment = $this->findOneEnvironmentByAction($action);
         $boxId = $this->getEnvironmentBoxId($environment);
 
         $request = $request->withHeader('x-tao-box-id', $boxId->literal);
 
-        return PlatformService::singleton()->callApi($environment->getUri(), $request);
+        return PlatformService::singleton()->callApi($environment->getUri(), $request, $clientOprions);
     }
 
     /**
