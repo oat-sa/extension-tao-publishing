@@ -51,6 +51,7 @@ class PlatformService extends \tao_models_classes_ClassService
     /**
      * @param $platformId
      * @param RequestInterface $request
+     * @param array $clientOptions Http client options
      * @return mixed|ResponseInterface
      * @throws \common_Exception
      * @throws \core_kernel_classes_EmptyProperty
