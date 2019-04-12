@@ -51,11 +51,12 @@ class PlatformService extends \tao_models_classes_ClassService
     /**
      * @param $platformId
      * @param RequestInterface $request
+     * @param array $clientOptions Http client options
      * @return mixed|ResponseInterface
      * @throws \common_Exception
      * @throws \core_kernel_classes_EmptyProperty
      */
-    public function callApi($platformId, RequestInterface $request)
+    public function callApi($platformId, RequestInterface $request, array $clientOptions = [])
     {
         $platform = $this->getResource($platformId);
         $rootUrl = $platform->getUniquePropertyValue($this->getProperty(self::PROPERTY_ROOT_URL));
@@ -73,6 +74,6 @@ class PlatformService extends \tao_models_classes_ClassService
         $absUrl = $rootUrl.ltrim($relUrl,'/');
         $request = $request->withUri(new Uri($absUrl));
 
-        return $authenticator->call($request);
+        return $authenticator->call($request, $clientOptions);
     }
 }
