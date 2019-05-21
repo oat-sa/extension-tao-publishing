@@ -84,6 +84,7 @@ class PlatformAdmin extends \tao_actions_SaSModule
                 foreach ($authType->getAuthProperties() as $authProperty) {
                     $values[$authProperty->getUri()] = $this->getRequest()->getParameter(\tao_helpers_Uri::encode($authProperty->getUri()));
                 }
+                $values = $authType->prepareAuthRequestValues($values);
 
                 $message = __('Undefined Instance can not be saved');
                 if (!$instance) {
