@@ -48,8 +48,10 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
     use ChildTaskAwareTrait;
 
     /**
-     * 
-     * @param array $params
+     * @param array  $params
+     * @return \common_report_Report
+     * @throws \common_exception_Error
+     * @throws \common_exception_MissingParameter
      */
     public function __invoke($params) {
 
