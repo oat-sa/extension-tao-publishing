@@ -60,7 +60,7 @@ class PlatformService extends \tao_models_classes_ClassService
     {
         $platform = $this->getResource($platformId);
         $rootUrl = $platform->getUniquePropertyValue($this->getProperty(self::PROPERTY_ROOT_URL));
-        $rootUrl = rtrim($rootUrl,"/").'/';
+        $rootUrl = rtrim(trim($rootUrl), '/') . '/';
 
         /** @var PublishingAuthService $publishingAuthService */
         $publishingAuthService = $this->getServiceLocator()->get(PublishingAuthService::SERVICE_ID);
@@ -71,7 +71,7 @@ class PlatformService extends \tao_models_classes_ClassService
         $authenticator->setInstance($platform);
 
         $relUrl = $request->getUri()->__toString();
-        $absUrl = $rootUrl.ltrim($relUrl,'/');
+        $absUrl = $rootUrl . ltrim($relUrl, '/');
         $request = $request->withUri(new Uri($absUrl));
 
         return $authenticator->call($request, $clientOptions);
