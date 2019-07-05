@@ -48,8 +48,10 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
     use ChildTaskAwareTrait;
 
     /**
-     * 
-     * @param array $params
+     * @param array  $params
+     * @return \common_report_Report
+     * @throws \common_exception_Error
+     * @throws \common_exception_MissingParameter
      */
     public function __invoke($params) {
 
@@ -84,6 +86,9 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
                 'instances' => $test->getUri(),
             ], \tao_helpers_File::createTempDir());
             $packagePath = $exportReport->getData();
+            if(is_array($packagePath) && isset($packagePath['path'])){
+                $packagePath = $packagePath['path'];
+            }
             $streamData = [[
                 'name'     => RestTest::REST_FILE_NAME,
                 'contents' => fopen($packagePath, 'rb'),
