@@ -24,6 +24,11 @@ use oat\taoPublishing\model\publishing\PublishingAuthService;
 use oat\tao\model\auth\AbstractAuthService;
 use oat\tao\model\session\restSessionFactory\RestSessionFactory;
 
+/**
+ * Class RegisterPublishingAuthTypeAction
+ * @package oat\taoPublishing\scripts\tools
+ * @usage sudo -u www-data php index.php 'oat\taoPublishing\scripts\tools\RegisterPublishingAuthTypeAction' -h
+ */
 class RegisterPublishingAuthTypeAction extends ScriptAction
 {
     /**
@@ -42,15 +47,15 @@ class RegisterPublishingAuthTypeAction extends ScriptAction
             'auth' => [
                 'prefix' => 'a',
                 'longPrefix' => 'authType',
-                'flag' => true,
-                'description' => 'Auth type',
+                'flag' => false,
+                'description' => 'Class name of Auth type',
                 'required' => true
             ],
             'builder' => [
                 'prefix' => 'b',
                 'longPrefix' => 'authBuilder',
-                'flag' => true,
-                'description' => 'Auth builder',
+                'flag' => false,
+                'description' => 'Class name of Auth builder',
                 'required' => true
             ]
         ];
@@ -73,8 +78,14 @@ class RegisterPublishingAuthTypeAction extends ScriptAction
     public function run()
     {
         $isWetRun = $this->getOption('wetRun') !== null ?: false;
-        $authType = $this->getOption('auth');
-        $authBuilder = $this->getOption('builder');
+        $authType = ltrim($this->getOption('auth'), '\\');
+        $authBuilder = ltrim($this->getOption('builder'), '\\');
+
+        try {
+            $authType = new $authType;
+        }catch (\Exception $e) {
+            return \common_report_Report::createFailure($e->getMessage());
+        }
 
         /** @var PublishingAuthService $service */
         $service = $this->getServiceLocator()->get(PublishingAuthService::SERVICE_ID);
