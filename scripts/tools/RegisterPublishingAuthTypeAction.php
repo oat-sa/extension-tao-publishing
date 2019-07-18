@@ -77,7 +77,7 @@ class RegisterPublishingAuthTypeAction extends ScriptAction
 
     public function run()
     {
-        $isWetRun = $this->getOption('wetRun') !== null ?: false;
+        $isWetRun = $this->getOption('wetRun') !== null;
         $authType = ltrim($this->getOption('auth'), '\\');
         $authBuilder = ltrim($this->getOption('builder'), '\\');
 
