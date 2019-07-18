@@ -83,7 +83,7 @@ class RegisterPublishingAuthTypeAction extends ScriptAction
 
         try {
             $authType = new $authType;
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             return \common_report_Report::createFailure($e->getMessage());
         }
 
