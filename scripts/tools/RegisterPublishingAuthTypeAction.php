@@ -118,7 +118,7 @@ class RegisterPublishingAuthTypeAction extends ScriptAction
 
         }
 
-        return \common_report_Report::createSuccess($authType . ' successfully added.');
+        return \common_report_Report::createSuccess(get_class($authType) . ' successfully added.');
     }
 
 }
