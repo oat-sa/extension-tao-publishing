@@ -98,8 +98,7 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
             ], [
                 'name'     => RestTest::REST_DELIVERY_PARAMS,
                 'contents' => json_encode([
-                    PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD => $delivery->getUri(),
-                    OntologyRdfs::RDFS_LABEL => $delivery->getLabel()
+                    PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD => $delivery->getUri()
                 ])
             ]];
 
