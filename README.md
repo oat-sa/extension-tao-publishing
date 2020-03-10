@@ -43,7 +43,7 @@ As a system administrator you can also install it through the TAO Extension Mana
 - Settings (the gears on the right hand side of the menu) -> Extension manager
 - Select _taoPublishing_ on the right hand side, check the box and hit _install_
 
-##Set up deliveries on TAO Platform
+## Set up deliveries on TAO Platform
 
 To be able to synchronize, you need to set up the platforms that you want to sync. You can do it by:
  - Clicking on Settings Icon (top corner right side) -> Remote environments -> Add Platform.
