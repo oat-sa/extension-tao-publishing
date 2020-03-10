@@ -43,6 +43,15 @@ As a system administrator you can also install it through the TAO Extension Mana
 - Settings (the gears on the right hand side of the menu) -> Extension manager
 - Select _taoPublishing_ on the right hand side, check the box and hit _install_
 
+##Set up deliveries on TAO Platform
+
+To be able to synchronize, you need to set up the platforms that you want to sync. You can do it by:
+ - Clicking on Settings Icon (top corner right side) -> Remote environments -> Add Platform.
+ - Label: Fill the label with a good name of your choice.
+ - Root URL should be the protocol + hostname of the other TAO platform (Ex: https://demo.taotesting.com/).
+ - Auth type: In case of Basic Auth, just use a username and password of a real user in the system that you want to synchronize. Please make sure that user has proper permissions.
+
+
 ## Extension Wiki
 <!-- remove this also, when the wiki is empty -->
 You can find the [extension wiki here](https://github.com/oat-sa/extension-tao-publishing/wiki).
