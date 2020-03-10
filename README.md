@@ -6,7 +6,7 @@
 ![GitHub release](https://img.shields.io/github/release/oat-sa/extension-tao-publishing.svg)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/y/oat-sa/extension-tao-publishing.svg)
 
-> Pushes a test to a delivery environment
+> Synchronize deliveries, tests and interactions to other tao platforms during the delivery creation.
 
 
 ## Installation instructions
