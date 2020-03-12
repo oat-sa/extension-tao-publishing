@@ -89,6 +89,7 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
             if(is_array($packagePath) && isset($packagePath['path'])){
                 $packagePath = $packagePath['path'];
             }
+
             $streamData = [[
                 'name'     => RestTest::REST_FILE_NAME,
                 'contents' => fopen($packagePath, 'rb'),
@@ -97,9 +98,12 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
                 'contents' => 'taoQtiTest',
             ], [
                 'name'     => RestTest::REST_DELIVERY_PARAMS,
-                'contents' => json_encode([
-                    PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD => $delivery->getUri()
-                ])
+                'contents' => json_encode(
+                    [
+                        PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD => $delivery->getUri(),
+                        OntologyRdfs::RDFS_LABEL => $delivery->getLabel(),
+                    ]
+                )
             ]];
 
             $deliveryClass = current($delivery->getTypes());
@@ -109,6 +113,7 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
                     'contents' => $deliveryClass->getLabel()
                 ];
             }
+
             $body = new MultipartStream($streamData);
 
             $request = new Request('POST', '/taoDeliveryRdf/RestTest/compileDeferred');
