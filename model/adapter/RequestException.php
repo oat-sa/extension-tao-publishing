@@ -50,6 +50,6 @@ class RequestException extends RuntimeException implements RequestExceptionInter
      */
     public function getRequest(): RequestInterface
     {
-        $this->request;
+        return $this->request;
     }
 }
