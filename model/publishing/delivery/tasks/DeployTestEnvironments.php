@@ -29,6 +29,11 @@ use oat\tao\model\taskQueue\Task\TaskAwareInterface;
 use oat\tao\model\taskQueue\Task\TaskAwareTrait;
 use oat\taoDeliveryRdf\controller\RestTest;
 use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
+use oat\taoPublishing\model\adapter\DeliveryRdfClientAdapter;
+use oat\taoPublishing\model\deliveryRdfClient\DeliveryRdfFacade;
+use oat\taoPublishing\model\deliveryRdfClient\entity\Delivery;
+use oat\taoPublishing\model\deliveryRdfClient\entity\TestPackage;
+use oat\taoPublishing\model\deliveryRdfClient\resource\restTest\CompileDeferredFailureException;
 use oat\taoPublishing\model\PlatformService;
 use oat\taoPublishing\model\publishing\delivery\PublishingDeliveryService;
 use Zend\ServiceManager\ServiceLocatorAwareTrait;
@@ -80,6 +85,7 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
     protected function compileTest(\core_kernel_classes_Resource $env, \core_kernel_classes_Resource $test, \core_kernel_classes_Resource $delivery) {
         try {
             \common_Logger::d('Exporting Test '.$test->getUri().' for deployment');
+
             $exporter = new \taoQtiTest_models_classes_export_TestExport();
             $exportReport = $exporter->export([
                 'filename' => \League\Flysystem\Util::normalizePath($test->getLabel()),
@@ -90,61 +96,52 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
                 $packagePath = $packagePath['path'];
             }
 
-            $streamData = [[
-                'name'     => RestTest::REST_FILE_NAME,
-                'contents' => fopen($packagePath, 'rb'),
-            ], [
-                'name'     => RestTest::REST_IMPORTER_ID,
-                'contents' => 'taoQtiTest',
-            ], [
-                'name'     => RestTest::REST_DELIVERY_PARAMS,
-                'contents' => json_encode(
-                    [
-                        PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD => $delivery->getUri(),
-                        OntologyRdfs::RDFS_LABEL => $delivery->getLabel(),
-                    ]
-                )
-            ]];
+            \common_Logger::d('Requesting compilation of Test '.$test);
+
+            $deliveryClient = new Delivery($delivery->getLabel(), $delivery->getUri(), null);
 
             $deliveryClass = current($delivery->getTypes());
             if ($deliveryClass->getUri() != DeliveryAssemblyService::CLASS_URI) {
-                $streamData[] = [
-                    'name'     => RestTest::REST_DELIVERY_CLASS_LABEL,
-                    'contents' => $deliveryClass->getLabel()
-                ];
+                $deliveryClient->setDeliveryClassLabel($deliveryClass->getLabel());
             }
 
-            $body = new MultipartStream($streamData);
+            $deliveryRdfFacade = new DeliveryRdfFacade(
+                new DeliveryRdfClientAdapter(PlatformService::singleton(), $env->getUri())
+            );
 
-            $request = new Request('POST', '/taoDeliveryRdf/RestTest/compileDeferred');
-            $request = $request->withBody($body);
-
-            \common_Logger::d('Requesting compilation of Test '.$test);
-
-            $response = PlatformService::singleton()->callApi($env->getUri(), $request);
-            if ($response->getStatusCode() == 200) {
-                $content = json_decode($response->getBody()->getContents(), true);
-                if (isset($content['success']) && $content['success']) {
-                    $data = $content['data'];
-                    $taskId = $data['reference_id'];
-
-                    /** @var QueueDispatcherInterface $queueDispatcher reference_id*/
-                    $queueDispatcher = $this->getServiceLocator()->get(QueueDispatcherInterface::SERVICE_ID);
-
-                    $queueDispatcher->createTask(
-                        new RemoteTaskStatusSynchroniser(),
-                        [$taskId, $env->getUri()],
-                        __('Remote status synchronisation for %s from %s', $delivery->getLabel(), $env->getLabel()),
-                        $this->getTask()
-                    );
-                    $this->addChildId($taskId);
-                }
-                $report = new \common_report_Report(\common_report_Report::TYPE_SUCCESS, __('Test has been compiled as %s', $delivery->getUri()));
-                $report->setData($delivery->getUri());
-                return $report;
-            } else {
-                return new \common_report_Report(\common_report_Report::TYPE_ERROR, __('Failed to compile %s with message: %s', $test, $response->getBody()->getContents()));
+            try {
+                $compileDeferredResult = $deliveryRdfFacade->getRestTestResource()->compileDeferred(
+                    new TestPackage($packagePath),
+                    $deliveryClient,
+                    'taoQtiTest'
+                );
+            } catch (CompileDeferredFailureException $e) {
+                return new \common_report_Report(
+                    \common_report_Report::TYPE_ERROR,
+                    __(
+                        'Failed to compile %s with message: %s',
+                        $test,
+                        $e->getMessage()
+                    )
+                );
             }
+
+            $taskId = $compileDeferredResult->getReferenceId();
+
+            /** @var QueueDispatcherInterface $queueDispatcher reference_id*/
+            $queueDispatcher = $this->getServiceLocator()->get(QueueDispatcherInterface::SERVICE_ID);
+
+            $queueDispatcher->createTask(
+                new RemoteTaskStatusSynchroniser(),
+                [$taskId, $env->getUri()],
+                __('Remote status synchronisation for %s from %s', $delivery->getLabel(), $env->getLabel()),
+                $this->getTask()
+            );
+            $this->addChildId($taskId);
+
+            $report = new \common_report_Report(\common_report_Report::TYPE_SUCCESS, __('Test has been compiled as %s', $delivery->getUri()));
+            $report->setData($delivery->getUri());
+            return $report;
         } catch (\Exception $e) {
             return new \common_report_Report(\common_report_Report::TYPE_ERROR, __('Failed to compile %s with message: %s', $test, $e->getMessage()));
         }

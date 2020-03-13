@@ -1,0 +1,61 @@
+<?php declare(strict_types=1);
+/**
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; under version 2
+ * of the License (non-upgradable).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *
+ * Copyright (c) 2017 (original work) Open Assessment Technologies SA;
+ *
+ *
+ */
+
+namespace oat\taoPublishing\model\deliveryRdfClient;
+
+use oat\taoPublishing\model\deliveryRdfClient\factory\CompileDeferredRequestFactory;
+use oat\taoPublishing\model\deliveryRdfClient\factory\CompileDeferredResultFactory;
+use oat\taoPublishing\model\deliveryRdfClient\resource\RestTest;
+use oat\taoPublishing\model\deliveryRdfClient\resource\restTest\CompileDeferredAction;
+use Psr\Http\Client\ClientInterface;
+
+class DeliveryRdfFacade
+{
+    /**
+     * @var ClientInterface
+     */
+    private $client;
+
+    /**
+     * @var RestTest
+     */
+    private $restTestResource;
+
+    public function __construct(ClientInterface $client)
+    {
+        $this->client = $client;
+    }
+
+    public function getRestTestResource(): RestTest
+    {
+        if (null === $this->restTestResource) {
+            $this->restTestResource = new RestTest(
+                new CompileDeferredAction(
+                    $this->client,
+                    new CompileDeferredRequestFactory(),
+                    new CompileDeferredResultFactory()
+                )
+            );
+        }
+
+        return $this->restTestResource;
+    }
+}

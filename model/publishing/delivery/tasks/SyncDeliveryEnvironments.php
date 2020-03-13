@@ -48,7 +48,7 @@ class SyncDeliveryEnvironments implements Action,ServiceLocatorAwareInterface
         $delivery = $this->getResource(array_shift($params));
         $envId = array_shift($params);
         $env = $this->getResource($envId);
-        
+
         \common_Logger::i('Deploying '.$delivery->getLabel().' to '.$env->getLabel());
         $report = new \common_report_Report(\common_report_Report::TYPE_SUCCESS, __('Deployed %s to %s', $delivery->getLabel(), $env->getLabel()));
         $subReport = $this->updateDelivery($env, $delivery);
@@ -73,10 +73,23 @@ class SyncDeliveryEnvironments implements Action,ServiceLocatorAwareInterface
                 $OriginDeliveryField => $deliveryUri
             ]);
 
+
+            \common_Logger::d('POST /taoDeliveryRdf/RestDelivery/updateDeferred?'.http_build_query(['searchParams' => $searchParams]));
+            \common_Logger::d(
+                http_build_query(
+                    $this->getPropertiesForUpdating($env, $delivery)
+                )
+            );
+
+
             $request = new Request('POST', '/taoDeliveryRdf/RestDelivery/updateDeferred?'.http_build_query(['searchParams' => $searchParams]));
             $request = $request->withBody(
-                \GuzzleHttp\Psr7\stream_for(http_build_query($this->getPropertiesForUpdating($env, $delivery)
-                )));
+                \GuzzleHttp\Psr7\stream_for(
+                    http_build_query(
+                        $this->getPropertiesForUpdating($env, $delivery)
+                    )
+                )
+            );
             $request = $request->withHeader('Content-Type', 'application/x-www-form-urlencoded');
 
             \common_Logger::d('Requesting updating of Delivery '.$delivery->getUri());
