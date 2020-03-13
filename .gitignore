@@ -1,2 +1,5 @@
 vendor
 phpunit.xml.dist
+generis
+tao
+.phpunit.result.cache
