@@ -21,15 +21,12 @@
 
 namespace oat\taoPublishing\model\deliveryRdfClient\resource\restTest;
 
-use GuzzleHttp\Exception\RequestException;
 use oat\taoPublishing\model\deliveryRdfClient\entity\CompileDeferredResult;
 use oat\taoPublishing\model\deliveryRdfClient\entity\Delivery;
 use oat\taoPublishing\model\deliveryRdfClient\entity\TestPackage;
 use oat\taoPublishing\model\deliveryRdfClient\factory\CompileDeferredRequestFactory;
 use oat\taoPublishing\model\deliveryRdfClient\factory\CompileDeferredResultFactory;
-use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
-use Psr\Http\Client\RequestExceptionInterface;
 use Throwable;
 
 class CompileDeferredAction
