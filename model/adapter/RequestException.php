@@ -14,7 +14,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2017 (original work) Open Assessment Technologies SA;
+ * Copyright (c) 2020 (original work) Open Assessment Technologies SA;
  *
  *
  */
@@ -36,8 +36,8 @@ class RequestException extends RuntimeException implements RequestExceptionInter
 
     public function __construct(
         RequestInterface $request,
-        string $message = "",
-        int $code = 0,
+        $message = "",
+        $code = 0,
         Throwable $previous = null
     ) {
         parent::__construct($message, $code, $previous);
