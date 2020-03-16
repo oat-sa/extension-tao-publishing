@@ -33,7 +33,7 @@
         }
     },
     "autoload-dev": {
-        "psr-4": { "oat\\taoPublishing\\tests\\integration\\": "tests/integration/" }
+        "psr-4": { "oat\\taoPublishing\\tests\\": "tests/" }
     },
     "require-dev": {
         "phpunit/phpunit": "^8"
