@@ -36,8 +36,8 @@ class RequestException extends RuntimeException implements RequestExceptionInter
 
     public function __construct(
         RequestInterface $request,
-        $message = "",
-        $code = 0,
+        string $message = "",
+        int $code = 0,
         Throwable $previous = null
     ) {
         parent::__construct($message, $code, $previous);
