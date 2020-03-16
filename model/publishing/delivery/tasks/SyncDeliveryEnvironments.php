@@ -73,23 +73,10 @@ class SyncDeliveryEnvironments implements Action,ServiceLocatorAwareInterface
                 $OriginDeliveryField => $deliveryUri
             ]);
 
-
-            \common_Logger::d('POST /taoDeliveryRdf/RestDelivery/updateDeferred?'.http_build_query(['searchParams' => $searchParams]));
-            \common_Logger::d(
-                http_build_query(
-                    $this->getPropertiesForUpdating($env, $delivery)
-                )
-            );
-
-
             $request = new Request('POST', '/taoDeliveryRdf/RestDelivery/updateDeferred?'.http_build_query(['searchParams' => $searchParams]));
             $request = $request->withBody(
-                \GuzzleHttp\Psr7\stream_for(
-                    http_build_query(
-                        $this->getPropertiesForUpdating($env, $delivery)
-                    )
-                )
-            );
+                \GuzzleHttp\Psr7\stream_for(http_build_query($this->getPropertiesForUpdating($env, $delivery)
+                )));
             $request = $request->withHeader('Content-Type', 'application/x-www-form-urlencoded');
 
             \common_Logger::d('Requesting updating of Delivery '.$delivery->getUri());
