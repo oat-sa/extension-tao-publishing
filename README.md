@@ -48,6 +48,12 @@ As a system administrator you can also install it through the TAO Extension Mana
 To be able to synchronize, you need to set up the platforms that you want to sync. You can do it by:
  - Clicking on Settings Icon (top corner right side) -> Remote environments -> Add Platform.
  - Label: Fill the label with a good name of your choice.
+ - Publish Actions: Currently, the Delivery can be synchronized During two events, When creating a delivery (
+  DeliveryCreatedEvent) or when updating a delivery (DeliveryUpdatedEvent). You can disable one of the events by removing
+  them from config/default/PublishingService.conf.php. Be aware that by disabling the DeliveryCreatedEvent you will 
+  not be able to use the  DeliveryUpdatedEvent because the DeliveryCreatedEvent is the only event who sends the test
+  to the TAO Platform. But it's possible to disable DeliveryUpdatedEvent with no issues. If you're using
+  "extension-tao-task-queue", please don't forget to restart the Queue Consumer after disabling an event.
  - Root URL should be the protocol + hostname of the other TAO platform (Ex: https://demo.taotesting.com/).
  - Auth type: In case of Basic Auth, just use a username and password of a real user in the system that you want to synchronize. Please make sure that user has proper permissions.
 
