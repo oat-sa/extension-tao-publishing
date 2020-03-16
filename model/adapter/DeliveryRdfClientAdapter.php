@@ -52,8 +52,6 @@ class DeliveryRdfClientAdapter implements ClientInterface
     {
         try {
             return $this->platformService->callApi($this->platformUri, $request);
-        } catch (\core_kernel_classes_EmptyProperty $e) {
-            throw new RequestException($request, $e->getMessage(), $e->getCode(), $e);
         } catch (\common_Exception $e) {
             throw new RequestException($request, $e->getMessage(), $e->getCode(), $e);
         }
