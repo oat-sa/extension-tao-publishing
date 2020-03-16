@@ -33,7 +33,7 @@ use oat\taoPublishing\model\adapter\DeliveryRdfClientAdapter;
 use oat\taoPublishing\model\deliveryRdfClient\DeliveryRdfFacade;
 use oat\taoPublishing\model\deliveryRdfClient\entity\Delivery;
 use oat\taoPublishing\model\deliveryRdfClient\entity\TestPackage;
-use oat\taoPublishing\model\deliveryRdfClient\resource\restTest\CompileDeferredFailureException;
+use oat\taoPublishing\model\deliveryRdfClient\resource\restTest\exception\CompileDeferredFailureException;
 use oat\taoPublishing\model\PlatformService;
 use oat\taoPublishing\model\publishing\delivery\PublishingDeliveryService;
 use Zend\ServiceManager\ServiceLocatorAwareTrait;

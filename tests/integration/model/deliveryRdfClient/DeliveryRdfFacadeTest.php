@@ -2,13 +2,13 @@
 
 namespace oat\taoPublishing\test\integration\model\deliveryRdfClient;
 
-use oat\taoPublishing\model\adapter\RequestException;
+use oat\taoPublishing\model\adapter\exception\RequestException;
 use oat\taoPublishing\model\deliveryRdfClient\DeliveryRdfFacade;
 use oat\taoPublishing\model\deliveryRdfClient\entity\CompileDeferredResult;
 use oat\taoPublishing\model\deliveryRdfClient\entity\Delivery;
 use oat\taoPublishing\model\deliveryRdfClient\entity\TestPackage;
 use oat\taoPublishing\model\deliveryRdfClient\resource\RestTest;
-use oat\taoPublishing\model\deliveryRdfClient\resource\restTest\CompileDeferredFailureException;
+use oat\taoPublishing\model\deliveryRdfClient\resource\restTest\exception\CompileDeferredFailureException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Client\ClientInterface;

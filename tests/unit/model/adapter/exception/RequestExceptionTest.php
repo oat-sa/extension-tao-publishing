@@ -1,7 +1,8 @@
 <?php
 
-namespace oat\taoPublishing\model\adapter;
+namespace oat\taoPublishing\test\unit\model\adapter\exception;
 
+use oat\taoPublishing\model\adapter\exception\RequestException;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
 

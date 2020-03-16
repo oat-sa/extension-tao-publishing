@@ -1,7 +1,9 @@
 <?php
 
-namespace oat\taoPublishing\model\adapter;
+namespace oat\taoPublishing\test\unit\model\adapter;
 
+use oat\taoPublishing\model\adapter\DeliveryRdfClientAdapter;
+use oat\taoPublishing\model\adapter\exception\RequestException;
 use oat\taoPublishing\model\PlatformService;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;

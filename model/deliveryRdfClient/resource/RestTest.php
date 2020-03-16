@@ -25,7 +25,7 @@ use oat\taoPublishing\model\deliveryRdfClient\entity\CompileDeferredResult;
 use oat\taoPublishing\model\deliveryRdfClient\entity\Delivery;
 use oat\taoPublishing\model\deliveryRdfClient\entity\TestPackage;
 use oat\taoPublishing\model\deliveryRdfClient\resource\restTest\CompileDeferredAction;
-use oat\taoPublishing\model\deliveryRdfClient\resource\restTest\CompileDeferredFailureException;
+use oat\taoPublishing\model\deliveryRdfClient\resource\restTest\exception\CompileDeferredFailureException;
 
 class RestTest
 {

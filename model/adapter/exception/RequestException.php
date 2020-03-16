@@ -19,7 +19,7 @@
  *
  */
 
-namespace oat\taoPublishing\model\adapter;
+namespace oat\taoPublishing\model\adapter\exception;
 
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Client\RequestExceptionInterface;

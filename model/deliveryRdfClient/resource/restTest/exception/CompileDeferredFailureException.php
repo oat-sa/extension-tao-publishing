@@ -19,7 +19,7 @@
  *
  */
 
-namespace oat\taoPublishing\model\deliveryRdfClient\resource\restTest;
+namespace oat\taoPublishing\model\deliveryRdfClient\resource\restTest\exception;
 
 use RuntimeException;
 

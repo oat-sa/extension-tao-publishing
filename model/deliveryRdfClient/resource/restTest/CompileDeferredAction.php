@@ -26,6 +26,7 @@ use oat\taoPublishing\model\deliveryRdfClient\entity\Delivery;
 use oat\taoPublishing\model\deliveryRdfClient\entity\TestPackage;
 use oat\taoPublishing\model\deliveryRdfClient\factory\CompileDeferredRequestFactory;
 use oat\taoPublishing\model\deliveryRdfClient\factory\CompileDeferredResultFactory;
+use oat\taoPublishing\model\deliveryRdfClient\resource\restTest\exception\CompileDeferredFailureException;
 use Psr\Http\Client\ClientInterface;
 use Throwable;
 

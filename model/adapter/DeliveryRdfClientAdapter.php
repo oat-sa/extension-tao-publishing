@@ -21,6 +21,7 @@
 
 namespace oat\taoPublishing\model\adapter;
 
+use oat\taoPublishing\model\adapter\exception\RequestException;
 use oat\taoPublishing\model\PlatformService;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
