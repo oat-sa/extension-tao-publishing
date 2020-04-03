@@ -55,26 +55,6 @@ class PublishingService extends ConfigurableService
     }
 
     /**
-     * @return array
-     */
-    public function getPublishingActions()
-    {
-        $actions = $this->getOption(self::OPTIONS_ACTIONS);
-        $options = [];
-        foreach ($actions as $action) {
-            $options[] = [
-                'data' => (new \ReflectionClass($action))->getShortName(),
-                'parent' => 0,
-                'attributes' => [
-                    'id' => $action,
-                    'class' => 'node-instance'
-                ]
-            ];
-        }
-        return $options;
-    }
-
-    /**
      * Send a $request to environment associated to the given $action
      *
      * @param $action
