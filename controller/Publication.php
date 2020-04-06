@@ -9,23 +9,6 @@ use oat\taoPublishing\model\publishing\delivery\PublishingDeliveryService;
 class Publication extends \tao_actions_SaSModule
 {
     /**
-     * @var PublishingDeliveryService
-     */
-    private $publishDeliveryService;
-
-    /**
-     * @var PublishDeliveryRequestValidator
-     */
-    private $requestValidator;
-
-    public function __construct()
-    {
-        parent::__construct();
-        $this->publishDeliveryService = $this->getServiceLocator()->get(PublishingDeliveryService::SERVICE_ID);
-        $this->requestValidator = $this->getServiceLocator()->get(PublishDeliveryRequestValidator::SERVICE_ID);
-    }
-
-    /**
      * @throws \common_exception_Error
      * @throws \common_exception_NotFound
      * @throws \core_kernel_persistence_Exception
@@ -37,13 +20,13 @@ class Publication extends \tao_actions_SaSModule
         \common_report_Report::createSuccess();
 
         try {
-            $this->requestValidator->validate($request);
+            $this->getPublishDeliveryRequestValidator()->validate($request);
         } catch (InvalidRequestException $exception) {
             $message = __($exception->getMessage());
             $this->displayFeedBackMessage($message);
         }
 
-        $this->publishDeliveryService->publishDelivery(
+        $this->getPublishingDeliveryService()->publishDelivery(
             new \core_kernel_classes_Resource($request->getParsedBody()['uri'])
         );
 
@@ -59,4 +42,13 @@ class Publication extends \tao_actions_SaSModule
         $this->setData('reload', true);
     }
 
+    private function getPublishDeliveryRequestValidator(): PublishDeliveryRequestValidator {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->getServiceLocator()->get(PublishDeliveryRequestValidator::SERVICE_ID);
+    }
+
+    private function getPublishingDeliveryService(): PublishingDeliveryService {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return  $this->getServiceLocator()->get(PublishingDeliveryService::SERVICE_ID);
+    }
 }
