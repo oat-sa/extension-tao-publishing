@@ -248,5 +248,9 @@ class Updater extends common_ext_ExtensionUpdater
         }
 
         $this->skip('1.2.0', '2.1.2');
+
+        if ($this->isVersion('2.1.2')) {
+            $this->setVersion('3.0.0');
+        }
     }
 }
