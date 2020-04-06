@@ -1,7 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE structures SYSTEM "../doc/structures.dtd">
 <structures>
-    <!--<structure id="tests" name="Tests" level="1" group="main">-->
+
+
+	<structure id="delivery" name="Deliveries" level="4" group="main">
+		<description/>
+		<sections>
+			<section id="manage_delivery_assembly" name="Deliveries" url="/taoDeliveryRdf/DeliveryMgmt/index">
+				<actions>
+					<action id="publication-publish-delivery" name="Publish Delivery"
+							url="/taoPublishing/Publication/publishDelivery" group="instance" context="tree" />
+				</actions>
+			</section>
+		</sections>
+	</structure>
+
+
+	<!--<structure id="tests" name="Tests" level="1" group="main">-->
         <!--<sections>-->
             <!--<section id="manage_tests" name="Manage tests" url="/taoTests/Tests/index">-->
                 <!--<actions>-->

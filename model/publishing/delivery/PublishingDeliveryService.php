@@ -70,16 +70,23 @@ class PublishingDeliveryService extends ConfigurableService
         $queueDispatcher = $this->getServiceManager()->get(QueueDispatcherInterface::SERVICE_ID);
         $taskLog = $this->getTaskLogFromDelivery($delivery);
 
-        $report = \common_report_Report::createInfo('Publishing delivery '.$delivery->getUri());
+        $report = \common_report_Report::createInfo('Publishing delivery ' . $delivery->getUri());
         /** @var \core_kernel_classes_Resource $env */
         foreach ($environments as $env) {
-            if ($this->checkActionForEnvironment(DeliveryCreatedEvent::class, $env)) {
-                $callBackTask = new CallbackTask($taskLog->getId(), $taskLog->getOwner());
-                $task = $queueDispatcher->createTask(new DeployTestEnvironments(), [$test->getUri(), $env->getUri(), $delivery->getUri()], __('Publishing %s to remote env %s', $delivery->getLabel(), $env->getLabel()), $callBackTask);
-                $message = DeployTestEnvironments::class . "task created; Task id: " . $task->getId();
-                $report->add(\common_report_Report::createSuccess($message));
-                $this->logNotice($message);
-            }
+            $callBackTask = new CallbackTask($taskLog->getId(), $taskLog->getOwner());
+            $task = $queueDispatcher->createTask(
+                new DeployTestEnvironments(),
+                [$test->getUri(), $env->getUri(), $delivery->getUri()],
+                __(
+                    'Publishing %s to remote env %s',
+                    $delivery->getLabel(),
+                    $env->getLabel()
+                ),
+                $callBackTask
+            );
+            $message = DeployTestEnvironments::class . "task created; Task id: " . $task->getId();
+            $report->add(\common_report_Report::createSuccess($message));
+            $this->logNotice($message);
         }
         return $report;
     }
