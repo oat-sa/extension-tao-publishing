@@ -9,7 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - “Sync to remote environments” checkboxes.
 - "Delivery Event Listeners"
 ### Added
-- Changelog File
+- Changelog Filefeature/TAO-10137/publish-to-remote-delivery-environment
+- New controller/action "listPublicationTargets" which render environments checkbox form
+
 
 ## [2.1.2] - 2019-10-25
 ### Removed

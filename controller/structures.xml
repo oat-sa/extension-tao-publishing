@@ -12,6 +12,17 @@
             <!--</section>-->
         <!--</sections>-->
     <!--</structure>-->
+	<structure id="delivery" name="Deliveries" level="4" group="main">
+		<sections>
+			<section id="manage_delivery_assembly" name="Deliveries" url="/taoDeliveryRdf/DeliveryMgmt/index">
+				<actions>
+					<action id="publish" name="Publish" url="/taoPublishing/Publish/listPublicationTargets" context="resource" group="tree">
+						<icon id="icon-upload"/>
+					</action>
+				</actions>
+			</section>
+		</sections>
+	</structure>
 	<structure id="settings" name="Settings" level="11" group="invisible">
 		<description />
 		<sections>
