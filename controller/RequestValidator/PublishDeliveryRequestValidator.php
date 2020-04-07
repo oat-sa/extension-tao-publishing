@@ -22,7 +22,7 @@ class PublishDeliveryRequestValidator extends ConfigurableService
             throw new InvalidRequestException("Undefined URI");
         }
 
-        if (filter_var($body[self::DELIVERY_URI], FILTER_VALIDATE_URL)) {
+        if (!filter_var($body[self::DELIVERY_URI], FILTER_VALIDATE_URL)) {
             throw new InvalidRequestException("URI Must be a valid URL");
         }
     }
