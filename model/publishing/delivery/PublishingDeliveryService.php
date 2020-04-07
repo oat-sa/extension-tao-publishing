@@ -71,6 +71,13 @@ class PublishingDeliveryService extends ConfigurableService
         $taskLog = $this->getTaskLogFromDelivery($delivery);
 
         $report = \common_report_Report::createInfo('Publishing delivery ' . $delivery->getUri());
+
+        if (empty($environments)) {
+            $report->add(\common_report_Report::createFailure("There is no publication targets to deploy"));
+
+            return $report;
+        }
+
         /** @var \core_kernel_classes_Resource $env */
         foreach ($environments as $env) {
             $callBackTask = new CallbackTask($taskLog->getId(), $taskLog->getOwner());

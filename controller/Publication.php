@@ -17,38 +17,63 @@ class Publication extends \tao_actions_SaSModule
     {
         $request = $this->getPsrRequest();
 
-        \common_report_Report::createSuccess();
-
         try {
             $this->getPublishDeliveryRequestValidator()->validate($request);
         } catch (InvalidRequestException $exception) {
             $message = __($exception->getMessage());
-            $this->displayFeedBackMessage($message);
+            $this->displayFeedBackMessage($message, false);
+
+            return;
         }
 
-        $this->getPublishingDeliveryService()->publishDelivery(
+        $report = $this->getPublishingDeliveryService()->publishDelivery(
             new \core_kernel_classes_Resource($request->getParsedBody()['uri'])
         );
+
+        $errors = $report->getErrors();
+        if (count($errors) > 0) {
+            $this->displayPublicationErrors($errors);
+
+            return;
+        }
 
         $this->displayFeedBackMessage(__('Publication Task was created successfully'));
     }
 
-    /**
-     * @param string $message
-     */
-    public function displayFeedBackMessage(string $message): void
+    private function displayFeedBackMessage(string $message, bool $isSuccess = true): void
     {
-        $this->setData('message', $message);
+        $this->setData($isSuccess ? 'message' : 'errorMessage', $message);
         $this->setData('reload', true);
     }
 
-    private function getPublishDeliveryRequestValidator(): PublishDeliveryRequestValidator {
+    private function displayPublicationErrors(array $errors): void
+    {
+        $joinedMessages = array_reduce(
+            $errors,
+            function (?string $joinedMessages, \common_report_Report $report): string {
+                return $joinedMessages . ', ' . $report->getMessage();
+            }
+        );
+        $this->displayFeedBackMessage(
+            __(
+                sprintf(
+                    "Fail to create the Publication Task: %s",
+                    trim($joinedMessages, ', ')
+                )
+            ),
+            false
+        );
+    }
+
+    private function getPublishDeliveryRequestValidator(): PublishDeliveryRequestValidator
+    {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getServiceLocator()->get(PublishDeliveryRequestValidator::SERVICE_ID);
     }
 
-    private function getPublishingDeliveryService(): PublishingDeliveryService {
+    private function getPublishingDeliveryService(): PublishingDeliveryService
+    {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return  $this->getServiceLocator()->get(PublishingDeliveryService::SERVICE_ID);
+        return $this->getServiceLocator()->get(PublishingDeliveryService::SERVICE_ID);
     }
 }
