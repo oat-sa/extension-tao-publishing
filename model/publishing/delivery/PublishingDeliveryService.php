@@ -20,19 +20,16 @@
 namespace oat\taoPublishing\model\publishing\delivery;
 
 use oat\generis\model\OntologyAwareTrait;
-use oat\oatbox\service\ConfigurableService;
 use oat\oatbox\log\LoggerAwareTrait;
+use oat\oatbox\service\ConfigurableService;
 use oat\tao\model\taskQueue\QueueDispatcherInterface;
 use oat\tao\model\taskQueue\Task\CallbackTask;
 use oat\tao\model\taskQueue\TaskLog\Entity\EntityInterface;
 use oat\tao\model\taskQueue\TaskLogInterface;
 use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
 use oat\taoDeliveryRdf\model\DeliveryFactory;
-use oat\taoDeliveryRdf\model\event\DeliveryCreatedEvent;
-use oat\taoDeliveryRdf\model\event\DeliveryUpdatedEvent;
 use oat\taoPublishing\model\publishing\delivery\tasks\DeployTestEnvironments;
 use oat\taoPublishing\model\publishing\PublishingService;
-use oat\taoPublishing\model\publishing\delivery\tasks\SyncDeliveryEnvironments;
 
 /**
  * Class PublishingDeliveryService
@@ -45,7 +42,6 @@ class PublishingDeliveryService extends ConfigurableService
     use OntologyAwareTrait;
 
     const SERVICE_ID = 'taoPublishing/PublishingDeliveryService';
-    const ORIGIN_DELIVERY_ID_FIELD = 'http://www.tao.lu/Ontologies/TAOPublisher.rdf#OriginDeliveryID';
     const ORIGIN_TEST_ID_FIELD = 'http://www.tao.lu/Ontologies/TAOPublisher.rdf#OriginTestID';
     const DELIVERY_REMOTE_SYNC_FIELD = 'http://www.tao.lu/Ontologies/TAOPublisher.rdf#RemoteSync';
     const DELIVERY_REMOTE_SYNC_COMPILE_ENABLED = 'http://www.tao.lu/Ontologies/TAODelivery.rdf#ComplyEnabled';
@@ -100,54 +96,6 @@ class PublishingDeliveryService extends ConfigurableService
 
     /**
      * @param \core_kernel_classes_Resource $delivery
-     * @return \common_report_Report
-     * @throws \common_exception_Error
-     * @throws \common_exception_NotFound
-     */
-    public function syncDelivery(\core_kernel_classes_Resource $delivery)
-    {
-        $environments = $this->getEnvironments();
-        /** @var QueueDispatcherInterface $queueDispatcher */
-        $queueDispatcher = $this->getServiceManager()->get(QueueDispatcherInterface::SERVICE_ID);
-        $report = \common_report_Report::createInfo('Updating remote delivery ' . $delivery->getUri());
-        foreach ($environments as $env) {
-            if ($this->checkActionForEnvironment(DeliveryUpdatedEvent::class, $env)) {
-                $task = $queueDispatcher->createTask(new SyncDeliveryEnvironments(), [$delivery->getUri(), $env->getUri()], __('Updating %s to remote env %s', $delivery->getLabel(), $env->getLabel()));
-                $message = DeployTestEnvironments::class . "task created; Task id: " . $task->getId();
-                $report->add(\common_report_Report::createSuccess($message));
-                $this->logNotice($message);
-            }
-        }
-        return $report;
-    }
-
-    /**
-     * @return array
-     */
-    public function getSyncFields()
-    {
-        $deliveryFieldsOptions = $this->getOption(PublishingService::OPTIONS_FIELDS);
-        $deliveryExcludedFieldsOptions = $this->hasOption(PublishingService::OPTIONS_EXCLUDED_FIELDS)
-            ? $this->getOption(PublishingService::OPTIONS_EXCLUDED_FIELDS)
-            : [];
-        if (!$deliveryFieldsOptions) {
-            $deliveryClass = new \core_kernel_classes_Class(DeliveryAssemblyService::CLASS_URI);
-            $deliveryProperties = \tao_helpers_form_GenerisFormFactory::getClassProperties($deliveryClass);
-            $defaultProperties = \tao_helpers_form_GenerisFormFactory::getDefaultProperties();
-            $deliveryProperties = array_merge($defaultProperties, $deliveryProperties);
-            /** @var \core_kernel_classes_Property $deliveryProperty */
-            foreach ($deliveryProperties as $deliveryProperty)
-            {
-                if (!in_array($deliveryProperty->getUri(), $deliveryExcludedFieldsOptions)) {
-                    $deliveryFieldsOptions[] = $deliveryProperty->getUri();
-                }
-            }
-        }
-        return $deliveryFieldsOptions;
-    }
-
-    /**
-     * @param \core_kernel_classes_Resource $delivery
      * @return EntityInterface
      * @throws \common_exception_NotFound
      */
@@ -176,20 +124,5 @@ class PublishingDeliveryService extends ConfigurableService
         $publishService = $this->getServiceManager()->get(PublishingService::SERVICE_ID);
         $environments = $publishService->getEnvironments();
         return $environments;
-    }
-
-    /**
-     * @param $action
-     * @param \core_kernel_classes_Resource $env
-     * @return bool
-     */
-    protected function checkActionForEnvironment($action, \core_kernel_classes_Resource $env)
-    {
-        $property = $this->getProperty(PublishingService::PUBLISH_ACTIONS);
-        $actionProperties = $env->getPropertyValues($property);
-        if ($actionProperties && in_array(addslashes($action), $actionProperties)) {
-            return true;
-        }
-        return false;
     }
 }

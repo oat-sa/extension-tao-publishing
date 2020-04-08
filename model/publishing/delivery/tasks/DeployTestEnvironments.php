@@ -30,6 +30,7 @@ use oat\tao\model\taskQueue\Task\TaskAwareTrait;
 use oat\taoDeliveryRdf\controller\RestTest;
 use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
 use oat\taoPublishing\model\PlatformService;
+use oat\taoPublishing\model\publishing\delivery\DeliveryTestService;
 use oat\taoPublishing\model\publishing\delivery\PublishingDeliveryService;
 use Zend\ServiceManager\ServiceLocatorAwareTrait;
 use Zend\ServiceManager\ServiceLocatorAwareInterface;
@@ -79,27 +80,12 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
      */
     protected function compileTest(\core_kernel_classes_Resource $env, \core_kernel_classes_Resource $test, \core_kernel_classes_Resource $delivery) {
         try {
-            \common_Logger::d('Exporting Test '.$test->getUri().' for deployment');
-            $exporter = new \taoQtiTest_models_classes_export_TestExport();
-            $exportReport = $exporter->export([
-                'filename' => \League\Flysystem\Util::normalizePath($test->getLabel()),
-                'instances' => $test->getUri(),
-            ], \tao_helpers_File::createTempDir());
-            $packagePath = $exportReport->getData();
-            if(is_array($packagePath) && isset($packagePath['path'])){
-                $packagePath = $packagePath['path'];
-            }
             $streamData = [[
                 'name'     => RestTest::REST_FILE_NAME,
-                'contents' => fopen($packagePath, 'rb'),
+                'contents' => $this->getDeliveryTestService()->getTestStream($delivery),
             ], [
                 'name'     => RestTest::REST_IMPORTER_ID,
                 'contents' => 'taoQtiTest',
-            ], [
-                'name'     => RestTest::REST_DELIVERY_PARAMS,
-                'contents' => json_encode([
-                    PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD => $delivery->getUri()
-                ])
             ]];
 
             $deliveryClass = current($delivery->getTypes());
@@ -143,5 +129,11 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
         } catch (\Exception $e) {
             return new \common_report_Report(\common_report_Report::TYPE_ERROR, __('Failed to compile %s with message: %s', $test, $e->getMessage()));
         }
+    }
+
+    private function getDeliveryTestService(): DeliveryTestService
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->getServiceLocator()->get(DeliveryTestService::SERVICE_ID);
     }
 }

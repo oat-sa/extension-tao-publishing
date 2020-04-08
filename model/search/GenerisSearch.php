@@ -40,7 +40,6 @@ class GenerisSearch extends OriginGenerisSearch
         $rootClass = $this->getClass($type);
         $results = $rootClass->searchInstances([
             OntologyRdfs::RDFS_LABEL => $queryString,
-            PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD => $queryString,
             PublishingDeliveryService::ORIGIN_TEST_ID_FIELD => $queryString,
         ], [
             'recursive' => true,
@@ -70,7 +69,6 @@ class GenerisSearch extends OriginGenerisSearch
         return $rootClass->countInstances(
             [
                 OntologyRdfs::RDFS_LABEL => $queryString,
-                PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD => $queryString,
                 PublishingDeliveryService::ORIGIN_TEST_ID_FIELD => $queryString,
             ],
             [
