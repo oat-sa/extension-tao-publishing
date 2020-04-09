@@ -96,6 +96,7 @@ class PublishingDeliveryService extends ConfigurableService
             $report->add(common_report_Report::createSuccess($message));
             $this->logNotice($message);
         }
+
         return $report;
     }
 
@@ -116,6 +117,7 @@ class PublishingDeliveryService extends ConfigurableService
             $taskLogService = $this->getServiceManager()->get(TaskLogInterface::SERVICE_ID);
             /** @var EntityInterface $taskLog */
             $taskLog = $taskLogService->getById($compileTask->getUri());
+            
             return $taskLog;
         } catch (Exception $e) {
             throw new common_exception_NotFound();
@@ -127,6 +129,7 @@ class PublishingDeliveryService extends ConfigurableService
         /** @var PublishingService $publishService */
         $publishService = $this->getServiceManager()->get(PublishingService::SERVICE_ID);
         $environments = $publishService->getEnvironments();
+
         return $environments;
     }
 }
