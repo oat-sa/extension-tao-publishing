@@ -29,7 +29,7 @@ class FailToGetTestException extends RuntimeException
     public function __construct(string $message = "", int $code = 0, Throwable $previous = null)
     {
         parent::__construct(
-            __(sprintf('Fail to get the test exported by delivery. Error: %s', $message)),
+            sprintf('Fail to get the test exported by delivery. Error: %s', $message),
             $code,
             $previous
         );

@@ -22,8 +22,7 @@ class Publication extends \tao_actions_SaSModule
         try {
             $this->getPublishDeliveryRequestValidator()->validate($request);
         } catch (InvalidRequestException $exception) {
-            $message = __($exception->getMessage());
-            $this->displayFeedBackMessage($message, false);
+            $this->displayFeedBackMessage(__($exception->getMessage()), false);
 
             return;
         }
