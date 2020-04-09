@@ -15,6 +15,8 @@ class Publication extends \tao_actions_SaSModule
      */
     public function publishDelivery(): void
     {
+        //@TODO need to redirect to listPublicationTarget action
+
         $request = $this->getPsrRequest();
 
         try {
