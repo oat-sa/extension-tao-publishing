@@ -20,34 +20,43 @@
 
 namespace oat\taoPublishing\model\publishing\delivery;
 
+use common_Exception;
+use common_exception_Error;
+use common_report_Report;
 use core_kernel_classes_Property;
+use core_kernel_classes_Resource;
+use core_kernel_persistence_Exception;
 use League\Flysystem\FileExistsException;
+use League\Flysystem\Util;
 use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
 use oat\tao\model\service\ServiceFileStorage;
 use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
+use tao_helpers_File;
+use taoQtiTest_models_classes_export_TestExport;
 
 class DeliveryTestService extends ConfigurableService
 {
     use OntologyAwareTrait;
 
     public const SERVICE_ID = self::class;
+
     private const TEST_DIRECTORY_ID_DELIVERY_PROPERTY = 'http://www.tao.lu/Ontologies/TAODelivery.rdf#TestFilePathID';
     private const TEST_FILE_NAME_DELIVERY_PROPERTY = 'http://www.tao.lu/Ontologies/TAODelivery.rdf#TestFileName';
 
     /**
-     * @param \core_kernel_classes_Resource $delivery
+     * @param core_kernel_classes_Resource $delivery
      *
      * @throws FailToSaveTestException
      */
-    public function exportTest(\core_kernel_classes_Resource $delivery): void
+    public function exportTest(core_kernel_classes_Resource $delivery): void
     {
         $testProperty = $this->getProperty(DeliveryAssemblyService::PROPERTY_ORIGIN);
 
         try {
-            /** @var \core_kernel_classes_Resource $test */
+            /** @var core_kernel_classes_Resource $test */
             $test = $delivery->getOnePropertyValue($testProperty);
-        } catch (\core_kernel_persistence_Exception $exception) {
+        } catch (core_kernel_persistence_Exception $exception) {
             throw new FailToSaveTestException($exception->getMessage(), $exception->getCode(), $exception);
         }
 
@@ -62,7 +71,7 @@ class DeliveryTestService extends ConfigurableService
      *
      * @throws FailToGetTestException
      */
-    public function getTestStream(\core_kernel_classes_Resource $delivery)
+    public function getTestStream(core_kernel_classes_Resource $delivery)
     {
         $filePathIdProperty = $this->getProperty(self::TEST_DIRECTORY_ID_DELIVERY_PROPERTY);
         $fileNameProperty = $this->getProperty(self::TEST_FILE_NAME_DELIVERY_PROPERTY);
@@ -70,7 +79,7 @@ class DeliveryTestService extends ConfigurableService
         try {
             $filePathId = $delivery->getOnePropertyValue($filePathIdProperty);
             $fileName = $delivery->getOnePropertyValue($fileNameProperty);
-        } catch (\core_kernel_persistence_Exception $exception) {
+        } catch (core_kernel_persistence_Exception $exception) {
             throw new FailToGetTestException($exception->getMessage(), $exception->getCode(), $exception);
         }
 
@@ -93,25 +102,25 @@ class DeliveryTestService extends ConfigurableService
     }
 
     /**
-     * @param \core_kernel_classes_Resource $test
+     * @param core_kernel_classes_Resource $test
      *
+     * @return common_report_Report
      * @throws FailToSaveTestException
      *
-     * @return \common_report_Report
      */
-    private function export(\core_kernel_classes_Resource $test): array
+    private function export(core_kernel_classes_Resource $test): array
     {
         $this->getLogger()->debug(sprintf('Exporting Test %s for deployment', $test->getUri()));
 
-        $exporter = new \taoQtiTest_models_classes_export_TestExport();
+        $exporter = new taoQtiTest_models_classes_export_TestExport();
 
         try {
             $report = $exporter->export(
                 [
-                    'filename' => \League\Flysystem\Util::normalizePath($test->getLabel()),
+                    'filename' => Util::normalizePath($test->getLabel()),
                     'instances' => $test->getUri(),
                 ],
-                \tao_helpers_File::createTempDir()
+                tao_helpers_File::createTempDir()
             );
 
             $reportData = $report->getData();
@@ -130,19 +139,20 @@ class DeliveryTestService extends ConfigurableService
                 'pathId' => $privateDirectory->getId(),
                 'fileName' => $fileName
             ];
-        } catch (\common_exception_Error | \common_Exception| FileExistsException $exception) {
+        } catch (common_exception_Error | common_Exception| FileExistsException $exception) {
             throw new FailToSaveTestException($exception->getMessage(), 0, $exception);
         }
     }
 
-    private function saveTestFilePathId(\core_kernel_classes_Resource $delivery, string $pathId): void
+    private function saveTestFilePathId(core_kernel_classes_Resource $delivery, string $pathId): void
     {
         $propertyFilePath = new core_kernel_classes_Property(
             self::TEST_DIRECTORY_ID_DELIVERY_PROPERTY
         );
         $delivery->setPropertyValue($propertyFilePath, $pathId);
     }
-    private function saveTestFileName(\core_kernel_classes_Resource $delivery, string $filename): void
+
+    private function saveTestFileName(core_kernel_classes_Resource $delivery, string $filename): void
     {
         $propertyFilePath = new core_kernel_classes_Property(
             self::TEST_FILE_NAME_DELIVERY_PROPERTY

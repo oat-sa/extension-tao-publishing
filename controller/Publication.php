@@ -1,4 +1,5 @@
-<?php declare(strict_types=1);
+<?php
+
 /**
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,19 +18,26 @@
  * Copyright (c) 2020 (original work) Open Assessment Technologies SA;
  *
  */
+declare(strict_types=1);
 
 namespace oat\taoPublishing\controller;
 
+use common_exception_Error;
+use common_exception_NotFound;
+use common_report_Report;
+use core_kernel_classes_Resource;
+use core_kernel_persistence_Exception;
 use oat\taoPublishing\controller\RequestValidator\InvalidRequestException;
 use oat\taoPublishing\controller\RequestValidator\PublishDeliveryRequestValidator;
 use oat\taoPublishing\model\publishing\delivery\PublishingDeliveryService;
+use tao_actions_SaSModule;
 
-class Publication extends \tao_actions_SaSModule
+class Publication extends tao_actions_SaSModule
 {
     /**
-     * @throws \common_exception_Error
-     * @throws \common_exception_NotFound
-     * @throws \core_kernel_persistence_Exception
+     * @throws common_exception_Error
+     * @throws common_exception_NotFound
+     * @throws core_kernel_persistence_Exception
      */
     public function publishDelivery(): void
     {
@@ -46,7 +54,7 @@ class Publication extends \tao_actions_SaSModule
         }
 
         $report = $this->getPublishingDeliveryService()->publishDelivery(
-            new \core_kernel_classes_Resource($request->getParsedBody()['uri'])
+            new core_kernel_classes_Resource($request->getParsedBody()['uri'])
         );
 
         $errors = $report->getErrors();
@@ -69,7 +77,7 @@ class Publication extends \tao_actions_SaSModule
     {
         $joinedMessages = array_reduce(
             $errors,
-            function (?string $joinedMessages, \common_report_Report $report): string {
+            function (?string $joinedMessages, common_report_Report $report): string {
                 return $joinedMessages . ', ' . $report->getMessage();
             }
         );

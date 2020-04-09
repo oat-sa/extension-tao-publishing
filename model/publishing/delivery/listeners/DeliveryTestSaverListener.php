@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,9 +18,13 @@
  * Copyright (c) 2020 (original work) Open Assessment Technologies SA;
  *
  */
+declare(strict_types=1);
 
 namespace oat\taoPublishing\model\publishing\delivery\listeners;
 
+use common_report_Report;
+use core_kernel_classes_Resource;
+use Exception;
 use oat\oatbox\service\ServiceManager;
 use oat\taoDeliveryRdf\model\event\DeliveryCreatedEvent;
 use oat\taoPublishing\model\publishing\delivery\DeliveryTestService;
@@ -31,19 +36,14 @@ use oat\taoPublishing\model\publishing\delivery\DeliveryTestService;
  */
 class DeliveryTestSaverListener
 {
-    /**
-     * @param DeliveryCreatedEvent $event
-     *
-     * @return \common_report_Report
-     */
-    public function __invoke(DeliveryCreatedEvent $event): \common_report_Report
+    public function __invoke(DeliveryCreatedEvent $event): common_report_Report
     {
-        $report = \common_report_Report::createSuccess();
+        $report = common_report_Report::createSuccess();
         try {
-            $this->getTestService()->exportTest(new \core_kernel_classes_Resource($event->getDeliveryUri()));
-        } catch (\Exception $e) {
-            $report = new \common_report_Report(
-                \common_report_Report::TYPE_ERROR,
+            $this->getTestService()->exportTest(new core_kernel_classes_Resource($event->getDeliveryUri()));
+        } catch (Exception $e) {
+            $report = new common_report_Report(
+                common_report_Report::TYPE_ERROR,
                 __('Delivery cannot be published. Please contact your administrator')
             );
         }
@@ -51,7 +51,8 @@ class DeliveryTestSaverListener
         return $report;
     }
 
-    public function getTestService(): DeliveryTestService {
+    public function getTestService(): DeliveryTestService
+    {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return ServiceManager::getServiceManager()->get(DeliveryTestService::SERVICE_ID);
     }
