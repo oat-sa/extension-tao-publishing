@@ -2,23 +2,25 @@
 
 namespace oat\taoPublishing\scripts\install;
 
+use common_Exception;
+use common_report_Report;
 use oat\oatbox\event\EventManager;
 use oat\oatbox\extension\InstallAction;
+use oat\oatbox\service\exception\InvalidServiceManagerException;
 use oat\taoDeliveryRdf\model\event\DeliveryCreatedEvent;
 use oat\taoPublishing\model\publishing\delivery\listeners\DeliveryTestSaverListener;
-use oat\taoPublishing\model\publishing\delivery\DeliveryTestService;
 
 class RegisterListeners extends InstallAction
 {
     /**
      * @param mixed $params
      *
-     * @return \common_report_Report
+     * @return common_report_Report
      *
-     * @throws \common_Exception
-     * @throws \oat\oatbox\service\exception\InvalidServiceManagerException
+     * @throws common_Exception
+     * @throws InvalidServiceManagerException
      */
-    public function __invoke($params)
+    public function __invoke($params): common_report_Report
     {
         /** @var EventManager $eventManager */
         $eventManager = $this->getServiceManager()->get(EventManager::SERVICE_ID);
@@ -31,6 +33,6 @@ class RegisterListeners extends InstallAction
 
         $this->getServiceManager()->register(EventManager::SERVICE_ID, $eventManager);
 
-        return new \common_report_Report(\common_report_Report::TYPE_SUCCESS, 'Publisher delivery events registered');
+        return new common_report_Report(common_report_Report::TYPE_SUCCESS, 'Publisher delivery events registered');
     }
 }
