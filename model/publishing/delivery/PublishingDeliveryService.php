@@ -117,7 +117,7 @@ class PublishingDeliveryService extends ConfigurableService
             $taskLogService = $this->getServiceManager()->get(TaskLogInterface::SERVICE_ID);
             /** @var EntityInterface $taskLog */
             $taskLog = $taskLogService->getById($compileTask->getUri());
-            
+
             return $taskLog;
         } catch (Exception $e) {
             throw new common_exception_NotFound();
