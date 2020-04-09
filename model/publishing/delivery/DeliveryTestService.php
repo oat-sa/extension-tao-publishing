@@ -121,6 +121,7 @@ class DeliveryTestService extends ConfigurableService
                 [
                     'filename' => Util::normalizePath($test->getLabel()),
                     'instances' => $test->getUri(),
+                    'uri' => $test->getUri(),
                 ],
                 tao_helpers_File::createTempDir()
             );
