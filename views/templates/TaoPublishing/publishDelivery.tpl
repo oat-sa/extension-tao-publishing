@@ -19,14 +19,6 @@ use oat\tao\helpers\Template;
         </header>
         <div class="main-container flex-container-main-form">
             <div class="form-content">
-                <?php foreach (get_data('publicationTargets') as $publicationTarget) : ?>
-                <ul>
-                    <li>
-                        <p><?= $publicationTarget['label'] ?></p>
-                    </li>
-                </ul>
-                <?php endforeach; ?>
-
                 <?=get_data('form')?>
             </div>
         </div>
