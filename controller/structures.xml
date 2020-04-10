@@ -16,7 +16,7 @@
 		<sections>
 			<section id="manage_delivery_assembly" name="Deliveries" url="/taoDeliveryRdf/DeliveryMgmt/index">
 				<actions>
-					<action id="publish" name="Publish" url="/taoPublishing/Publish/listPublicationTargets" context="resource" group="tree">
+					<action id="publish" name="Publish" url="/taoPublishing/Publish/listPublicationTargets" context="instance" group="tree">
 						<icon id="icon-upload"/>
 					</action>
 				</actions>
