@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New Listener "DeliveryTestSaverListener" which listen the "DeliveryCreatedEvent"
 - New Service "DeliveryTestService" which handle the test export during delivery creation.
 - New controller/action which handles the creation of DeployTestEnvironments task 
+- Changelog Filefeature/TAO-10137/publish-to-remote-delivery-environment
+- New controller/action "listPublicationTargets" which render environments checkbox form
+
+>>>>>>> 3a8e91a2ab3f07caf04dc7635482291bced3c133
 
 ## [2.1.2] - 2019-10-25
 ### Removed

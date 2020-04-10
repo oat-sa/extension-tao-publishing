@@ -23,48 +23,68 @@ declare(strict_types=1);
 namespace oat\taoPublishing\controller;
 
 use common_exception_Error;
-use common_exception_NotFound;
+use common_ext_ExtensionException;
 use common_report_Report;
 use core_kernel_classes_Resource;
-use core_kernel_persistence_Exception;
-use oat\taoPublishing\controller\RequestValidator\InvalidRequestException;
-use oat\taoPublishing\controller\RequestValidator\PublishDeliveryRequestValidator;
 use oat\taoPublishing\model\publishing\delivery\PublishingDeliveryService;
+use oat\taoPublishing\model\publishing\PublishingService;
+use oat\taoPublishing\view\form\PublishForm;
 use tao_actions_SaSModule;
+use tao_models_classes_MissingRequestParameterException;
 
 class Publication extends tao_actions_SaSModule
 {
     /**
+     * @throws common_ext_ExtensionException
+     * @throws tao_models_classes_MissingRequestParameterException
      * @throws common_exception_Error
-     * @throws common_exception_NotFound
-     * @throws core_kernel_persistence_Exception
      */
     public function publishDelivery(): void
     {
-        //@TODO need to redirect to listPublicationTarget action
+        $formContainer = new PublishForm(['class' => $this->getCurrentClass(), 'instance' => $this->getCurrentInstance()]);
+        $form = $formContainer->getForm();
 
-        $request = $this->getPsrRequest();
+        $this->defaultData();
 
-        try {
-            $this->getPublishDeliveryRequestValidator()->validate($request);
-        } catch (InvalidRequestException $exception) {
-            $this->displayFeedBackMessage(__($exception->getMessage()), false);
+        $this->setData('form', $form->render());
+        $this->setData('publicationTargets', $this->getPublicationTargets());
+        $this->setData('formTitle', __('Properties'));
+        $this->setData('label', $this->getCurrentInstance()->getLabel());
 
-            return;
+        $this->setView('TaoPublishing/publishDelivery.tpl');
+
+        if ($form->isValid() && $form->isSubmited()) {
+            $request = $this->getPsrRequest();
+            $report = $this->getPublishingDeliveryService()->publishDelivery(
+                new core_kernel_classes_Resource($request->getParsedBody()['uri'])
+            );
+
+            $errors = $report->getErrors();
+            if (count($errors) > 0) {
+                $this->displayPublicationErrors($errors);
+
+                return;
+            }
+
+            $this->displayFeedBackMessage(__('Publication Task was created successfully'));
+        }
+    }
+
+    private function getPublicationTargets(): array
+    {
+        $publicationTargets = $this->getPublishingService()->getEnvironments();
+
+        $targets = [];
+
+        /** @var core_kernel_classes_Resource $publicationTarget */
+        foreach ($publicationTargets as $publicationTarget) {
+            $targets[] = [
+                'uriResource' => $publicationTarget->getUri(),
+                'label' => $publicationTarget->getLabel(),
+            ];
         }
 
-        $report = $this->getPublishingDeliveryService()->publishDelivery(
-            new core_kernel_classes_Resource($request->getParsedBody()['uri'])
-        );
-
-        $errors = $report->getErrors();
-        if (count($errors) > 0) {
-            $this->displayPublicationErrors($errors);
-
-            return;
-        }
-
-        $this->displayFeedBackMessage(__('Publication Task was created successfully'));
+        return $targets;
     }
 
     private function displayFeedBackMessage(string $message, bool $isSuccess = true): void
@@ -92,10 +112,10 @@ class Publication extends tao_actions_SaSModule
         );
     }
 
-    private function getPublishDeliveryRequestValidator(): PublishDeliveryRequestValidator
+    private function getPublishingService(): PublishingService
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->getServiceLocator()->get(PublishDeliveryRequestValidator::SERVICE_ID);
+        return $this->getServiceLocator()->get(PublishingService::SERVICE_ID);
     }
 
     private function getPublishingDeliveryService(): PublishingDeliveryService

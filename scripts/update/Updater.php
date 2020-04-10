@@ -252,7 +252,6 @@ class Updater extends common_ext_ExtensionUpdater
         $this->skip('1.2.0', '2.1.2');
 
         if ($this->isVersion('2.1.2')) {
-            $this->getServiceManager()->register(PublishDeliveryRequestValidator::SERVICE_ID, new PublishDeliveryRequestValidator());
             $this->getServiceManager()->register(DeliveryTestService::SERVICE_ID, new DeliveryTestService());
 
             $this->setVersion('3.0.0');
