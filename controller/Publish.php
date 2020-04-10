@@ -80,8 +80,14 @@ class Publish extends \tao_actions_SaSModule {
         $formContainer = new PublishForm(['class' => $this->getCurrentClass()]);
         $form = $formContainer->getForm();
 
+        $targets = $this->publicationTargets();
+
+        $targetElements = \tao_helpers_form_FormFactory::getElement('targetsList', 'Free');
+        $targetValue = $this->generatePublicationTargets($targets);
+        $targetElements->setValue($targetValue);
+        $form->addElement($targetElements);
+
         $this->setData('form', $form->render());
-        $this->setData('publicationTargets', $this->publicationTargets());
         $this->setData('formTitle', __('Properties'));
         $this->setData('label', $this->getCurrentInstance()->getLabel());
 
@@ -116,5 +122,24 @@ class Publish extends \tao_actions_SaSModule {
     private function getQueueService(): Queue
     {
         return $this->getServiceLocator()->get(Queue::CONFIG_ID);
+    }
+
+    /**
+     * @param array $targets
+     * @return string
+     */
+    private function generatePublicationTargets(array $targets): string
+    {
+        if (empty($targets)) {
+            $targetValue = '<h3>There are not publication targets</h3>';
+        } else {
+            $targetValue = '<ul>';
+            foreach ($targets as $target) {
+                $targetValue .= '<li>' . $target['label'] . '</li>';
+            }
+            $targetValue .= '</ul>';
+        }
+
+        return $targetValue;
     }
 }
