@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace oat\taoPublishing\model\publishing\test;
 
+use Exception;
 use common_Exception;
 use core_kernel_classes_Resource;
 use oat\generis\model\OntologyAwareTrait;
@@ -53,7 +54,7 @@ class TestBackupService extends ConfigurableService
         } catch (RdsResourceNotFoundException $e) {
             $this->logError($e->getMessage());
             throw $e;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logError($e->getMessage());
             throw new common_Exception(sprintf('Backup of origin QTI test failed for delivery %s', $deliveryUri));
         }

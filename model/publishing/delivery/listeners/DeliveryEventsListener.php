@@ -36,7 +36,7 @@ class DeliveryEventsListener extends ConfigurableService
         try {
             /** @var BackupQtiTestPackageFactory $backupQtiTestPackageFactory */
             $backupQtiTestPackageFactory = $this->getServiceLocator()->get(BackupQtiTestPackageFactory::class);
-            $task = $backupQtiTestPackageFactory->createTask($event->getDeliveryUri());
+            $backupQtiTestPackageFactory->createTask($event->getDeliveryUri());
         } catch (Exception $e) {
             $this->logError('Backup was not created for delivery: ' . $event->getDeliveryUri());
         }
