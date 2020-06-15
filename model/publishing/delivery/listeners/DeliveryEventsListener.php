@@ -21,11 +21,11 @@ declare(strict_types=1);
 
 namespace oat\taoPublishing\model\publishing\delivery\listeners;
 
-use Exception;
+use Throwable;
 use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
 use oat\taoDeliveryRdf\model\event\DeliveryCreatedEvent;
-use oat\taoPublishing\model\tasks\BackupQtiTestPackageFactory;
+use oat\taoPublishing\model\publishing\test\TestBackupService;
 
 class DeliveryEventsListener extends ConfigurableService
 {
@@ -34,11 +34,24 @@ class DeliveryEventsListener extends ConfigurableService
     public function backupQtiTestPackage(DeliveryCreatedEvent $event): void
     {
         try {
-            /** @var BackupQtiTestPackageFactory $backupQtiTestPackageFactory */
-            $backupQtiTestPackageFactory = $this->getServiceLocator()->get(BackupQtiTestPackageFactory::class);
-            $backupQtiTestPackageFactory->createTask($event->getDeliveryUri());
-        } catch (Exception $e) {
+            /** @var TestBackupService $testBackupService */
+            $testBackupService = $this->getServiceLocator()->get(TestBackupService::class);
+            $file = $testBackupService->backupDeliveryTestPackage($event->getDeliveryUri());
+            $this->storeQtiTestBackupPath($event->getDeliveryUri(), $file->getPrefix());
+        } catch (Throwable $e) {
             $this->logError('Backup was not created for delivery: ' . $event->getDeliveryUri());
         }
+    }
+
+    /**
+     * @param string $deliveryUri
+     * @param string $path
+     * @return bool
+     */
+    private function storeQtiTestBackupPath(string $deliveryUri, string $path): bool
+    {
+        $delivery = $this->getResource($deliveryUri);
+
+        return $delivery->setPropertyValue($this->getProperty(TestBackupService::PROPERTY_QTI_TEST_BACKUP_PATH), $path);
     }
 }

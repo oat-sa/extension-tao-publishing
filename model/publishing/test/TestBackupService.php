@@ -37,6 +37,8 @@ class TestBackupService extends ConfigurableService
 
     public const FILESYSTEM_ID = 'publishing';
 
+    public const PROPERTY_QTI_TEST_BACKUP_PATH = 'http://www.tao.lu/Ontologies/TAOPublishing.rdf#QtiTestBackupPath';
+
     /**
      * @param string $deliveryUri
      * @return File
@@ -64,7 +66,7 @@ class TestBackupService extends ConfigurableService
      * @param string $deliveryUri
      * @return string
      */
-    public function prepareBackupFilePath(string $deliveryUri): string
+    private function prepareBackupFilePath(string $deliveryUri): string
     {
         $folderName = md5($deliveryUri);
 
