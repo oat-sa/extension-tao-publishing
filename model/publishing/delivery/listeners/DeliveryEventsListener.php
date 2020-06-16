@@ -36,18 +36,16 @@ class DeliveryEventsListener extends ConfigurableService
         try {
             /** @var TestBackupService $testBackupService */
             $testBackupService = $this->getServiceLocator()->get(TestBackupService::class);
-            $file = $testBackupService->backupDeliveryTestPackage($event->getDeliveryUri());
+            $file = $testBackupService->backupDeliveryTestPackage(
+                $event->getDeliveryUri(),
+                $event->getOriginTest()->getUri()
+            );
             $this->storeQtiTestBackupPath($event->getDeliveryUri(), $file->getPrefix());
         } catch (Throwable $e) {
             $this->logError('Backup was not created for delivery: ' . $event->getDeliveryUri());
         }
     }
 
-    /**
-     * @param string $deliveryUri
-     * @param string $path
-     * @return bool
-     */
     private function storeQtiTestBackupPath(string $deliveryUri, string $path): bool
     {
         $delivery = $this->getResource($deliveryUri);
