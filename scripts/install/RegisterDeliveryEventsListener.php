@@ -30,7 +30,7 @@ use oat\taoQtiTest\helpers\QtiPackageExporter;
 
 class RegisterDeliveryEventsListener extends InstallAction
 {
-    public function __invoke($params)
+    public function __invoke($params): common_report_Report
     {
         $serviceManager = $this->getServiceManager();
         /** @var EventManager $eventManager */

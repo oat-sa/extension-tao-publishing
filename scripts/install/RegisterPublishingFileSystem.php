@@ -28,7 +28,7 @@ use oat\taoPublishing\model\publishing\test\TestBackupService;
 
 class RegisterPublishingFileSystem extends InstallAction
 {
-    public function __invoke($params)
+    public function __invoke($params): common_report_Report
     {
         /** @var FileSystemService $fileSystemService */
         $fileSystemService = $this->getServiceLocator()->get(FileSystemService::SERVICE_ID);
