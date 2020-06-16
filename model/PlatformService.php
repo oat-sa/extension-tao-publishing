@@ -19,17 +19,18 @@
 
 namespace oat\taoPublishing\model;
 
-use oat\taoPublishing\model\publishing\PublishingAuthService;
-use Psr\Http\Message\RequestInterface;
 use GuzzleHttp\Psr7\Uri;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use oat\tao\model\OntologyClassService;
+use oat\taoPublishing\model\publishing\PublishingAuthService;
 
 /**
  * Service methods to manage the Platforms
  *
  * @access public
  */
-class PlatformService extends \tao_models_classes_ClassService
+class PlatformService extends OntologyClassService
 {
     const CLASS_URI = 'http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatform';
     const PROPERTY_AUTH_TYPE = 'http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatformAuthType';
