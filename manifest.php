@@ -24,7 +24,7 @@ return array(
 	'label' => 'Test Publishing',
 	'description' => 'An extension to publish tests to a delivery environment',
     'license' => 'GPL-2.0',
-    'version' => '2.1.2',
+    'version' => '3.0.0',
     'author' => 'Open Assessment Technologies SA',
     'requires' => array(
         'taoDeliveryRdf' => '>=6.0.0',
@@ -41,7 +41,6 @@ return array(
             __DIR__. '/model/ontology/indexation.rdf'
         ),
         'php' => array(
-            \oat\taoPublishing\scripts\install\UpdateConfigDeliveryFactoryService::class,
             \oat\taoPublishing\scripts\install\RegisterGenerisSearch::class
         )
     ),

@@ -107,65 +107,16 @@ class Updater extends common_ext_ExtensionUpdater
 
             $publishingDeliveryService->setOptions($deliveryFieldsOptions);
             $this->getServiceManager()->register(PublishingDeliveryService::SERVICE_ID, $publishingDeliveryService);
-
-            $eventManager = $this->getServiceManager()->get(EventManager::SERVICE_ID);
-
-            $eventManager->detach(
-                'oat\\taoDeliveryRdf\\model\\event\\DeliveryCreatedEvent',
-                ['oat\\taoPublishing\\model\\publishing\\listeners\\DeliveryEventsListeners', 'createdDeliveryEvent']
-            );
-            $eventManager->detach(
-                'oat\\taoDeliveryRdf\\model\\event\\DeliveryUpdatedEvent',
-                ['oat\\taoPublishing\\model\\publishing\\listeners\\DeliveryEventsListeners', 'updatedDeliveryEvent']
-            );
-            $eventManager->attach(
-                DeliveryCreatedEvent::class,
-                [DeliveryEventsListeners::class, 'createdDeliveryEvent']
-            );
-            $eventManager->attach(
-                DeliveryUpdatedEvent::class,
-                [DeliveryEventsListeners::class, 'updatedDeliveryEvent']
-            );
-
-            $this->getServiceManager()->register(EventManager::SERVICE_ID, $eventManager);
-
             $this->setVersion('0.3.0');
         }
 
         if ($this->isVersion('0.3.0')) {
             OntologyUpdater::syncModels();
-
-            $deliveryFactoryService = $this->getServiceManager()->get(DeliveryFactory::SERVICE_ID);
-            $publishingOptions = $deliveryFactoryService->getOptions();
-            $publishingOptions[DeliveryFactory::OPTION_INITIAL_PROPERTIES][] = PublishingDeliveryService::DELIVERY_REMOTE_SYNC_FIELD;
-            $publishingOptions[DeliveryFactory::OPTION_INITIAL_PROPERTIES_MAP] = [
-                PublishingDeliveryService::DELIVERY_REMOTE_SYNC_REST_OPTION => [
-                    DeliveryFactory::OPTION_INITIAL_PROPERTIES_MAP_URI => PublishingDeliveryService::DELIVERY_REMOTE_SYNC_FIELD,
-                    DeliveryFactory::OPTION_INITIAL_PROPERTIES_MAP_VALUES => [
-                        'true' => PublishingDeliveryService::DELIVERY_REMOTE_SYNC_COMPILE_ENABLED
-                    ]
-                ]
-            ];
-            $deliveryFactoryService->setOptions($publishingOptions);
-            $this->getServiceManager()->register(DeliveryFactory::SERVICE_ID, $deliveryFactoryService);
-
-            $publishingDeliveryService = $this->getServiceManager()->get(PublishingDeliveryService::SERVICE_ID);
-            $deliveryFieldsOptions = $publishingDeliveryService->getOption(PublishingService::OPTIONS_EXCLUDED_FIELDS);
-            $deliveryFieldsOptions[] = PublishingDeliveryService::DELIVERY_REMOTE_SYNC_FIELD;
-
-            $publishingDeliveryService->setOptions($deliveryFieldsOptions);
-            $this->getServiceManager()->register(PublishingDeliveryService::SERVICE_ID, $publishingDeliveryService);
-
             $this->setVersion('0.4.0');
         }
 
         if ($this->isVersion('0.4.0')) {
-            $service = new PublishingService();
-            $service->setOption(PublishingService::OPTIONS_ACTIONS, [
-                DeliveryCreatedEvent::class,
-                DeliveryUpdatedEvent::class
-            ]);
-            $this->getServiceManager()->register(PublishingService::SERVICE_ID, $service);
+            $this->getServiceManager()->register(PublishingService::SERVICE_ID, new PublishingService());
 
             $publishingDeliveryService = new PublishingDeliveryService();
             $deliveryFieldsOptions[PublishingService::OPTIONS_FIELDS] = [];
@@ -176,7 +127,6 @@ class Updater extends common_ext_ExtensionUpdater
                 DeliveryAssemblyService::PROPERTY_DELIVERY_TIME,
                 DeliveryAssemblyService::PROPERTY_ORIGIN,
                 PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD,
-                PublishingDeliveryService::DELIVERY_REMOTE_SYNC_FIELD
             ];
             $publishingDeliveryService->setOptions($deliveryFieldsOptions);
             $this->getServiceManager()->register(PublishingDeliveryService::SERVICE_ID, $publishingDeliveryService);
@@ -248,5 +198,42 @@ class Updater extends common_ext_ExtensionUpdater
         }
 
         $this->skip('1.2.0', '2.1.2');
+
+        if ($this->isVersion('2.1.2')) {
+            // Unregister remote publishing event listeners
+            $eventManager = $this->getServiceManager()->get(EventManager::SERVICE_ID);
+            $eventManager->detach(
+                DeliveryCreatedEvent::class,
+                [
+                    'oat\\taoPublishing\\model\\publishing\\delivery\\listeners\\DeliveryEventsListeners',
+                    'createdDeliveryEvent'
+                ]
+            );
+            $eventManager->detach(
+                DeliveryUpdatedEvent::class,
+                [
+                    'oat\\taoPublishing\\model\\publishing\\delivery\\listeners\\DeliveryEventsListeners',
+                    'updatedDeliveryEvent'
+                ]
+            );
+            $this->getServiceManager()->register(EventManager::SERVICE_ID, $eventManager);
+
+            // Remove related configs in DeliveryFactory
+            $deliveryFactory = $this->getServiceManager()->get(DeliveryFactory::SERVICE_ID);
+            $deliveryFactoryOptions = $deliveryFactory->getOptions();
+            unset($deliveryFactoryOptions[DeliveryFactory::OPTION_INITIAL_PROPERTIES]);
+            unset($deliveryFactoryOptions[DeliveryFactory::OPTION_INITIAL_PROPERTIES_MAP]);
+            $deliveryFactory->setOptions($deliveryFactoryOptions);
+            $this->getServiceManager()->register(DeliveryFactory::SERVICE_ID, $deliveryFactory);
+
+            $publishingDeliveryService = $this->getServiceManager()->get(PublishingDeliveryService::SERVICE_ID);
+            $deliveryExcludedFieldsOptions = $publishingDeliveryService->getOption(PublishingService::OPTIONS_EXCLUDED_FIELDS);
+            if (isset($deliveryExcludedFieldsOptions['http://www.tao.lu/Ontologies/TAOPublisher.rdf#RemoteSync'])) {
+                unset($deliveryExcludedFieldsOptions['http://www.tao.lu/Ontologies/TAOPublisher.rdf#RemoteSync']);
+            }
+
+            OntologyUpdater::syncModels();
+            $this->setVersion('3.0.0');
+        }
     }
 }
