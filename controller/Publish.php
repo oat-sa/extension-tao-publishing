@@ -21,6 +21,11 @@
 
 namespace oat\taoPublishing\controller;
 
+use GuzzleHttp\Psr7\Request;
+use oat\tao\helpers\UrlHelper;
+use oat\taoPublishing\model\publishing\PublishingService;
+use tao_helpers_Uri;
+use core_kernel_classes_Resource;
 use oat\taoDeliveryRdf\model\NoTestsException;
 use oat\taoPublishing\view\form\WizardForm;
 use oat\generis\model\OntologyAwareTrait;
@@ -61,5 +66,31 @@ class Publish extends \tao_actions_CommonModule {
         } catch (NoTestsException $e) {
             $this->setView('DeliveryMgmt/wizard_error.tpl');
         }
+    }
+
+    public function selectRemoteEnvironments()
+    {
+        $selectedDelivery = new core_kernel_classes_Resource(
+            tao_helpers_Uri::decode($this->getRequestParameter('uri'))
+        );
+
+        $environments = $this->getServiceLocator()
+            ->get(PublishingService::SERVICE_ID)
+            ->getEnvironments();
+
+        $submitUrl = $this->getServiceLocator()
+            ->get(UrlHelper::class)
+            ->buildUrl('publishToRemoteEnvironment', 'Publish', 'taoPublishing');
+
+        $this->setData('submit-url', $submitUrl);
+        $this->setData('delivery-uri', $selectedDelivery->getUri());
+        $this->setData('delivery-label', $selectedDelivery->getLabel());
+        $this->setData('remote-environments', $environments);
+        $this->setView('PublishToRemote/index.tpl');
+    }
+
+    public function publishToRemoteEnvironment()
+    {
+        $a = 'a';
     }
 }
