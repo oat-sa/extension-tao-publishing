@@ -24,11 +24,12 @@ return array(
 	'label' => 'Test Publishing',
 	'description' => 'An extension to publish tests to a delivery environment',
     'license' => 'GPL-2.0',
-    'version' => '2.1.2',
+    'version' => '2.2.1',
     'author' => 'Open Assessment Technologies SA',
     'requires' => array(
-        'taoDeliveryRdf' => '>=6.0.0',
-        'tao' => '>=31.6.0'
+        'taoDeliveryRdf' => '>=11.7.0',
+        'tao' => '>=31.6.0',
+        'taoQtiTest' => '>=38.13.0',
     ),
 	'managementRole' => 'http://www.tao.lu/Ontologies/generis.rdf#taoPublishingManager',
     'acl' => array(
@@ -44,7 +45,9 @@ return array(
         'php' => array(
             \oat\taoPublishing\scripts\install\RegisterListeners::class,
             \oat\taoPublishing\scripts\install\UpdateConfigDeliveryFactoryService::class,
-            \oat\taoPublishing\scripts\install\RegisterGenerisSearch::class
+            \oat\taoPublishing\scripts\install\RegisterGenerisSearch::class,
+            \oat\taoPublishing\scripts\install\RegisterDeliveryEventsListener::class,
+            \oat\taoPublishing\scripts\install\RegisterPublishingFileSystem::class,
         )
     ),
     'uninstall' => array(
