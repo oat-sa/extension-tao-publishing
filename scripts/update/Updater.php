@@ -37,11 +37,14 @@ use oat\taoPublishing\model\publishing\delivery\listeners\DeliveryEventsListener
 use oat\taoPublishing\model\publishing\delivery\PublishingDeliveryService;
 use oat\taoPublishing\model\publishing\PublishingAuthService;
 use oat\taoPublishing\model\publishing\PublishingService;
+use oat\taoPublishing\scripts\install\RegisterDeliveryEventsListener;
+use oat\taoPublishing\scripts\install\RegisterPublishingFileSystem;
 use oat\taoPublishing\scripts\update\v0_6_0\UpdateAuthFieldAction;
 
 /**
  * Class Updater
  * @package oat\taoProctoring\scripts\update
+ * @deprecated use migrations instead. See https://github.com/oat-sa/generis/wiki/Tao-Update-Process
  */
 class Updater extends common_ext_ExtensionUpdater
 {
@@ -248,5 +251,17 @@ class Updater extends common_ext_ExtensionUpdater
         }
 
         $this->skip('1.2.0', '2.1.2');
+        if ($this->isVersion('2.1.2')) {
+            $this->runExtensionScript(RegisterPublishingFileSystem::class);
+            $this->runExtensionScript(RegisterDeliveryEventsListener::class);
+            $this->setVersion('2.2.0');
+        }
+
+        $this->skip('2.2.0', '2.2.1');
+        
+        //Updater files are deprecated. Please use migrations.
+        //See: https://github.com/oat-sa/generis/wiki/Tao-Update-Process
+
+        $this->setVersion($this->getExtension()->getManifest()->getVersion());
     }
 }
