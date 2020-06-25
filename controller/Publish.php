@@ -21,14 +21,12 @@
 
 namespace oat\taoPublishing\controller;
 
-use GuzzleHttp\Psr7\Request;
+use tao_helpers_Uri;
+use core_kernel_classes_Resource;
 use GuzzleHttp\Psr7\ServerRequest;
 use oat\tao\helpers\UrlHelper;
 use oat\taoPublishing\model\publishing\delivery\RemotePublishingService;
 use oat\taoPublishing\model\publishing\PublishingService;
-use Psr\Http\Message\RequestInterface;
-use tao_helpers_Uri;
-use core_kernel_classes_Resource;
 use oat\taoDeliveryRdf\model\NoTestsException;
 use oat\taoPublishing\view\form\WizardForm;
 use oat\generis\model\OntologyAwareTrait;
