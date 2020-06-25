@@ -17,14 +17,14 @@ use oat\tao\helpers\Template;
 
                 <?php if (count(get_data('remote-environments')) > 0) :?>
                     <h3><?= __('Remote environment(s)')?></h3>
-                    <div class="remotePublishingEnvironments">
-                        <?php foreach (get_data('remote-environments') as $environment) :?>
-                            <p>
-                                <input type="checkbox" name="remote-environment[]" value="<?= $environment->getUri();?>">
-                                <label><?= $environment->getLabel();?></label>
-                            </p>
+                    <ul class="plain">
+                        <?php foreach (get_data('remote-environments') as $index => $environment) :?>
+                            <li>
+                                <input type="checkbox" name="remote-environments[]" value="<?= $environment->getUri();?>" id="remote-environment-<?= $index ?>">
+                                <label for="remote-environment-<?= $index ?>"><?= $environment->getLabel();?></label>
+                            </li>
                         <?php endforeach;?>
-                    </div>
+                    </ul>
                     <div class="form-toolbar">
                         <button type="submit" name="Publish" id="Publish" class="form-submitter btn-success small" value="Publish"><span class="icon-external"></span> <?= __('Publish')?></button>
                     </div>

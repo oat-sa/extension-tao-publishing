@@ -34,7 +34,7 @@
 		<sections>
 			<section id="manage_delivery_assembly" name="Deliveries" url="/taoDeliveryRdf/DeliveryMgmt/index">
 				<actions>
-					<action id="delivery-remote-publish" name="Publish" url="/taoPublishing/Publish/selectRemoteEnvironments" context="instance" group="tree">
+					<action id="delivery-remote-publish" name="Publish To Remote" url="/taoPublishing/Publish/selectRemoteEnvironments" context="instance" group="tree">
 						<icon id="icon-external"/>
 					</action>
 				</actions>

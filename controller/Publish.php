@@ -22,8 +22,11 @@
 namespace oat\taoPublishing\controller;
 
 use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\ServerRequest;
 use oat\tao\helpers\UrlHelper;
+use oat\taoPublishing\model\publishing\delivery\RemotePublishingService;
 use oat\taoPublishing\model\publishing\PublishingService;
+use Psr\Http\Message\RequestInterface;
 use tao_helpers_Uri;
 use core_kernel_classes_Resource;
 use oat\taoDeliveryRdf\model\NoTestsException;
@@ -85,12 +88,24 @@ class Publish extends \tao_actions_CommonModule {
         $this->setData('submit-url', $submitUrl);
         $this->setData('delivery-uri', $selectedDelivery->getUri());
         $this->setData('delivery-label', $selectedDelivery->getLabel());
-        $this->setData('remote-environments', $environments);
+        $this->setData('remote-environments', array_values($environments));
         $this->setView('PublishToRemote/index.tpl');
     }
 
-    public function publishToRemoteEnvironment()
+    public function publishToRemoteEnvironment(ServerRequest $request)
     {
-        $a = 'a';
+        $requestData = $request->getParsedBody();
+        $deliveryUri = $requestData['delivery-uri'] ?? '';
+        $environments = $requestData['remote-environments'] ?? [];
+
+        /** @var RemotePublishingService $remotePublishingService */
+        $remotePublishingService = $this->getServiceLocator()->get(RemotePublishingService::class);
+        $tasks = $remotePublishingService->publishDeliveryToEnvironments($deliveryUri, $environments);
+
+        $returnUrl = $this->getServiceLocator()
+            ->get(UrlHelper::class)
+            ->buildUrl('editDelivery', 'DeliveryMgmt', 'taoDeliveryRdf', ['uri' => $deliveryUri]);
+
+        return $this->redirect($returnUrl);
     }
 }
