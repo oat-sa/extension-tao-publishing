@@ -38,7 +38,7 @@ class DeliveryEventsListener extends ConfigurableService
             $testBackupService = $this->getServiceLocator()->get(TestBackupService::class);
             $file = $testBackupService->backupDeliveryTestPackage(
                 $event->getDeliveryUri(),
-                $event->getOriginTest()->getUri()
+                $event->getOriginTestUri()
             );
             $this->storeQtiTestBackupPath($event->getDeliveryUri(), $file->getPrefix());
         } catch (Throwable $e) {
