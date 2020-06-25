@@ -22,6 +22,7 @@ declare(strict_types=1);
 namespace oat\taoPublishing\model\publishing\delivery;
 
 use Throwable;
+use core_kernel_classes_Resource;
 use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
 use oat\tao\model\taskQueue\QueueDispatcherInterface;
@@ -36,6 +37,9 @@ class RemotePublishingService extends ConfigurableService
 
     /** @var string */
     private $deliveryUri;
+
+    /** @var core_kernel_classes_Resource */
+    private $deliveryResource;
 
     /** @var string */
     private $testUri;
@@ -52,14 +56,15 @@ class RemotePublishingService extends ConfigurableService
     public function publishDeliveryToEnvironments(string $deliveryUri, array $environments): array
     {
         $this->deliveryUri = $deliveryUri;
-        $this->testUri = $this->getOriginTestUri($deliveryUri);
-        $this->queueDispatcher = $this->getServiceLocator()->get(QueueDispatcherInterface::SERVICE_ID);
-        $deliveryLabel = $this->getResource($deliveryUri)->getLabel();
+        $this->deliveryResource = $this->getResource($deliveryUri);
+        $this->testUri = $this->getOriginTestUri();
 
         $tasks = [];
+        $this->queueDispatcher = $this->getServiceLocator()->get(QueueDispatcherInterface::SERVICE_ID);
         foreach ($environments as $environmentUri) {
             try {
-                $tasks[] = $this->publishToEnvironment($environmentUri, $deliveryLabel);
+                $environmentResource = $this->getResource($environmentUri);
+                $tasks[] = $this->publishToEnvironment($environmentResource);
             } catch (Throwable $e) {
                 $this->logError(
                     sprintf(
@@ -75,27 +80,27 @@ class RemotePublishingService extends ConfigurableService
         return $tasks;
     }
 
-    private function getOriginTestUri(string $deliveryUri): string
+    private function getOriginTestUri(): string
     {
         $testProperty = $this->getProperty(DeliveryAssemblyService::PROPERTY_ORIGIN);
-        $deliveryResource = $this->getResource($deliveryUri);
-        $testResource = $deliveryResource->getOnePropertyValue($testProperty);
-        if (!$testResource instanceof \core_kernel_classes_Resource) {
-            throw new PublishingFailedException("Origin test property not found for delivery: {$deliveryUri}");
+        $testResource = $this->deliveryResource->getOnePropertyValue($testProperty);
+        if (!$testResource instanceof core_kernel_classes_Resource) {
+            throw new PublishingFailedException(
+                "Origin test property not found for delivery: " . $this->deliveryResource->getUri()
+            );
         }
 
         return $testResource->getUri();
     }
 
-    private function publishToEnvironment(string $environmentUri, string $deliveryLabel): CallbackTaskInterface
+    private function publishToEnvironment(core_kernel_classes_Resource $environment): CallbackTaskInterface
     {
         $params = [
             $this->testUri,
-            $environmentUri,
+            $environment->getUri(),
             $this->deliveryUri
         ];
-        $environmentLabel = $this->getResource($environmentUri)->getLabel();
-        $message = __("Publishing %s to remote env %s", $deliveryLabel, $environmentLabel);
+        $message = __("Publishing %s to remote env %s", $this->deliveryResource->getLabel(), $environment->getLabel());
 
         return $this->queueDispatcher->createTask(new DeployTestEnvironments(), $params, $message);
     }
