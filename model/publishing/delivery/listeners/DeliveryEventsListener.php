@@ -21,9 +21,12 @@ declare(strict_types=1);
 
 namespace oat\taoPublishing\model\publishing\delivery\listeners;
 
+use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
 use Throwable;
+use core_kernel_classes_Resource;
 use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
+use oat\tao\model\import\service\RdsResourceNotFoundException;
 use oat\taoDeliveryRdf\model\event\DeliveryCreatedEvent;
 use oat\taoPublishing\model\publishing\test\TestBackupService;
 
@@ -36,14 +39,29 @@ class DeliveryEventsListener extends ConfigurableService
         try {
             /** @var TestBackupService $testBackupService */
             $testBackupService = $this->getServiceLocator()->get(TestBackupService::class);
+            $testResource = $this->getOriginTestResource($event);
             $file = $testBackupService->backupDeliveryTestPackage(
                 $event->getDeliveryUri(),
-                $event->getOriginTestUri()
+                $testResource->getUri()
             );
             $this->storeQtiTestBackupPath($event->getDeliveryUri(), $file->getPrefix());
         } catch (Throwable $e) {
             $this->logError('Backup was not created for delivery: ' . $event->getDeliveryUri());
         }
+    }
+
+    private function getOriginTestResource(DeliveryCreatedEvent  $event): core_kernel_classes_Resource
+    {
+        $delivery = $this->getResource($event->getDeliveryUri());
+        /** @var core_kernel_classes_Resource $test */
+        $test = $delivery->getOnePropertyValue($this->getProperty(DeliveryAssemblyService::PROPERTY_ORIGIN));
+        if (!$test->exists()) {
+            throw new RdsResourceNotFoundException(
+                sprintf("Origin test not found for delivery: %s", $event->getDeliveryUri())
+            );
+        }
+
+        return $test;
     }
 
     private function storeQtiTestBackupPath(string $deliveryUri, string $path): bool
