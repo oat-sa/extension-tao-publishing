@@ -13,7 +13,6 @@ class UpdateConfigDeliveryFactoryService extends InstallAction
     {
         $deliveryFactoryService = $this->getServiceManager()->get(DeliveryFactory::SERVICE_ID);
         $publishingOptions = $deliveryFactoryService->getOptions();
-        $publishingOptions[DeliveryFactory::OPTION_INITIAL_PROPERTIES][] = PublishingDeliveryService::DELIVERY_REMOTE_SYNC_FIELD;
         $publishingOptions[DeliveryFactory::OPTION_INITIAL_PROPERTIES_MAP] = [
             PublishingDeliveryService::DELIVERY_REMOTE_SYNC_REST_OPTION => [
                 DeliveryFactory::OPTION_INITIAL_PROPERTIES_MAP_URI => PublishingDeliveryService::DELIVERY_REMOTE_SYNC_FIELD,
