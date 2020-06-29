@@ -1,0 +1,84 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Platform API",
+        "version": "0.1"
+    },
+    "paths": {
+        "/taoPublishing/api/platforms": {
+            "get": {
+                "tags": [
+                    "platforms"
+                ],
+                "summary": "Index of platforms",
+                "description": "Index of platforms",
+                "operationId": "oat\\taoPublishing\\controller\\RestPlatforms::get",
+                "responses": {
+                    "200": {
+                        "description": "Platform data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "description": "`false` on failure, `true` on success",
+                                            "type": "boolean"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Platform"
+                                            }
+                                        }
+                                    },
+                                    "type": "object",
+                                    "example": {
+                                        "success": true,
+                                        "data": [
+                                            {
+                                                "uri": "http://sample/first.rdf#i1536680377163170",
+                                                "label": "Sample label",
+                                                "rootUri": "http://ROOT/URI",
+                                                "boxId": "1",
+                                                "isEnabled": true
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Platform": {
+                "properties": {
+                    "uri": {
+                        "description": "Platform URI",
+                        "type": "string"
+                    },
+                    "label": {
+                        "description": "Platform label",
+                        "type": "string"
+                    },
+                    "rootUrl": {
+                        "description": "Platform root url",
+                        "type": "string"
+                    },
+                    "boxId": {
+                        "description": "Platform box id",
+                        "type": "string"
+                    },
+                    "isEnabled": {
+                        "description": "Is platform enabled",
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            }
+        }
+    }
+}

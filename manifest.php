@@ -53,6 +53,7 @@ return array(
     'uninstall' => array(
     ),
     'routes' => array(
+        '/taoPublishing/api' => ['class' => \oat\taoPublishing\model\routing\ApiRoute::class],
         '/taoPublishing' => 'oat\\taoPublishing\\controller'
     ),
     'update' => 'oat\\taoPublishing\\scripts\\update\\Updater',
