@@ -18,23 +18,15 @@
 
 define([
     'jquery',
-    'lodash',
     'i18n',
-    'util/url',
     'layout/actions',
-    'provider/resources',
-    'ui/destination/selector',
     'ui/feedback',
     'ui/taskQueue/taskQueue',
     'layout/loading-bar'
 ], function (
     $,
-    _,
     __,
-    urlHelper,
     actionManager,
-    resourceProviderFactory,
-    destinationSelectorFactory,
     feedback,
     taskQueue,
     loadingBar
@@ -45,7 +37,7 @@ define([
      * wrapped the old jstree API used to refresh the tree and optionally select a resource
      * @param {String} [uriResource] - the uri resource node to be selected
      */
-    var refreshTree = function refreshTree(uriResource) {
+    const refreshTree = function refreshTree(uriResource) {
         actionManager.trigger('refresh', {
             uri: uriResource
         });
@@ -67,13 +59,12 @@ define([
                     .then(function(result) {
                         const tasksCount = result['extra']['allTasks'].length + 1;
                         const message = __('<strong> %s </strong> task(s) have been moved to the background.', tasksCount);
-                        const infoBox = feedback(null, {
+
+                        feedback(null, {
                             encodeHtml: false,
                             timeout: { info: 8000 }
                         }).info(message);
 
-                        // ui effects
-                        taskQueue.trigger('taskcreated', { sourceDom: infoBox.getElement() });
                         // updating tasks in the background tasks
                         taskQueue.pollAll(true);
                         refreshTree($('#selected-delivery-uri').val());
