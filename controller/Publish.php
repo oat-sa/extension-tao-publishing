@@ -21,6 +21,14 @@
 
 namespace oat\taoPublishing\controller;
 
+use oat\tao\model\taskQueue\TaskLogActionTrait;
+use oat\taoPublishing\model\publishing\exception\PublishingFailedException;
+use tao_helpers_Uri;
+use core_kernel_classes_Resource;
+use GuzzleHttp\Psr7\ServerRequest;
+use oat\tao\helpers\UrlHelper;
+use oat\taoPublishing\model\publishing\delivery\RemotePublishingService;
+use oat\taoPublishing\model\publishing\PublishingService;
 use oat\taoDeliveryRdf\model\NoTestsException;
 use oat\taoPublishing\view\form\WizardForm;
 use oat\generis\model\OntologyAwareTrait;
@@ -37,6 +45,7 @@ use oat\oatbox\task\Queue;
 class Publish extends \tao_actions_CommonModule {
 
     use OntologyAwareTrait;
+    use TaskLogActionTrait;
     
     public function wizard()
     {
@@ -61,5 +70,57 @@ class Publish extends \tao_actions_CommonModule {
         } catch (NoTestsException $e) {
             $this->setView('DeliveryMgmt/wizard_error.tpl');
         }
+    }
+
+    public function selectRemoteEnvironments()
+    {
+        $selectedDelivery = new core_kernel_classes_Resource(
+            tao_helpers_Uri::decode($this->getRequestParameter('uri'))
+        );
+
+        $environments = $this->getServiceLocator()
+            ->get(PublishingService::SERVICE_ID)
+            ->getEnvironments();
+
+        $submitUrl = $this->getServiceLocator()
+            ->get(UrlHelper::class)
+            ->buildUrl('publishToRemoteEnvironment', 'Publish', 'taoPublishing');
+
+        $this->setData('submit-url', $submitUrl);
+        $this->setData('delivery-uri', $selectedDelivery->getUri());
+        $this->setData('delivery-label', $selectedDelivery->getLabel());
+        $this->setData('remote-environments', array_values($environments));
+        $this->setView('PublishToRemote/index.tpl');
+    }
+
+    /**
+     * @param ServerRequest $request
+     * @return mixed
+     * @throws PublishingFailedException
+     */
+    public function publishToRemoteEnvironment(ServerRequest $request)
+    {
+        $requestData = $request->getParsedBody();
+        $deliveryUri = $requestData['delivery-uri'] ?? '';
+        $environments = $requestData['remote-environments'] ?? [];
+
+        if (!count($environments)) {
+            return $this->returnJson([
+                'success'=> false,
+                'message' => __('Environment(s) should be selected'),
+            ]);
+        }
+
+        /** @var RemotePublishingService $remotePublishingService */
+        $remotePublishingService = $this->getServiceLocator()->get(RemotePublishingService::class);
+        $tasks = $remotePublishingService->publishDeliveryToEnvironments($deliveryUri, $environments);
+
+        $task = array_shift($tasks);
+        $self = $this;
+        $allTasks = array_map(static function ($task) use ($self) {
+            return $self->getTaskLogReturnData($task->getId());
+        }, $tasks);
+
+        return $this->returnTaskJson($task, ['allTasks' => $allTasks]);
     }
 }
