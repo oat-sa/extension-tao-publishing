@@ -102,12 +102,6 @@ class PlatformAdmin extends \tao_actions_SaSModule
             }
         }
 
-        $actionsElementClass = \tao_helpers_Uri::encode(PublishingService::PUBLISH_ACTIONS);
-        $actionsElement = $myForm->getElement($actionsElementClass);
-        $actionsElement->setOptions($publishingService->getPublishingActions());
-        $myForm->removeElement($actionsElement);
-        $myForm->addElement($actionsElement);
-
         $this->setData('myForm', $myForm->render());
         $this->setView('form.tpl', 'tao');
     }

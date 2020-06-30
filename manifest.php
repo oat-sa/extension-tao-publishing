@@ -38,12 +38,10 @@ return array(
     'install' => array(
         'rdf' => array(
             __DIR__. '/model/ontology/platform.rdf',
-            __DIR__. '/model/ontology/taodelivery.rdf',
             __DIR__. '/model/ontology/taotest.rdf',
             __DIR__. '/model/ontology/indexation.rdf'
         ),
         'php' => array(
-            \oat\taoPublishing\scripts\install\RegisterListeners::class,
             \oat\taoPublishing\scripts\install\UpdateConfigDeliveryFactoryService::class,
             \oat\taoPublishing\scripts\install\RegisterGenerisSearch::class,
             \oat\taoPublishing\scripts\install\RegisterDeliveryEventsListener::class,
