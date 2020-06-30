@@ -38,6 +38,7 @@ return array(
     'install' => array(
         'rdf' => array(
             __DIR__. '/model/ontology/platform.rdf',
+            __DIR__. '/model/ontology/taodelivery.rdf',
             __DIR__. '/model/ontology/taotest.rdf',
             __DIR__. '/model/ontology/indexation.rdf'
         ),
