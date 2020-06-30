@@ -19,6 +19,7 @@
 
 namespace oat\taoPublishing\model;
 
+use oat\tao\model\OntologyClassService;
 use oat\taoPublishing\model\publishing\PublishingAuthService;
 use Psr\Http\Message\RequestInterface;
 use GuzzleHttp\Psr7\Uri;
@@ -29,13 +30,13 @@ use Psr\Http\Message\ResponseInterface;
  *
  * @access public
  */
-class PlatformService extends \tao_models_classes_ClassService
+class PlatformService extends OntologyClassService
 {
     public const CLASS_URI = 'http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatform';
     public const PROPERTY_AUTH_TYPE = 'http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatformAuthType';
     public const PROPERTY_ROOT_URL = 'http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatformUrl';
     public const PROPERTY_SENDING_BOX_ID = 'http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatformSendingBoxId';
-    public const PROPERTY_IS_ENABLED = 'http://www.tao.lu/Ontologies/TaoPlatform.rdf#Publishing';
+    public const PROPERTY_IS_PUBLISHING_ENABLED = 'http://www.tao.lu/Ontologies/TaoPlatform.rdf#PublishingEnabled';
 
     /**
      * return the group top level class

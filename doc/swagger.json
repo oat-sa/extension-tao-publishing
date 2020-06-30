@@ -12,7 +12,7 @@
                 ],
                 "summary": "Index of platforms",
                 "description": "Index of platforms",
-                "operationId": "oat\\taoPublishing\\controller\\RestPlatforms::get",
+                "operationId": "oat\\taoPublishing\\controller\\api\\Platforms::get",
                 "responses": {
                     "200": {
                         "description": "Platform data",
@@ -38,9 +38,10 @@
                                             {
                                                 "uri": "http://sample/first.rdf#i1536680377163170",
                                                 "label": "Sample label",
+                                                "authType": "http://www.tao.lu/Ontologies/TAO.rdf#BasicAuthConsumer",
                                                 "rootUri": "http://ROOT/URI",
                                                 "boxId": "1",
-                                                "isEnabled": true
+                                                "isPublishingEnabled": true
                                             }
                                         ]
                                     }
@@ -72,8 +73,12 @@
                         "description": "Platform box id",
                         "type": "string"
                     },
-                    "isEnabled": {
-                        "description": "Is platform enabled",
+                    "authType": {
+                        "description": "Platform authentication type",
+                        "type": "string"
+                    },
+                    "isPublishingEnabled": {
+                        "description": "Is publishing enabled",
                         "type": "boolean"
                     }
                 },

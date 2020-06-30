@@ -21,17 +21,55 @@
 
 declare(strict_types=1);
 
-namespace oat\taoPublishing\controller;
+namespace oat\taoPublishing\controller\api;
 
-use oat\taoPublishing\model\platform\Platform;
+use common_exception_RestApi;
+use oat\taoPublishing\model\entity\Platform;
 use oat\taoPublishing\model\PlatformService;
+use oat\taoPublishing\model\CrudPlatformsService;
+use tao_actions_CommonRestModule;
 use tao_actions_RestController;
 
 /**
  * @OA\Info(title="Platform API", version="0.1")
  */
-class RestPlatforms extends tao_actions_RestController
+class Platforms extends tao_actions_CommonRestModule
 {
+    public function __construct()
+    {
+        parent::__construct();
+        $this->service = CrudPlatformsService::singleton();
+    }
+
+    public function index()
+    {
+        $this->returnFailure(new common_exception_RestApi('Not implemented'));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function post()
+    {
+        $this->returnFailure(new common_exception_RestApi('Not implemented'));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function put($uri)
+    {
+        $this->returnFailure(new common_exception_RestApi('Not implemented'));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function delete($uri = null)
+    {
+        $this->returnFailure(new common_exception_RestApi('Not implemented'));
+    }
+
     /**
      * @OA\Get(
      *     path="/taoPublishing/api/platforms",
@@ -62,9 +100,10 @@ class RestPlatforms extends tao_actions_RestController
      *                         {
      *                             "uri": "http://sample/first.rdf#i1536680377163170",
      *                             "label": "Sample label",
+     *                             "authType": "http://www.tao.lu/Ontologies/TAO.rdf#BasicAuthConsumer",
      *                             "rootUri": "http://ROOT/URI",
      *                             "boxId": "1",
-     *                             "isEnabled": true,
+     *                             "isPublishingEnabled": true,
      *                         }
      *                     }
      *                 }
@@ -72,25 +111,23 @@ class RestPlatforms extends tao_actions_RestController
      *         ),
      *     ),
      * )
+     * {@inheritDoc}
      */
-    public function get()
+    public function get($uri = null)
     {
-        try {
-            if ($this->getRequestMethod() !== \Request::HTTP_GET) {
-                throw new \common_exception_BadRequest();
-            }
+        return $this->returnSuccess(parent::get($uri));
+    }
 
-            $list = [];
-            foreach ($this->getClass(PlatformService::CLASS_URI)->getInstances(true) as $platformResource) {
-                $list[] = new Platform($platformResource);
-            }
-
-            $this->returnJson([
-                'success' => true,
-                'data' => $list,
-            ]);
-        } catch (\Exception $e) {
-            $this->returnFailure($e);
-        }
+    /**
+     * @return array
+     */
+    protected function getParametersAliases()
+    {
+        return array_merge(parent::getParametersAliases(), [
+            'rootUrl' => PlatformService::PROPERTY_ROOT_URL,
+            'authType' => PlatformService::PROPERTY_AUTH_TYPE,
+            'boxId' => PlatformService::PROPERTY_SENDING_BOX_ID,
+            'isPublishingEnabled' => PlatformService::PROPERTY_IS_PUBLISHING_ENABLED,
+        ]);
     }
 }

@@ -27,7 +27,7 @@ use oat\tao\model\routing\AbstractApiRoute;
 
 class ApiRoute extends AbstractApiRoute
 {
-    const REST_CONTROLLER_PREFIX = 'oat\\taoPublishing\\controller\\Rest';
+    const REST_CONTROLLER_PREFIX = 'oat\\taoPublishing\\controller\\api\\';
 
     /**
      * @inheritdoc

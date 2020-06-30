@@ -21,9 +21,10 @@
 
 declare(strict_types=1);
 
-namespace oat\taoPublishing\model\platform;
+namespace oat\taoPublishing\model\entity;
 
 use oat\taoPublishing\model\PlatformService;
+use oat\generis\model\OntologyRdfs;
 
 /**
  * @OA\Schema()
@@ -67,27 +68,39 @@ class Platform implements \JsonSerializable
     private $boxId;
 
     /**
+     * @var string
+     * @OA\Property(
+     *     description="Platform authentication type",
+     *     type="string",
+     * )
+     */
+    private $authType;
+
+    /**
      * @var bool
      * @OA\Property(
-     *     description="Is platform enabled",
+     *     description="Is publishing enabled",
      *     type="boolean",
      * )
      */
-    private $isEnabled;
+    private $isPublishingEnabled;
 
     public function __construct(\core_kernel_classes_Resource $resource)
     {
         $this->uri = $resource->getUri();
-        $this->label = $resource->getLabel();
-        $this->rootUrl = (string) $resource->getOnePropertyValue(
-            new \core_kernel_classes_Property(PlatformService::PROPERTY_ROOT_URL)
-        );
-        $this->boxId = (string) $resource->getOnePropertyValue(
-            new \core_kernel_classes_Property(PlatformService::PROPERTY_SENDING_BOX_ID)
-        );
-        $this->isEnabled = (bool) $resource->getOnePropertyValue(
-            new \core_kernel_classes_Property(PlatformService::PROPERTY_IS_ENABLED)
-        );
+        $values = $resource->getPropertiesValues([
+            OntologyRdfs::RDFS_LABEL,
+            PlatformService::PROPERTY_ROOT_URL,
+            PlatformService::PROPERTY_SENDING_BOX_ID,
+            PlatformService::PROPERTY_AUTH_TYPE,
+            PlatformService::PROPERTY_IS_PUBLISHING_ENABLED,
+        ]);
+        $this->label = (string) reset($values[OntologyRdfs::RDFS_LABEL]);
+        $this->rootUrl = (string) reset($values[PlatformService::PROPERTY_ROOT_URL]);
+        $this->boxId = (string) reset($values[PlatformService::PROPERTY_SENDING_BOX_ID]);
+        $this->isPublishingEnabled = (bool) reset($values[PlatformService::PROPERTY_IS_PUBLISHING_ENABLED]);
+        $authType = reset($values[PlatformService::PROPERTY_AUTH_TYPE]);
+        $this->authType = $authType instanceof \core_kernel_classes_Resource ? $authType->getUri() : (string) $authType;
     }
 
     public function getUri(): string
@@ -110,9 +123,14 @@ class Platform implements \JsonSerializable
         return $this->boxId;
     }
 
-    public function isEnabled(): bool
+    public function getAuthType(): string
     {
-        return $this->isEnabled;
+        return $this->authType;
+    }
+
+    public function isPublishingEnabled(): bool
+    {
+        return $this->isPublishingEnabled;
     }
 
     public function jsonSerialize(): array
@@ -122,7 +140,8 @@ class Platform implements \JsonSerializable
             'label' => $this->getLabel(),
             'rootUrl' => $this->getRootUrl(),
             'boxId' => $this->getBoxId(),
-            'isEnabled' => $this->isEnabled(),
+            'authType' => $this->getAuthType(),
+            'isPublishingEnabled' => $this->isPublishingEnabled(),
         ];
     }
 }
