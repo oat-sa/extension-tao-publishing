@@ -33,6 +33,8 @@ use oat\taoDeliveryRdf\model\ContainerRuntime;
 use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
 use oat\taoDeliveryRdf\model\event\DeliveryCreatedEvent;
 use oat\taoDeliveryRdf\model\event\DeliveryUpdatedEvent;
+use oat\taoPublishing\controller\RequestValidator\PublishDeliveryRequestValidator;
+use oat\taoPublishing\model\publishing\delivery\DeliveryTestService;
 use oat\taoPublishing\model\publishing\delivery\listeners\DeliveryEventsListeners;
 use oat\taoPublishing\model\publishing\delivery\PublishingDeliveryService;
 use oat\taoPublishing\model\publishing\PublishingAuthService;
@@ -248,5 +250,11 @@ class Updater extends common_ext_ExtensionUpdater
         }
 
         $this->skip('1.2.0', '2.1.2');
+
+        if ($this->isVersion('2.1.2')) {
+            $this->getServiceManager()->register(DeliveryTestService::SERVICE_ID, new DeliveryTestService());
+
+            $this->setVersion('3.0.0');
+        }
     }
 }

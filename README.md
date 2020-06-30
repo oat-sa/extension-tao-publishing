@@ -6,7 +6,7 @@
 ![GitHub release](https://img.shields.io/github/release/oat-sa/extension-tao-publishing.svg)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/y/oat-sa/extension-tao-publishing.svg)
 
-> Publish deliveries, tests and interactions to other tao platforms during the delivery creation.
+> Publish deliveries, tests and interactions to other tao platforms.
 
 
 ## Installation instructions
@@ -45,8 +45,11 @@ As a system administrator you can also install it through the TAO Extension Mana
 
 ## Set up deliveries on TAO Platform
 
-To be able to synchronize, you need to set up the publication targets that you want to publish. You can do it by:
+To be able to publish, you need to set up the publication targets that you want to publish. You can do it by:
  - Clicking on Settings Icon (top corner right side) -> Publication Targets -> Add Button.
  - Label: Fill the label with a good name of your choice.
  - Root URL should be the protocol + hostname of the publication target (other TAO platform). Ex: https://demo.taotesting.com/.
- - Auth type: In case of Basic Auth, just use a username and password of a real user in the system that you want to publish. Please make sure that user has proper permissions.
+ - Auth type: In case of Basic Auth, just use an username and password of a real user in the system that you want to publish. Please make sure that user has proper permissions.
+
+After this steps, we're able to see a new button called publish on the delivery dialog.
+To do a publication, just click on it and follow the proper steps on the publication dialog.

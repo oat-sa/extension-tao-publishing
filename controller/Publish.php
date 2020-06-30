@@ -1,31 +1,38 @@
 <?php
-/**  
+
+/**
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; under version 2
  * of the License (non-upgradable).
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- * 
+ *
  * Copyright (c) 2016 (original work) Open Assessment Technologies SA;
- *               
- * 
+ *
+ *
  */
+
+declare(strict_types=1);
 
 namespace oat\taoPublishing\controller;
 
+use core_kernel_classes_Resource;
 use oat\taoDeliveryRdf\model\NoTestsException;
+use oat\taoPublishing\model\publishing\PublishingService;
+use oat\taoPublishing\view\form\PublishForm;
 use oat\taoPublishing\view\form\WizardForm;
 use oat\generis\model\OntologyAwareTrait;
 use oat\taoPublishing\model\DeployTest;
 use oat\oatbox\task\Queue;
+
 /**
  * Sample controller
  *
@@ -34,32 +41,40 @@ use oat\oatbox\task\Queue;
  * @license GPL-2.0
  *
  */
-class Publish extends \tao_actions_CommonModule {
+class Publish extends \tao_actions_SaSModule {
 
     use OntologyAwareTrait;
-    
-    public function wizard()
+
+    public function wizard(): void
     {
-            try {
-            $formContainer = new WizardForm(array('test' => $this->getRequestParameter('id')));
-            $myForm = $formContainer->getForm();
-             
-            if ($myForm->isValid() && $myForm->isSubmited()) {
-                $test = $this->getResource($myForm->getValue('test'));
-                $env = $this->getResource($myForm->getValue('environment'));
-                
-                $queue = $this->getServiceManager()->get(Queue::CONFIG_ID);
-                $report = $queue->createTask(new DeployTest(), [$test->getUri(), $env->getUri()]);
-                //$this->returnReport($report);
-                $this->returnReport(\common_report_Report::createSuccess('The deployement of your test has been scheduled'));
-            } else {
-                $this->setData('myForm', $myForm->render());
-                $this->setData('formTitle', __('Publish to a delivery environment'));
-                $this->setView('form.tpl', 'tao');
+        try {
+            $formContainer = new WizardForm(['test' => $this->getRequestParameter('id')]);
+            $form = $formContainer->getForm();
+
+            if ($form->isValid() && $form->isSubmited()) {
+                $test = $this->getResource($form->getValue('test'));
+                $env = $this->getResource($form->getValue('environment'));
+
+                $queue = $this->getQueueService();
+                $queue->createTask(new DeployTest(), [$test->getUri(), $env->getUri()]);
+                $this->returnReport(
+                    \common_report_Report::createSuccess('The deployment of your test has been scheduled')
+                );
+
+                return;
             }
-    
+
+            $this->setData('myForm', $form->render());
+            $this->setData('formTitle', __('Publish to a delivery environment'));
+            $this->setView('form.tpl', 'tao');
+
         } catch (NoTestsException $e) {
             $this->setView('DeliveryMgmt/wizard_error.tpl');
         }
+    }
+
+    private function getQueueService(): Queue
+    {
+        return $this->getServiceLocator()->get(Queue::CONFIG_ID);
     }
 }
