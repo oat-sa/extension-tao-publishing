@@ -32,6 +32,7 @@ use oat\tao\model\taskQueue\Task\CallbackTaskInterface;
 use oat\taoPublishing\model\publishing\delivery\RemotePublishingService;
 use oat\generis\test\TestCase;
 use oat\taoPublishing\model\publishing\exception\PublishingFailedException;
+use oat\taoPublishing\model\publishing\exception\PublishingInvalidArgumentException;
 
 class RemotePublishingServiceTest extends TestCase
 {
@@ -50,7 +51,7 @@ class RemotePublishingServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->ontologyMock =  $this->createMock(Ontology::class);
+        $this->ontologyMock =  $this->getOntologyMock();
         $this->loggerMock = $this->createMock(LoggerService::class);
         $this->queueDispatcherMock = $this->createMock(QueueDispatcherInterface::class);
         $serviceLocatorMock = $this->getServiceLocatorMock(
@@ -65,55 +66,6 @@ class RemotePublishingServiceTest extends TestCase
         $this->subject->setServiceLocator($serviceLocatorMock);
     }
 
-    public function testPublishDeliveryToEnvironments_WhenDeliveryDoesNotHaveOriginTest_ThrowsException(): void
-    {
-        $deliveryUri = 'FAKE_DELIVERY_URI';
-        $environments = ['FAKE_ENVIRONMENT_URI'];
-
-        $this->mockOriginTestProperty();
-        $deliveryResourceMock = $this->getDeliveryResourceMock(null);
-        $deliveryResourceMock->method('exists')
-            ->willReturn(true);
-
-        $this->ontologyMock
-            ->method('getResource')
-            ->with($deliveryUri)
-            ->willReturn($deliveryResourceMock);
-
-        self::expectException(PublishingFailedException::class);
-
-        $this->subject->publishDeliveryToEnvironments($deliveryUri, $environments);
-    }
-
-    public function testPublishDeliveryToEnvironments_WhenPublicationToEnvFailed_LogsError(): void
-    {
-        $deliveryUri = 'FAKE_DELIVERY_URI';
-        $testUri = 'FAKE_TEST_URI';
-        $environments = ['FAKE_ENVIRONMENT_URI'];
-
-        $this->mockOriginTestProperty();
-        $testResourceMock = $this->getTestResourceMock($testUri);
-        $deliveryResourceMock = $this->getDeliveryResourceMock($testResourceMock);
-        $deliveryResourceMock->method('exists')
-            ->willReturn(true);
-        $environmentMock = $this->createMock(core_kernel_classes_Resource::class);
-
-        $this->ontologyMock
-            ->method('getResource')
-            ->withConsecutive([$deliveryUri], ['FAKE_ENVIRONMENT_URI'])
-            ->willReturnOnConsecutiveCalls($deliveryResourceMock, $environmentMock);
-
-        $this->queueDispatcherMock
-            ->method('createTask')
-            ->willThrowException(new common_exception_Error('DUMMY DISPATCHER EXCEPTION MESSAGE'));
-
-        $this->loggerMock->expects(self::once())
-            ->method('error');
-
-        $tasks = $this->subject->publishDeliveryToEnvironments($deliveryUri, $environments);
-        self::assertCount(0, $tasks, 'Method must return correct number of created tasks.');
-    }
-
     public function testPublishDeliveryToEnvironments_ReturnsListOfCreatedTasks(): void
     {
         $deliveryUri = 'FAKE_DELIVERY_URI';
@@ -121,17 +73,14 @@ class RemotePublishingServiceTest extends TestCase
         $environments = ['FAKE_ENVIRONMENT_URI_1', 'FAKE_ENVIRONMENT_URI_2'];
         $expectedTasksAmount = 2;
 
-        $this->mockOriginTestProperty();
         $testResourceMock = $this->getTestResourceMock($testUri);
-        $deliveryResourceMock = $this->getDeliveryResourceMock($testResourceMock);
-        $deliveryResourceMock->method('exists')
-            ->willReturn(true);
-        $environmentMock1 = $this->createMock(core_kernel_classes_Resource::class);
-        $environmentMock1->method('exists')
-            ->willReturn(true);
-        $environmentMock2 = $this->createMock(core_kernel_classes_Resource::class);
-        $environmentMock2->method('exists')
-            ->willReturn(true);
+        $deliveryExists = true;
+        $deliveryResourceMock = $this->getDeliveryResourceMock($testResourceMock, $deliveryExists);
+
+        $environmentExists = true;
+        $publishingEnabled = true;
+        $environmentMock1 = $this->getRemoteEnvironmentMock($environmentExists, $publishingEnabled);
+        $environmentMock2 = $this->getRemoteEnvironmentMock($environmentExists, $publishingEnabled);
 
         $this->ontologyMock
             ->method('getResource')
@@ -150,12 +99,143 @@ class RemotePublishingServiceTest extends TestCase
         self::assertInstanceOf(CallbackTaskInterface::class, $tasks[1]);
     }
 
-    private function mockOriginTestProperty(): void
+    public function testPublishDeliveryToEnvironments_WhenDeliveryDoesNotExist_ThrowsException(): void
+    {
+        $deliveryUri = 'FAKE_DELIVERY_URI';
+        $environments = ['FAKE_ENVIRONMENT_URI'];
+
+        $originTestProperty = null;
+        $deliveryExists = false;
+        $deliveryResourceMock = $this->getDeliveryResourceMock($originTestProperty, $deliveryExists);
+        $this->ontologyMock
+            ->method('getResource')
+            ->with($deliveryUri)
+            ->willReturn($deliveryResourceMock);
+
+        self::expectException(PublishingInvalidArgumentException::class);
+
+        $this->subject->publishDeliveryToEnvironments($deliveryUri, $environments);
+    }
+
+    public function testPublishDeliveryToEnvironments_WhenDeliveryDoesNotHaveOriginTest_ThrowsException(): void
+    {
+        $deliveryUri = 'FAKE_DELIVERY_URI';
+        $environments = ['FAKE_ENVIRONMENT_URI'];
+
+        $originTestProperty = null;
+        $deliveryExists = true;
+        $deliveryResourceMock = $this->getDeliveryResourceMock($originTestProperty, $deliveryExists);
+        $this->ontologyMock
+            ->method('getResource')
+            ->with($deliveryUri)
+            ->willReturn($deliveryResourceMock);
+
+        self::expectException(PublishingFailedException::class);
+
+        $this->subject->publishDeliveryToEnvironments($deliveryUri, $environments);
+    }
+
+    public function testPublishDeliveryToEnvironments_WhenPublicationToEnvFailed_LogsError(): void
+    {
+        $deliveryUri = 'FAKE_DELIVERY_URI';
+        $testUri = 'FAKE_TEST_URI';
+        $environments = ['FAKE_ENVIRONMENT_URI'];
+
+        $testResourceMock = $this->getTestResourceMock($testUri);
+        $deliveryExists = true;
+        $deliveryResourceMock = $this->getDeliveryResourceMock($testResourceMock, $deliveryExists);
+        $environmentMock = $this->createMock(core_kernel_classes_Resource::class);
+
+        $this->ontologyMock
+            ->method('getResource')
+            ->withConsecutive([$deliveryUri], ['FAKE_ENVIRONMENT_URI'])
+            ->willReturnOnConsecutiveCalls($deliveryResourceMock, $environmentMock);
+
+        $this->queueDispatcherMock
+            ->method('createTask')
+            ->willThrowException(new common_exception_Error('DUMMY DISPATCHER EXCEPTION MESSAGE'));
+
+        $this->loggerMock->expects(self::once())
+            ->method('error');
+
+        $tasks = $this->subject->publishDeliveryToEnvironments($deliveryUri, $environments);
+        self::assertCount(0, $tasks, 'Method must return correct number of created tasks.');
+    }
+
+    public function testPublishDeliveryToEnvironments_EnvironmentDoesNotExist(): void
+    {
+        $deliveryUri = 'FAKE_DELIVERY_URI';
+        $testUri = 'FAKE_TEST_URI';
+        $environments = ['FAKE_ENVIRONMENT_URI_1', 'FAKE_ENVIRONMENT_URI_2'];
+        $expectedTasksAmount = 1;
+
+        $testResourceMock = $this->getTestResourceMock($testUri);
+        $deliveryExists = true;
+        $deliveryResourceMock = $this->getDeliveryResourceMock($testResourceMock, $deliveryExists);
+
+        $environmentExists = true;
+        $publishingEnabled = true;
+        $environmentMock1 = $this->getRemoteEnvironmentMock(false, $publishingEnabled);
+        $environmentMock2 = $this->getRemoteEnvironmentMock($environmentExists, $publishingEnabled);
+
+        $this->ontologyMock
+            ->method('getResource')
+            ->willReturnOnConsecutiveCalls($deliveryResourceMock, $environmentMock1, $environmentMock2);
+
+        $task1 = $this->createMock(CallbackTaskInterface::class);
+        $this->queueDispatcherMock
+            ->method('createTask')
+            ->willReturnOnConsecutiveCalls($task1);
+
+        $tasks = $this->subject->publishDeliveryToEnvironments($deliveryUri, $environments);
+
+        self::assertCount($expectedTasksAmount, $tasks, 'Method must return expected number of created tasks.');
+        self::assertInstanceOf(CallbackTaskInterface::class, $tasks[0]);
+    }
+
+    public function testPublishDeliveryToEnvironments_PublishingToEnvironmentDisabled(): void
+    {
+        $deliveryUri = 'FAKE_DELIVERY_URI';
+        $testUri = 'FAKE_TEST_URI';
+        $environments = ['FAKE_ENVIRONMENT_URI_1', 'FAKE_ENVIRONMENT_URI_2'];
+        $expectedTasksAmount = 1;
+
+        $testResourceMock = $this->getTestResourceMock($testUri);
+        $deliveryExists = true;
+        $deliveryResourceMock = $this->getDeliveryResourceMock($testResourceMock, $deliveryExists);
+
+        $environmentExists = true;
+        $publishingEnabled = true;
+        $environmentMock1 = $this->getRemoteEnvironmentMock($environmentExists, $publishingEnabled);
+        $environmentMock2 = $this->getRemoteEnvironmentMock($environmentExists, false);
+
+        $this->ontologyMock
+            ->method('getResource')
+            ->willReturnOnConsecutiveCalls($deliveryResourceMock, $environmentMock1, $environmentMock2);
+
+        $task1 = $this->createMock(CallbackTaskInterface::class);
+        $this->queueDispatcherMock
+            ->method('createTask')
+            ->willReturnOnConsecutiveCalls($task1);
+
+        $tasks = $this->subject->publishDeliveryToEnvironments($deliveryUri, $environments);
+
+        self::assertCount($expectedTasksAmount, $tasks, 'Method must return expected number of created tasks.');
+        self::assertInstanceOf(CallbackTaskInterface::class, $tasks[0]);
+    }
+
+    /**
+     * @return Ontology|MockObject
+     */
+    private function getOntologyMock(): Ontology
     {
         $propertyOriginMock = $this->createMock(core_kernel_classes_Property::class);
-        $this->ontologyMock
+        $ontologyMock = $this->createMock(Ontology::class);
+        $ontologyMock
             ->method('getProperty')
             ->willReturn($propertyOriginMock);
+
+        return $ontologyMock;
     }
 
     /**
@@ -173,15 +253,34 @@ class RemotePublishingServiceTest extends TestCase
 
     /**
      * @param mixed $expectedOriginTestValue
+     * @param bool $resourceExists
      * @return core_kernel_classes_Resource|MockObject
      */
-    private function getDeliveryResourceMock($expectedOriginTestValue): core_kernel_classes_Resource
+    private function getDeliveryResourceMock($expectedOriginTestValue, bool $resourceExists): core_kernel_classes_Resource
     {
         $deliveryResourceMock = $this->createMock(core_kernel_classes_Resource::class);
         $deliveryResourceMock->method('getOnePropertyValue')
             ->willReturn($expectedOriginTestValue);
+        $deliveryResourceMock->method('exists')
+            ->willReturn($resourceExists);
 
         return $deliveryResourceMock;
+    }
+
+    /**
+     * @param bool $resourceExists
+     * @param bool $remotePublishingEnabled
+     * @return core_kernel_classes_Resource|MockObject
+     */
+    private function getRemoteEnvironmentMock(bool $resourceExists, bool $remotePublishingEnabled): core_kernel_classes_Resource
+    {
+        $environmentMock = $this->createMock(core_kernel_classes_Resource::class);
+        $environmentMock->method('exists')
+            ->willReturn($resourceExists);
+        $environmentMock->method('getOnePropertyValue')
+            ->willReturn($remotePublishingEnabled);
+
+        return $environmentMock;
     }
 }
 
