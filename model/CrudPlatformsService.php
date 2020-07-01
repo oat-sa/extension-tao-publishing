@@ -23,6 +23,9 @@ declare(strict_types=1);
 
 namespace oat\taoPublishing\model;
 
+use common_exception_InvalidArgumentType;
+use common_exception_PreConditionFailure;
+use common_Utils;
 use oat\taoPublishing\model\entity\Platform;
 use oat\taoPublishing\model\PlatformService;
 use tao_models_classes_CrudService;
