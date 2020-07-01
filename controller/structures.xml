@@ -23,7 +23,7 @@
 					<action id="platform-delete" name="Delete" binding="removeNode" url="/taoPublishing/PlatformAdmin/delete" context="instance" group="tree">
                         <icon id="icon-bin"/>
                     </action>
-					<action id="platform-new" name="Add Platform" url="/taoPublishing/PlatformAdmin/addInstanceForm" context="class" group="tree">
+					<action id="platform-new" name="Add" url="/taoPublishing/PlatformAdmin/addInstanceForm" context="class" group="tree">
                         <icon id="icon-add"/>
                     </action>
 				</actions>
