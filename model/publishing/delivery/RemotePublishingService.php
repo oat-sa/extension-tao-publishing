@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace oat\taoPublishing\model\publishing\delivery;
 
+use oat\taoPublishing\model\PlatformService;
 use oat\taoPublishing\model\publishing\exception\PublishingInvalidArgumentException;
 use Throwable;
 use core_kernel_classes_Resource;
@@ -81,6 +82,18 @@ class RemotePublishingService extends ConfigurableService
         return $tasks;
     }
 
+    private function getDeliveryResource(string $deliveryUri): core_kernel_classes_Resource
+    {
+        $deliveryResource = $this->getResource($deliveryUri);
+        if (!$deliveryResource->exists()) {
+            throw new PublishingInvalidArgumentException(
+                sprintf("Delivery resource with URI '%s' does not exist.", $deliveryUri)
+            );
+        }
+
+        return $deliveryResource;
+    }
+
     private function getOriginTestUri(): string
     {
         $testProperty = $this->getProperty(DeliveryAssemblyService::PROPERTY_ORIGIN);
@@ -96,12 +109,7 @@ class RemotePublishingService extends ConfigurableService
 
     private function publishToEnvironment(core_kernel_classes_Resource $environment): CallbackTaskInterface
     {
-        if (!$environment->exists()) {
-            throw new PublishingInvalidArgumentException(
-                __(sprintf('Remote environment with URI "%s" does not exist.', $environment->getUri()))
-            );
-        }
-
+        $this->validateRemoteEnvironment($environment);
         $params = [
             $this->testUri,
             $environment->getUri(),
@@ -112,15 +120,19 @@ class RemotePublishingService extends ConfigurableService
         return $this->queueDispatcher->createTask(new DeployTestEnvironments(), $params, $message);
     }
 
-    private function getDeliveryResource(string $deliveryUri): core_kernel_classes_Resource
+    private function validateRemoteEnvironment(core_kernel_classes_Resource $environment): void
     {
-        $deliveryResource = $this->getResource($deliveryUri);
-        if (!$deliveryResource->exists()) {
+        if (!$environment->exists()) {
             throw new PublishingInvalidArgumentException(
-                sprintf("Delivery resource with URI '%s' does not exist.", $deliveryUri)
+                __(sprintf('Remote environment with URI "%s" does not exist.', $environment->getUri()))
             );
         }
 
-        return $deliveryResource;
+        $publishingEnabled = (bool) $environment->getOnePropertyValue($this->getProperty(PlatformService::PROPERTY_IS_PUBLISHING_ENABLED));
+        if ($publishingEnabled === false) {
+            throw new PublishingInvalidArgumentException(
+                __(sprintf('Remote publishing is disabled for environment with URI "%s"', $environment->getUri()))
+            );
+        }
     }
 }
