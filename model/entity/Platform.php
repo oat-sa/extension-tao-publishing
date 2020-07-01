@@ -23,13 +23,15 @@ declare(strict_types=1);
 
 namespace oat\taoPublishing\model\entity;
 
+use core_kernel_classes_Resource;
+use JsonSerializable;
 use oat\taoPublishing\model\PlatformService;
 use oat\generis\model\OntologyRdfs;
 
 /**
  * @OA\Schema()
  */
-class Platform implements \JsonSerializable
+class Platform implements JsonSerializable
 {
     /**
      * @var string
@@ -85,7 +87,7 @@ class Platform implements \JsonSerializable
      */
     private $isPublishingEnabled;
 
-    public function __construct(\core_kernel_classes_Resource $resource)
+    public function __construct(core_kernel_classes_Resource $resource)
     {
         $this->uri = $resource->getUri();
         $values = $resource->getPropertiesValues([
@@ -100,7 +102,7 @@ class Platform implements \JsonSerializable
         $this->boxId = (string) reset($values[PlatformService::PROPERTY_SENDING_BOX_ID]);
         $this->isPublishingEnabled = (bool) reset($values[PlatformService::PROPERTY_IS_PUBLISHING_ENABLED]);
         $authType = reset($values[PlatformService::PROPERTY_AUTH_TYPE]);
-        $this->authType = $authType instanceof \core_kernel_classes_Resource ? $authType->getUri() : (string) $authType;
+        $this->authType = $authType instanceof core_kernel_classes_Resource ? $authType->getUri() : (string) $authType;
     }
 
     public function getUri(): string
