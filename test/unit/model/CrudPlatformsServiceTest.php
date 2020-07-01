@@ -23,6 +23,10 @@ declare(strict_types=1);
 
 namespace oat\taoPublishing\test\unit\model;
 
+use common_exception_InvalidArgumentType;
+use common_exception_PreConditionFailure;
+use core_kernel_classes_Class;
+use core_kernel_classes_Resource;
 use oat\generis\test\OntologyMockTrait;
 use oat\generis\test\TestCase;
 use oat\taoPublishing\model\CrudPlatformsService;
@@ -52,13 +56,13 @@ class CrudPlatformsServiceTest extends TestCase
 
     public function testGet_WhenUriIsNotValid_ThenExceptionIsThrown(): void
     {
-        $this->expectException(\common_exception_InvalidArgumentType::class);
+        $this->expectException(common_exception_InvalidArgumentType::class);
         $this->subject->get('invaliduri');
     }
 
     public function testGet_WhenUriIsNotInScope_ThenExceptionIsThrown(): void
     {
-        $this->expectException(\common_exception_PreConditionFailure::class);
+        $this->expectException(common_exception_PreConditionFailure::class);
         $this->subject->expects($this->once())->method('isInScope')->willReturn(false);
         $this->subject->get('http://test/first.rdf#i1111111111111111');
     }
@@ -67,7 +71,7 @@ class CrudPlatformsServiceTest extends TestCase
     {
         $this->subject->expects($this->once())->method('isInScope')->willReturn(true);
         $this->subject->expects($this->once())->method('getResource')->willReturn(
-            new \core_kernel_classes_Resource('http://test/first.rdf#i1111111111111111')
+            new core_kernel_classes_Resource('http://test/first.rdf#i1111111111111111')
         );
         $result = $this->subject->get('http://test/first.rdf#i1111111111111111');
         $this->assertInstanceOf(Platform::class, $result);
@@ -76,10 +80,10 @@ class CrudPlatformsServiceTest extends TestCase
     public function testGetAll_WhenRequested_ThenListOfPlatformEntitiesReturned(): void
     {
         $resources = [
-            new \core_kernel_classes_Resource('http://test/first.rdf#i1111111111111111'),
-            new \core_kernel_classes_Resource('http://test/second.rdf#i2222222222222222'),
+            new core_kernel_classes_Resource('http://test/first.rdf#i1111111111111111'),
+            new core_kernel_classes_Resource('http://test/second.rdf#i2222222222222222'),
         ];
-        $classMock = $this->createMock(\core_kernel_classes_Class::class);
+        $classMock = $this->createMock(core_kernel_classes_Class::class);
         $classMock->method('getInstances')->willReturn($resources);
         $this->platformServiceMock->method('getRootClass')->willReturn($classMock);
 

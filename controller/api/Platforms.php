@@ -24,6 +24,7 @@ declare(strict_types=1);
 namespace oat\taoPublishing\controller\api;
 
 use common_exception_RestApi;
+use Exception;
 use oat\taoPublishing\model\entity\Platform;
 use oat\taoPublishing\model\PlatformService;
 use oat\taoPublishing\model\CrudPlatformsService;
@@ -115,7 +116,11 @@ class Platforms extends tao_actions_CommonRestModule
      */
     public function get($uri = null)
     {
-        return $this->returnSuccess(parent::get($uri));
+        try {
+            $this->returnSuccess(parent::get($uri));
+        } catch (Exception $e) {
+            $this->returnFailure($e);
+        }
     }
 
     /**
