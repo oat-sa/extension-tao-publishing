@@ -72,6 +72,8 @@ class RemotePublishingServiceTest extends TestCase
 
         $this->mockOriginTestProperty();
         $deliveryResourceMock = $this->getDeliveryResourceMock(null);
+        $deliveryResourceMock->method('exists')
+            ->willReturn(true);
 
         $this->ontologyMock
             ->method('getResource')
@@ -92,6 +94,8 @@ class RemotePublishingServiceTest extends TestCase
         $this->mockOriginTestProperty();
         $testResourceMock = $this->getTestResourceMock($testUri);
         $deliveryResourceMock = $this->getDeliveryResourceMock($testResourceMock);
+        $deliveryResourceMock->method('exists')
+            ->willReturn(true);
         $environmentMock = $this->createMock(core_kernel_classes_Resource::class);
 
         $this->ontologyMock
@@ -120,8 +124,14 @@ class RemotePublishingServiceTest extends TestCase
         $this->mockOriginTestProperty();
         $testResourceMock = $this->getTestResourceMock($testUri);
         $deliveryResourceMock = $this->getDeliveryResourceMock($testResourceMock);
+        $deliveryResourceMock->method('exists')
+            ->willReturn(true);
         $environmentMock1 = $this->createMock(core_kernel_classes_Resource::class);
+        $environmentMock1->method('exists')
+            ->willReturn(true);
         $environmentMock2 = $this->createMock(core_kernel_classes_Resource::class);
+        $environmentMock2->method('exists')
+            ->willReturn(true);
 
         $this->ontologyMock
             ->method('getResource')
