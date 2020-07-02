@@ -28,6 +28,7 @@ use common_exception_MissingParameter;
 use common_exception_NotImplemented;
 use common_exception_RestApi;
 use Exception;
+use GuzzleHttp\Psr7\ServerRequest;
 use oat\tao\model\taskQueue\TaskLogActionTrait;
 use oat\taoPublishing\model\publishing\delivery\RemotePublishingService;
 use oat\taoPublishing\model\publishing\exception\PublishingInvalidArgumentException;
@@ -50,6 +51,28 @@ class Deliveries extends \tao_actions_RestController
      *     tags={"deliveries"},
      *     summary="Publish delivery to remote environment",
      *     description="Publish delivery to remote environment",
+     *     @OA\RequestBody(
+     *         @OA\MediaType(
+     *             mediaType="application/x-www-form-urlencoded",
+     *             @OA\Schema(
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="delivery-uri",
+     *                     type="string",
+     *                     description="Delivery URI",
+     *                 ),
+     *                 @OA\Property(
+     *                     property="remote-environments",
+     *                     type="array",
+     *                     description="Remote environment URIs",
+     *                     @OA\Items(
+     *                         type="string"
+     *                     ),
+     *                 ),
+     *                 required={"delivery-uri", "remote-environments"}
+     *             )
+     *         )
+     *     ),
      *     @OA\Response(
      *         response="200",
      *         description="Delivery publishing successful",
@@ -162,20 +185,21 @@ class Deliveries extends \tao_actions_RestController
      *     ),
      * )
      */
-    public function publish()
+    public function publish(ServerRequest $request)
     {
         try {
-            if ($this->getRequestMethod() !== \Request::HTTP_POST) {
+            if ($request->getMethod() !== \Request::HTTP_POST) {
                 throw new common_exception_NotImplemented('Only POST method is accepted to publish deliveries');
             }
-            if (!$this->hasRequestParameter(self::REST_DELIVERY_URI)) {
-                throw new common_exception_MissingParameter(self::REST_DELIVERY_URI, $this->getRequestURI());
+            $requestData = $request->getParsedBody();
+            if (!array_key_exists(self::REST_DELIVERY_URI, $requestData)) {
+                throw new common_exception_RestApi(__('Missing required parameter: `%s`', self::REST_DELIVERY_URI), 400);
             }
-            if (!$this->hasRequestParameter(self::REST_REMOTE_ENVIRONMENTS)) {
-                throw new common_exception_MissingParameter(self::REST_REMOTE_ENVIRONMENTS, $this->getRequestURI());
+            if (!array_key_exists(self::REST_REMOTE_ENVIRONMENTS, $requestData)) {
+                throw new common_exception_RestApi(__('Missing required parameter: `%s`', self::REST_REMOTE_ENVIRONMENTS), 400);
             }
-            $deliveryUri = $this->getRequestParameter(self::REST_DELIVERY_URI);
-            $remoteEnvironmentUris = $this->getRequestParameter(self::REST_REMOTE_ENVIRONMENTS);
+            $deliveryUri = $requestData[self::REST_DELIVERY_URI];
+            $remoteEnvironmentUris = $requestData[self::REST_REMOTE_ENVIRONMENTS];
             if (!is_array($remoteEnvironmentUris)) {
                 $remoteEnvironmentUris = [$remoteEnvironmentUris];
             }
