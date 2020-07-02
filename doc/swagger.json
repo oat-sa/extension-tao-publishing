@@ -15,7 +15,7 @@
                 "operationId": "oat\\taoPublishing\\controller\\api\\Deliveries::publish",
                 "responses": {
                     "200": {
-                        "description": "Platform data",
+                        "description": "Delivery publishing successful",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -29,6 +29,9 @@
                                             "items": {
                                                 "$ref": "#/components/schemas/TaskLog"
                                             }
+                                        },
+                                        "version": {
+                                            "type": "string"
                                         }
                                     },
                                     "type": "object",
@@ -45,7 +48,41 @@
                                                     }
                                                 ]
                                             }
-                                        ]
+                                        ],
+                                        "version": "3.4.0-sprint131"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Delivery publishing bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "description": "`false` on failure, `true` on success",
+                                            "type": "boolean"
+                                        },
+                                        "errorCode": {
+                                            "description": "Exception error code",
+                                            "type": "string"
+                                        },
+                                        "errorMsg": {
+                                            "description": "Exception message",
+                                            "type": "string"
+                                        },
+                                        "version": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object",
+                                    "example": {
+                                        "success": false,
+                                        "errorCode": 0,
+                                        "errorMsg": "Delivery resource with URI 'http://BAD/URI.rdf#i1' does not exist.",
+                                        "version": "3.4.0-sprint131"
                                     }
                                 }
                             }
@@ -77,6 +114,9 @@
                                             "items": {
                                                 "$ref": "#/components/schemas/Platform"
                                             }
+                                        },
+                                        "version": {
+                                            "type": "string"
                                         }
                                     },
                                     "type": "object",
@@ -91,7 +131,8 @@
                                                 "boxId": "1",
                                                 "isPublishingEnabled": true
                                             }
-                                        ]
+                                        ],
+                                        "version": "3.4.0-sprint131"
                                     }
                                 }
                             }

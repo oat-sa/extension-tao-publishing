@@ -77,6 +77,10 @@ class Platforms extends tao_actions_CommonRestModule
      *                         ref="#/components/schemas/Platform",
      *                     ),
      *                 ),
+     *                 @OA\Property(
+     *                     property="version",
+     *                     type="string",
+     *                 ),
      *                 example= {
      *                     "success": true,
      *                     "data": {
@@ -88,7 +92,8 @@ class Platforms extends tao_actions_CommonRestModule
      *                             "boxId": "1",
      *                             "isPublishingEnabled": true,
      *                         }
-     *                     }
+     *                     },
+     *                     "version": "3.4.0-sprint131"
      *                 }
      *             )
      *         ),
