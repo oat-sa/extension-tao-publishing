@@ -23,6 +23,10 @@ declare(strict_types=1);
 
 namespace oat\taoPublishing\controller\api;
 
+use common_exception_BadRequest;
+use common_exception_MissingParameter;
+use common_exception_NotImplemented;
+use Exception;
 use oat\tao\model\taskQueue\TaskLogActionTrait;
 use oat\taoPublishing\model\publishing\delivery\RemotePublishingService;
 
@@ -35,7 +39,7 @@ class Deliveries extends \tao_actions_RestController
 
     public function index()
     {
-        return $this->returnFailure(new \common_exception_BadRequest($this->getPsrRequest()->getUri()->getPath()));
+        return $this->returnFailure(new common_exception_BadRequest($this->getPsrRequest()->getUri()->getPath()));
     }
 
     /**
@@ -121,13 +125,13 @@ class Deliveries extends \tao_actions_RestController
     {
         try {
             if ($this->getRequestMethod() !== \Request::HTTP_POST) {
-                throw new \common_exception_NotImplemented('Only POST method is accepted to publish deliveries');
+                throw new common_exception_NotImplemented('Only POST method is accepted to publish deliveries');
             }
             if (!$this->hasRequestParameter(self::REST_DELIVERY_URI)) {
-                throw new \common_exception_MissingParameter(self::REST_DELIVERY_URI, $this->getRequestURI());
+                throw new common_exception_MissingParameter(self::REST_DELIVERY_URI, $this->getRequestURI());
             }
             if (!$this->hasRequestParameter(self::REST_REMOTE_ENVIRONMENTS)) {
-                throw new \common_exception_MissingParameter(self::REST_REMOTE_ENVIRONMENTS, $this->getRequestURI());
+                throw new common_exception_MissingParameter(self::REST_REMOTE_ENVIRONMENTS, $this->getRequestURI());
             }
             $deliveryUri = $this->getRequestParameter(self::REST_DELIVERY_URI);
             $remoteEnvironmentUris = $this->getRequestParameter(self::REST_REMOTE_ENVIRONMENTS);
@@ -145,7 +149,7 @@ class Deliveries extends \tao_actions_RestController
             }
 
             return $this->returnSuccess($response);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->returnFailure($e);
         }
     }

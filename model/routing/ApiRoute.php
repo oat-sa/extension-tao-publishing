@@ -27,6 +27,7 @@ use oat\tao\model\routing\AbstractApiRoute;
 use oat\tao\model\routing\RouterException;
 use Psr\Http\Message\ServerRequestInterface;
 use ResolverException;
+use tao_helpers_Request;
 
 class ApiRoute extends AbstractApiRoute
 {
@@ -51,7 +52,7 @@ class ApiRoute extends AbstractApiRoute
      */
     public function resolve(ServerRequestInterface $request)
     {
-        $relativeUrl = \tao_helpers_Request::getRelativeUrl($request->getRequestTarget());
+        $relativeUrl = tao_helpers_Request::getRelativeUrl($request->getRequestTarget());
         try {
             $controllerName = $this->getController($relativeUrl);
         } catch (RouterException $e) {

@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace oat\taoPublishing\controller\api;
 
+use common_exception_BadRequest;
 use common_exception_RestApi;
 use Exception;
 use oat\taoPublishing\model\entity\Platform;
@@ -46,7 +47,7 @@ class Platforms extends tao_actions_CommonRestModule
     {
         $request = $this->getPsrRequest();
         if ($request->getMethod() !== 'GET') {
-            return $this->returnFailure(new \common_exception_BadRequest($request->getUri()->getPath()));
+            return $this->returnFailure(new common_exception_BadRequest($request->getUri()->getPath()));
         }
 
         parent::index();
