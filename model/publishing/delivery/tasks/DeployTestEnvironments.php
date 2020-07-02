@@ -87,49 +87,21 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
      */
     protected function compileTest(core_kernel_classes_Resource $env, core_kernel_classes_Resource $test, core_kernel_classes_Resource $delivery) {
         try {
-            $qtiPackageFile = $this->getQtiTestPackageFile($delivery);
-            $streamData = [
-                [
-                    'name' => RestTest::REST_FILE_NAME,
-                    'contents' => $qtiPackageFile->readStream(),
-                ],
-                [
-                    'name' => RestTest::REST_IMPORTER_ID,
-                    'contents' => 'taoQtiTest',
-                ],
-                [
-                    'name' => RestTest::REST_DELIVERY_PARAMS,
-                    'contents' => json_encode(
-                        [
-                            PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD => $delivery->getUri()
-                        ]
-                    )
-                ]
-            ];
+            $requestData = $this->prepareRequestData($delivery);
 
-            $deliveryClass = current($delivery->getTypes());
-            if ($deliveryClass->getUri() != DeliveryAssemblyService::CLASS_URI) {
-                $streamData[] = [
-                    'name'     => RestTest::REST_DELIVERY_CLASS_LABEL,
-                    'contents' => $deliveryClass->getLabel()
-                ];
-            }
-            $body = new MultipartStream($streamData);
+            $this->getLoggerService()->logDebug(
+                sprintf('Requesting remote publishing of Delivery %s to %s' . $delivery->getLabel(), $env->getLabel())
+            );
+            $response = $this->callRemotePublishingApi($env, $requestData);
 
-            $request = new Request('POST', '/taoDeliveryRdf/RestTest/compileDeferred');
-            $request = $request->withBody($body);
-
-            $this->getLoggerService()->logDebug('Requesting compilation of Test ' . $test->getUri());
-            $response = $this->getServiceLocator()->get(PlatformService::class)->callApi($env->getUri(), $request);
             if ($response->getStatusCode() == 200) {
-                $content = json_decode($response->getBody()->getContents(), true);
-                if (isset($content['success']) && $content['success']) {
-                    $data = $content['data'];
+                $responseData = json_decode($response->getBody()->getContents(), true);
+                if (isset($responseData['success']) && $responseData['success']) {
+                    $data = $responseData['data'];
                     $taskId = $data['reference_id'];
 
                     /** @var QueueDispatcherInterface $queueDispatcher reference_id*/
                     $queueDispatcher = $this->getServiceLocator()->get(QueueDispatcherInterface::SERVICE_ID);
-
                     $queueDispatcher->createTask(
                         new RemoteTaskStatusSynchroniser(),
                         [$taskId, $env->getUri()],
@@ -172,5 +144,56 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
     private function getLoggerService(): LoggerService
     {
         return $this->getServiceLocator()->get(LoggerService::SERVICE_ID);
+    }
+
+    /**
+     * @param core_kernel_classes_Resource $delivery
+     * @return array
+     * @throws \core_kernel_persistence_Exception
+     */
+    private function prepareRequestData(core_kernel_classes_Resource $delivery): array
+    {
+        $qtiPackageFile = $this->getQtiTestPackageFile($delivery);
+        $streamData = [
+            [
+                'name' => RestTest::REST_FILE_NAME,
+                'contents' => $qtiPackageFile->readStream(),
+            ],
+            [
+                'name' => RestTest::REST_IMPORTER_ID,
+                'contents' => 'taoQtiTest',
+            ],
+            [
+                'name' => RestTest::REST_DELIVERY_PARAMS,
+                'contents' => json_encode(
+                    [
+                        PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD => $delivery->getUri()
+                    ]
+                )
+            ]
+        ];
+
+        $deliveryClass = current($delivery->getTypes());
+        if ($deliveryClass->getUri() != DeliveryAssemblyService::CLASS_URI) {
+            $streamData[] = [
+                'name' => RestTest::REST_DELIVERY_CLASS_LABEL,
+                'contents' => $deliveryClass->getLabel()
+            ];
+        }
+        return $streamData;
+    }
+
+    /**
+     * @param core_kernel_classes_Resource $env
+     * @param array $requestData
+     * @return mixed
+     */
+    private function callRemotePublishingApi(core_kernel_classes_Resource $env, array $requestData)
+    {
+        $body = new MultipartStream($requestData);
+        $request = new Request('POST', '/taoDeliveryRdf/RestTest/compileDeferred');
+        $request = $request->withBody($body);
+        $response = $this->getServiceLocator()->get(PlatformService::class)->callApi($env->getUri(), $request);
+        return $response;
     }
 }

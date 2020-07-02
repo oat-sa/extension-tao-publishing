@@ -36,11 +36,11 @@ class RemoteTaskStatusSynchroniser implements Action,ServiceLocatorAwareInterfac
         if (count($params) != 2) {
             throw new \common_exception_MissingParameter();
         }
-        $taskId = array_shift($params);
+        $remoteTaskId = array_shift($params);
         $envId = array_shift($params);
 
         $url = '/tao/TaskQueue/getStatus';
-        $request = new Request('GET', trim($url, '/').'?'.http_build_query(['id' => $taskId]));
+        $request = new Request('GET', trim($url, '/').'?'.http_build_query(['id' => $remoteTaskId]));
         $response = PlatformService::singleton()->callApi($envId, $request);
 
         if ($response->getStatusCode() == 200) {
