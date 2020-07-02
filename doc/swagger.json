@@ -5,6 +5,55 @@
         "version": "0.1"
     },
     "paths": {
+        "/taoPublishing/api/deliveries/publish": {
+            "post": {
+                "tags": [
+                    "deliveries"
+                ],
+                "summary": "Publish delivery to remote environment",
+                "description": "Publish delivery to remote environment",
+                "operationId": "oat\\taoPublishing\\controller\\api\\Deliveries::publish",
+                "responses": {
+                    "200": {
+                        "description": "Platform data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "description": "`false` on failure, `true` on success",
+                                            "type": "boolean"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/TaskLog"
+                                            }
+                                        }
+                                    },
+                                    "type": "object",
+                                    "example": {
+                                        "success": true,
+                                        "data": [
+                                            {
+                                                "id": "http://sample/first.rdf#i1111111111111111",
+                                                "status": "Finished",
+                                                "report": [
+                                                    {
+                                                        "type": "info",
+                                                        "message": "Running task http://sample/first.rdf#i1111111111111111"
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/taoPublishing/api/platforms": {
             "get": {
                 "tags": [
@@ -12,7 +61,6 @@
                 ],
                 "summary": "Index of platforms",
                 "description": "Index of platforms",
-                "operationId": "oat\\taoPublishing\\controller\\api\\Platforms::get",
                 "responses": {
                     "200": {
                         "description": "Platform data",
@@ -55,6 +103,38 @@
     },
     "components": {
         "schemas": {
+            "TaskLog": {
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string"
+                    },
+                    "status": {
+                        "description": "Status",
+                        "type": "string"
+                    },
+                    "report": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TaskReport"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "TaskReport": {
+                "properties": {
+                    "type": {
+                        "description": "Type",
+                        "type": "string"
+                    },
+                    "message": {
+                        "description": "Message",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "Platform": {
                 "properties": {
                     "uri": {

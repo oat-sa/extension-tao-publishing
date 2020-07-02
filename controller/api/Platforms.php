@@ -44,31 +44,12 @@ class Platforms extends tao_actions_CommonRestModule
 
     public function index()
     {
-        $this->returnFailure(new common_exception_RestApi('Not implemented'));
-    }
+        $request = $this->getPsrRequest();
+        if ($request->getMethod() !== 'GET') {
+            return $this->returnFailure(new \common_exception_BadRequest($request->getUri()->getPath()));
+        }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function post()
-    {
-        $this->returnFailure(new common_exception_RestApi('Not implemented'));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function put($uri)
-    {
-        $this->returnFailure(new common_exception_RestApi('Not implemented'));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function delete($uri = null)
-    {
-        $this->returnFailure(new common_exception_RestApi('Not implemented'));
+        parent::index();
     }
 
     /**
@@ -112,16 +93,7 @@ class Platforms extends tao_actions_CommonRestModule
      *         ),
      *     ),
      * )
-     * {@inheritDoc}
      */
-    public function get($uri = null)
-    {
-        try {
-            $this->returnSuccess(parent::get($uri));
-        } catch (Exception $e) {
-            $this->returnFailure($e);
-        }
-    }
 
     /**
      * @return array
