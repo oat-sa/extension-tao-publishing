@@ -6,15 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.0.2]
 ### Removed
-- “Sync to remote environments” checkboxes.
-- "Delivery Event Listeners"
-- Configuration of delivery properties in DeliveryFactory
+- *Sync to remote environments* checkboxes
+- *Actions* block on the remote environment form.
+- *DeliveryCreatedEvent* and *DeliveryUpdatedEvent* listeners to trigger remote environment's actions  
+- Configuration of the *RemoteSync* delivery properties in the *DeliveryFactory*
 ### Added
-- A new event handler to create backup of QTI test package when delivery is created
+- A new event handler to create a backup of the QTI test package when a delivery is created
 - A new property of Remote Environment - `Publishing Enabled`
-- A new UI interface to publish delivery to selected remote environment(s) when it's ready (configured, tested, etc.)
-- API to get list of remote environments
-- API to publish delivery to remote environment
+- A new UI interface to publish delivery to selected remote environment(s)
+- API to get a list of remote environments
+- API to publish deliveries to remote environments
 ### Added
 - Changelog File
 

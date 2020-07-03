@@ -59,10 +59,9 @@ During extension installation it will:
 
 After delivery was created and tested on the authoring environment it can be published to a remote environment(s). 
 
-To publish delivery to a remote environment(s):
-- open delivery in back office
-- in actions panel press "Publish To Remote" button
+- open the delivery in the back office
+- in actions panel press *Publish To Remote* button
 - select one or more of available environments
-- press "Publish"
+- press *Publish*
 
-For each of the selected remote environments, a new background task will be created. This task will send QTI test package, exported when the delivery was created, and delivery metadata to the selected remote environment. After that, it will check the status of test import and delivery compilation on a remote environment. The task will be completed only when delivery compilation on a remote environment is completed (or failed).
+There will be a new background task for each environment. This task will send the QTI test package along with the corresponding metadata to the environment. It will monitor the progress of test import and delivery compilation. The task will end once either the compilation is complete or in when it fails.
