@@ -44,6 +44,7 @@ use oat\taoPublishing\scripts\update\v0_6_0\UpdateAuthFieldAction;
 /**
  * Class Updater
  * @package oat\taoProctoring\scripts\update
+ * @deprecated use migrations instead. See https://github.com/oat-sa/generis/wiki/Tao-Update-Process
  */
 class Updater extends common_ext_ExtensionUpdater
 {
@@ -257,5 +258,10 @@ class Updater extends common_ext_ExtensionUpdater
         }
 
         $this->skip('2.2.0', '2.2.1');
+        
+        //Updater files are deprecated. Please use migrations.
+        //See: https://github.com/oat-sa/generis/wiki/Tao-Update-Process
+
+        $this->setVersion($this->getExtension()->getManifest()->getVersion());
     }
 }

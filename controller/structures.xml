@@ -1,17 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE structures SYSTEM "../doc/structures.dtd">
 <structures>
-    <!--<structure id="tests" name="Tests" level="1" group="main">-->
-        <!--<sections>-->
-            <!--<section id="manage_tests" name="Manage tests" url="/taoTests/Tests/index">-->
-                <!--<actions>-->
-                	<!--<action id="delivery-publish" name="Publish" url="/taoPublishing/Publish/wizard" group="tree" context="instance">-->
-                        <!--<icon id="icon-magicwand"/>-->
-                    <!--</action>-->
-                <!--</actions>-->
-            <!--</section>-->
-        <!--</sections>-->
-    <!--</structure>-->
 	<structure id="settings" name="Settings" level="11" group="invisible">
 		<description />
 		<sections>
@@ -34,9 +23,20 @@
 					<action id="platform-delete" name="Delete" binding="removeNode" url="/taoPublishing/PlatformAdmin/delete" context="instance" group="tree">
                         <icon id="icon-bin"/>
                     </action>
-					<action id="platform-new" name="Add Platform" url="/taoPublishing/PlatformAdmin/addInstanceForm" context="class" group="tree">
+					<action id="platform-new" name="Add" url="/taoPublishing/PlatformAdmin/addInstanceForm" context="class" group="tree">
                         <icon id="icon-add"/>
                     </action>
+				</actions>
+			</section>
+		</sections>
+	</structure>
+	<structure id="delivery" name="Deliveries" level="4" group="main">
+		<sections>
+			<section id="manage_delivery_assembly" name="Deliveries" url="/taoDeliveryRdf/DeliveryMgmt/index">
+				<actions>
+					<action id="delivery-remote-publish" name="Publish To Remote" url="/taoPublishing/Publish/selectRemoteEnvironments" context="instance" group="tree">
+						<icon id="icon-external"/>
+					</action>
 				</actions>
 			</section>
 		</sections>

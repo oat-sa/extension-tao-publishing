@@ -1,0 +1,236 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Platform API",
+        "version": "0.1"
+    },
+    "paths": {
+        "/taoPublishing/api/deliveries/publish": {
+            "post": {
+                "tags": [
+                    "deliveries"
+                ],
+                "summary": "Publish delivery to remote environment",
+                "description": "Publish delivery to remote environment",
+                "operationId": "oat\\taoPublishing\\controller\\api\\Deliveries::publish",
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "required": [
+                                    "delivery-uri",
+                                    "remote-environments"
+                                ],
+                                "properties": {
+                                    "delivery-uri": {
+                                        "description": "Delivery URI",
+                                        "type": "string"
+                                    },
+                                    "remote-environments": {
+                                        "description": "Remote environment URIs",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Delivery publishing successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "description": "`false` on failure, `true` on success",
+                                            "type": "boolean"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/TaskLog"
+                                            }
+                                        },
+                                        "version": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object",
+                                    "example": {
+                                        "success": true,
+                                        "data": [
+                                            {
+                                                "id": "http://sample/first.rdf#i1111111111111111",
+                                                "status": "Finished",
+                                                "report": [
+                                                    {
+                                                        "type": "info",
+                                                        "message": "Running task http://sample/first.rdf#i1111111111111111"
+                                                    }
+                                                ]
+                                            }
+                                        ],
+                                        "version": "3.4.0-sprint131"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Delivery publishing bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "description": "`false` on failure, `true` on success",
+                                            "type": "boolean"
+                                        },
+                                        "errorCode": {
+                                            "description": "Exception error code",
+                                            "type": "string"
+                                        },
+                                        "errorMsg": {
+                                            "description": "Exception message",
+                                            "type": "string"
+                                        },
+                                        "version": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object",
+                                    "example": {
+                                        "success": false,
+                                        "errorCode": 0,
+                                        "errorMsg": "Delivery resource with URI 'http://BAD/URI.rdf#i1' does not exist.",
+                                        "version": "3.4.0-sprint131"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/taoPublishing/api/platforms": {
+            "get": {
+                "tags": [
+                    "platforms"
+                ],
+                "summary": "Index of platforms",
+                "description": "Index of platforms",
+                "responses": {
+                    "200": {
+                        "description": "Platform data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "description": "`false` on failure, `true` on success",
+                                            "type": "boolean"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Platform"
+                                            }
+                                        },
+                                        "version": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object",
+                                    "example": {
+                                        "success": true,
+                                        "data": [
+                                            {
+                                                "uri": "http://sample/first.rdf#i1536680377163170",
+                                                "label": "Sample label",
+                                                "authType": "http://www.tao.lu/Ontologies/TAO.rdf#BasicAuthConsumer",
+                                                "rootUri": "http://ROOT/URI",
+                                                "boxId": "1",
+                                                "isPublishingEnabled": true
+                                            }
+                                        ],
+                                        "version": "3.4.0-sprint131"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "TaskLog": {
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string"
+                    },
+                    "status": {
+                        "description": "Status",
+                        "type": "string"
+                    },
+                    "report": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TaskReport"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "TaskReport": {
+                "properties": {
+                    "type": {
+                        "description": "Type",
+                        "type": "string"
+                    },
+                    "message": {
+                        "description": "Message",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "Platform": {
+                "properties": {
+                    "uri": {
+                        "description": "Platform URI",
+                        "type": "string"
+                    },
+                    "label": {
+                        "description": "Platform label",
+                        "type": "string"
+                    },
+                    "rootUrl": {
+                        "description": "Platform root url",
+                        "type": "string"
+                    },
+                    "boxId": {
+                        "description": "Platform box id",
+                        "type": "string"
+                    },
+                    "authType": {
+                        "description": "Platform authentication type",
+                        "type": "string"
+                    },
+                    "isPublishingEnabled": {
+                        "description": "Is publishing enabled",
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            }
+        }
+    }
+}
