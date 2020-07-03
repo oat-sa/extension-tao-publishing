@@ -50,3 +50,19 @@ To be able to synchronize, you need to set up the publication targets that you w
  - Label: Fill the label with a good name of your choice.
  - Root URL should be the protocol + hostname of the publication target (other TAO platform). Ex: https://demo.taotesting.com/.
  - Auth type: In case of Basic Auth, just use a username and password of a real user in the system that you want to publish. Please make sure that user has proper permissions.
+
+## Publishing of delivery to a remote environment
+
+During extension installation it will:
+- register a new filesystem `publishing`
+- register a new event handler for `DeliveryCreatedEvent`. This event handler will export a QTI test package from which delivery is created and store it in `publishing/{md5_hash_of_delivery_uri}/qti_test_export.zip`
+
+After delivery was created and tested on the authoring environment it can be published to a remote environment(s). 
+
+To publish delivery to a remote environment(s):
+- open delivery in back office
+- in actions panel on press "Publish To Remote"
+- select one or more of available environments
+- press "Publish"
+
+For each of the selected remote environments, a new background task will be created. This task will send QTI test package, exported when the delivery was created, and delivery metadata to the selected remote environment. After that, it will check the status of test import and delivery compilation on a remote environment. The task will be completed only when delivery compilation on a remote environment is completed (or failed).
