@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - A new event handler to create backup of QTI test package when delivery is created
 - A new property of Remote Environment - `Publishing Enabled`
-- A new UI interface to publish delivery to selected remote environment(s) when it's ready
+- A new UI interface to publish delivery to selected remote environment(s) when it's ready (configured, tested, etc.)
 - API to get list of remote environments
 - API to publish delivery to remote environment
 ### Added

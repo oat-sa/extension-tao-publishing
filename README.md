@@ -61,7 +61,7 @@ After delivery was created and tested on the authoring environment it can be pub
 
 To publish delivery to a remote environment(s):
 - open delivery in back office
-- in actions panel on press "Publish To Remote"
+- in actions panel press "Publish To Remote" button
 - select one or more of available environments
 - press "Publish"
 
