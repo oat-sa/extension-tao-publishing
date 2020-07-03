@@ -20,7 +20,15 @@ use oat\tao\helpers\Template;
                     <ul class="plain">
                         <?php foreach (get_data('remote-environments') as $index => $environment) :?>
                             <li>
-                                <input type="checkbox" name="remote-environments[]" value="<?= $environment->getUri();?>" id="remote-environment-<?= $index ?>">
+                                <input
+                                        type="checkbox"
+                                        <?php if (!$environment->isPublishingEnabled()): ?>
+                                            disabled
+                                        <?php endif;?>
+                                        name="remote-environments[]"
+                                        value="<?= $environment->getUri();?>"
+                                        id="remote-environment-<?= $index ?>"
+                                >
                                 <label for="remote-environment-<?= $index ?>"><?= $environment->getLabel();?></label>
                             </li>
                         <?php endforeach;?>

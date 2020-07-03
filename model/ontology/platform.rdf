@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
-<rdf:RDF 
+<rdf:RDF
 	xml:base="http://www.tao.lu/Ontologies/TaoPlatform.rdf#"
-	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" 
-	xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" 
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
 	xmlns:widget="http://www.tao.lu/datatypes/WidgetDefinitions.rdf#"
     xmlns:tao="http://www.tao.lu/Ontologies/TAO.rdf#"
 >
@@ -31,15 +31,6 @@
     <tao:TAOGUIOrder><![CDATA[100]]></tao:TAOGUIOrder>
   </rdf:Description>
 
-   <rdf:Description rdf:about="http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatformPublishAction">
-     <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
-     <rdfs:label xml:lang="en-US"><![CDATA[Publish Actions]]></rdfs:label>
-     <rdfs:domain rdf:resource="http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatform"/>
-     <rdfs:range rdf:resource="http://www.w3.org/2000/01/rdf-schema#Literal"/>
-     <widget:widget rdf:resource="http://www.tao.lu/datatypes/WidgetDefinitions.rdf#TreeBox"/>
-     <tao:TAOGUIOrder><![CDATA[40]]></tao:TAOGUIOrder>
-   </rdf:Description>
-
   <rdf:Description rdf:about="http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatformAuthType">
     <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
     <rdfs:label xml:lang="en-US"><![CDATA[Auth type]]></rdfs:label>
@@ -62,12 +53,33 @@
     <rdfs:comment xml:lang="en-US"><![CDATA[Identity for authentication]]></rdfs:comment>
     <widget:rangeConstraint rdf:resource="http://www.tao.lu/datatypes/WidgetDefinitions.rdf#rangeConstraint-Resource"/>
   </rdf:Description>
-  
+
   <rdf:Description rdf:about="http://www.tao.lu/datatypes/WidgetDefinitions.rdf#AuthenticationIdentityXhtmlRenderer">
     <rdf:type rdf:resource="http://www.tao.lu/datatypes/WidgetDefinitions.rdf#WidgetRenderer"/>
     <widget:renderedWidget rdf:resource="http://www.tao.lu/datatypes/WidgetDefinitions.rdf#AuthenticationIdentity"/>
   	<widget:renderMode><![CDATA[xhtml]]></widget:renderMode>
   	<widget:implementation><![CDATA[oat\taoPublishing\model\widget\AuthWidget]]></widget:implementation>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://www.tao.lu/Ontologies/TaoPlatform.rdf#PublishingEnabled">
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en-US"><![CDATA[Remote Publishing]]></rdfs:label>
+    <rdfs:comment xml:lang="en-US"><![CDATA[Remote Publishing]]></rdfs:comment>
+    <rdfs:domain rdf:resource="http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatform"/>
+    <widget:widget rdf:resource="http://www.tao.lu/datatypes/WidgetDefinitions.rdf#CheckBox"/>
+    <rdfs:range rdf:resource="http://www.tao.lu/Ontologies/TaoPlatform.rdf#CheckMode"/>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://www.tao.lu/Ontologies/TaoPlatform.rdf#CheckMode">
+    <rdfs:label xml:lang="en-US"><![CDATA[Check Enable]]></rdfs:label>
+    <rdfs:comment xml:lang="en-US"><![CDATA[Check Enable]]></rdfs:comment>
+    <rdfs:subClassOf rdf:resource="http://www.tao.lu/Ontologies/TAO.rdf#SystemObject"/>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://www.tao.lu/Ontologies/TaoPlatform.rdf#ComplyEnabled">
+    <rdfs:label xml:lang="en-US"><![CDATA[Enable]]></rdfs:label>
+    <rdfs:comment xml:lang="en-US"><![CDATA[Enable]]></rdfs:comment>
+    <rdf:type rdf:resource="http://www.tao.lu/Ontologies/TaoPlatform.rdf#CheckMode"/>
   </rdf:Description>
 
 </rdf:RDF>

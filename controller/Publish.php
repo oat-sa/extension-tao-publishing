@@ -24,7 +24,7 @@ namespace oat\taoPublishing\controller;
 use Exception;
 use common_exception_ClientException;
 use oat\tao\model\taskQueue\TaskLogActionTrait;
-use oat\taoPublishing\model\publishing\exception\PublishingFailedException;
+use oat\taoPublishing\model\entity\Platform;
 use oat\taoPublishing\model\publishing\exception\PublishingInvalidArgumentException;
 use tao_helpers_Uri;
 use core_kernel_classes_Resource;
@@ -84,10 +84,7 @@ class Publish extends \tao_actions_CommonModule {
             tao_helpers_Uri::decode($this->getRequestParameter('uri'))
         );
 
-        $environments = $this->getServiceLocator()
-            ->get(PublishingService::SERVICE_ID)
-            ->getEnvironments();
-
+        $environments = $this->getEnvironmentsEntities();
         $submitUrl = $this->getServiceLocator()
             ->get(UrlHelper::class)
             ->buildUrl('publishToRemoteEnvironment', 'Publish', 'taoPublishing');
@@ -144,5 +141,21 @@ class Publish extends \tao_actions_CommonModule {
             );
         }
 
+    }
+
+    /**
+     * @return Platform[]
+     */
+    private function getEnvironmentsEntities(): array
+    {
+        $environments = [];
+
+        /** @var PublishingService $publishingService */
+        $publishingService = $this->getServiceLocator()->get(PublishingService::SERVICE_ID);
+        foreach ($publishingService->getEnvironments() as $environment) {
+            $environments[] = new Platform($environment);
+        }
+
+        return $environments;
     }
 }
