@@ -101,7 +101,8 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
                     'name' => RestTest::REST_DELIVERY_PARAMS,
                     'contents' => json_encode(
                         [
-                            PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD => $delivery->getUri()
+                            PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD => $delivery->getUri(),
+                            PublishingDeliveryService::ORIGIN_TEST_ID_FIELD => $test->getUri()
                         ]
                     )
                 ]
@@ -132,7 +133,7 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
 
                     $queueDispatcher->createTask(
                         new RemoteTaskStatusSynchroniser(),
-                        [$taskId, $env->getUri()],
+                        [$taskId, $env->getUri(), $test->getUri(), $delivery->getUri()],
                         __('Remote status synchronisation for %s from %s', $delivery->getLabel(), $env->getLabel()),
                         $this->getTask()
                     );
