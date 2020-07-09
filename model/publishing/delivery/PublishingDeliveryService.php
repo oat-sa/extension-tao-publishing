@@ -70,7 +70,7 @@ class PublishingDeliveryService extends ConfigurableService
         $queueDispatcher = $this->getServiceManager()->get(QueueDispatcherInterface::SERVICE_ID);
         $taskLog = $this->getTaskLogFromDelivery($delivery);
 
-        $report = \common_report_Report::createInfo('Publishing delivery '.$delivery->getUri());
+        $report = \common_report_Report::createInfo('Publishing delivery ' . $delivery->getUri());
         /** @var \core_kernel_classes_Resource $env */
         foreach ($environments as $env) {
             if ($this->checkActionForEnvironment(DeliveryCreatedEvent::class, $env)) {
@@ -79,7 +79,7 @@ class PublishingDeliveryService extends ConfigurableService
                     new DeployTestEnvironments(),
                     [$test->getUri(), $env->getUri(), $delivery->getUri()],
                     __(
-                        'Publishing %s to remote env %s',
+                        'Publishing delivery "%s" to remote environment "%s"',
                         $delivery->getLabel(),
                         $env->getLabel()
                     ),

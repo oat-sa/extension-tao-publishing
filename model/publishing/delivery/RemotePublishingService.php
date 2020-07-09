@@ -115,7 +115,11 @@ class RemotePublishingService extends ConfigurableService
             $environment->getUri(),
             $this->deliveryUri
         ];
-        $message = __("Publishing %s to remote env %s", $this->deliveryResource->getLabel(), $environment->getLabel());
+        $message = __(
+            'Publishing delivery "%s" to remote environment "%s"',
+            $this->deliveryResource->getLabel(),
+            $environment->getLabel()
+        );
 
         return $this->queueDispatcher->createTask(new DeployTestEnvironments(), $params, $message);
     }
