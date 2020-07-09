@@ -5,8 +5,10 @@ namespace oat\taoPublishing\model\publishing\delivery\tasks;
 use common_report_Report;
 use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\action\Action;
+use oat\oatbox\event\EventManager;
 use oat\tao\model\taskQueue\Task\RemoteTaskSynchroniserInterface;
 use oat\taoPublishing\model\PlatformService;
+use oat\taoPublishing\model\publishing\event\RemoteDeliveryCreatedEvent;
 use Zend\ServiceManager\ServiceLocatorAwareTrait;
 use Zend\ServiceManager\ServiceLocatorAwareInterface;
 use GuzzleHttp\Psr7\Request;
@@ -22,6 +24,8 @@ class RemoteTaskStatusSynchroniser implements Action,ServiceLocatorAwareInterfac
 
     private $status;
 
+    private $remoteDeliveryId = null;
+
     public function getRemoteStatus()
     {
         return $this->status;
@@ -35,11 +39,10 @@ class RemoteTaskStatusSynchroniser implements Action,ServiceLocatorAwareInterfac
      */
     public function __invoke($params)
     {
-        if (count($params) != 2) {
+        if (count($params) != 4) {
             throw new \common_exception_MissingParameter();
         }
-        $remoteTaskId = array_shift($params);
-        $envId = array_shift($params);
+        list ($remoteTaskId, $envId, $deliveryUri, $testUri) = $params;
 
         $url = '/tao/TaskQueue/get';
         $request = new Request('GET', trim($url, '/').'?'.http_build_query(['id' => $remoteTaskId]));
@@ -54,6 +57,10 @@ class RemoteTaskStatusSynchroniser implements Action,ServiceLocatorAwareInterfac
                 $remoteReport = common_report_Report::jsonUnserialize($remoteTaskData['report']);
                 $report = new common_report_Report(common_report_Report::TYPE_SUCCESS, __('Remote task was completed.'), $remoteTaskData);
                 $report->add($this->prepareRemoteTaskExecutionReport($remoteReport));
+
+                /** @var EventManager $eventManager */
+                $remoteDeliveryId = $this->getRemoteDeliveryId($remoteReport);
+                $this->triggerRemoteDeliveryCreatedEvent($remoteDeliveryId, $deliveryUri, $testUri);
             } else {
                 $report = new common_report_Report(common_report_Report::TYPE_ERROR, __('Remote task execution failed.'));
             }
@@ -70,15 +77,39 @@ class RemoteTaskStatusSynchroniser implements Action,ServiceLocatorAwareInterfac
             $message = __("Delivery publishing on remote environment failed");
             $report = new common_report_Report(common_report_Report::TYPE_ERROR, $message);
         } else {
-            $deliveryCompilationReport = current($remoteTaskReport->getChildren());
-            $reportData = $deliveryCompilationReport->getData();
-            $message = isset($reportData['delivery-uri'])
-                ? __(sprintf("Remote delivery ID: %", $reportData['delivery-uri']))
-                : __('Report does not contain remote delivery ID.');
+            $remoteDeliveryId = $this->getRemoteDeliveryId($remoteTaskReport);
+            $message = $remoteDeliveryId === null
+                ? __('Report does not contain remote delivery ID.')
+                : __(sprintf("Remote delivery ID: %", $remoteDeliveryId));
 
             $report = new common_report_Report(common_report_Report::TYPE_INFO, $message);
         }
 
         return $report;
+    }
+
+    private function getRemoteDeliveryId(common_report_Report $remoteTaskReport): ?string
+    {
+        if ($this->remoteDeliveryId === null) {
+            $deliveryCompilationReport = current($remoteTaskReport->getChildren());
+            $reportData = $deliveryCompilationReport->getData();
+
+            $this->remoteDeliveryId = $reportData['delivery-uri'] ?? null;
+        }
+
+        return $this->remoteDeliveryId;
+    }
+
+    /**
+     * @param string|null $remoteDeliveryId
+     * @param string $deliveryUri
+     * @param string $testUri
+     */
+    private function triggerRemoteDeliveryCreatedEvent(?string $remoteDeliveryId, string $deliveryUri, string $testUri): void
+    {
+        if ($remoteDeliveryId !== null) {
+            $eventManager = $this->getServiceLocator()->get(EventManager::SERVICE_ID);
+            $eventManager->trigger(new RemoteDeliveryCreatedEvent($deliveryUri, $testUri, $remoteDeliveryId));
+        }
     }
 }

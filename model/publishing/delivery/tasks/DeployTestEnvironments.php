@@ -113,7 +113,7 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
                     $queueDispatcher = $this->getServiceLocator()->get(QueueDispatcherInterface::SERVICE_ID);
                     $queueDispatcher->createTask(
                         new RemoteTaskStatusSynchroniser(),
-                        [$remoteTaskId, $env->getUri()],
+                        [$remoteTaskId, $env->getUri(), $delivery->getUri(), $test->getUri()],
                         __('Status of publishing delivery "%s" on remote environment "%s"', $delivery->getLabel(), $env->getLabel()),
                         $this->getTask()
                     );
