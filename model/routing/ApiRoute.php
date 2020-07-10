@@ -24,10 +24,16 @@ declare(strict_types=1);
 namespace oat\taoPublishing\model\routing;
 
 use oat\tao\model\routing\AbstractApiRoute;
+use oat\tao\model\routing\RouterException;
+use Psr\Http\Message\ServerRequestInterface;
+use ResolverException;
+use tao_helpers_Request;
 
 class ApiRoute extends AbstractApiRoute
 {
     public const REST_CONTROLLER_PREFIX = 'oat\\taoPublishing\\controller\\api\\';
+
+    public const DEFAULT_API_ACTION = 'index';
 
     /**
      * @inheritdoc
@@ -36,5 +42,29 @@ class ApiRoute extends AbstractApiRoute
     public static function getControllerPrefix()
     {
         return self::REST_CONTROLLER_PREFIX;
+    }
+
+    /**
+     * Default controller action is index, unless the URL matches another public action in the controller
+     * @param ServerRequestInterface $request
+     * @return string|null
+     * @throws ResolverException
+     */
+    public function resolve(ServerRequestInterface $request)
+    {
+        $relativeUrl = tao_helpers_Request::getRelativeUrl($request->getRequestTarget());
+        try {
+            $controllerName = $this->getController($relativeUrl);
+        } catch (RouterException $e) {
+            return null;
+        }
+
+        $action = self::DEFAULT_API_ACTION;
+        $parts = explode('/', $relativeUrl);
+        if (isset($parts[3]) && is_callable([$controllerName, $parts[3]])) {
+            $action = $parts[3];
+        }
+
+        return $controllerName . '@' . $action;
     }
 }

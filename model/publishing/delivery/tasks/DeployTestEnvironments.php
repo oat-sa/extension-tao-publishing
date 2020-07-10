@@ -183,7 +183,8 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
         $streamData = [
             [
                 'name' => RestTest::REST_FILE_NAME,
-                'contents' => $qtiPackageFile->readStream(),
+                'filename' => RestTest::REST_FILE_NAME,
+                'contents' => $qtiPackageFile->readPsrStream(),
             ],
             [
                 'name' => RestTest::REST_IMPORTER_ID,

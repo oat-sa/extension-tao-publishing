@@ -43,45 +43,67 @@ define([
         });
     };
 
+    const initCheckboxes = function initCheckboxes() {
+        const $form = $('#publish-remote');
+        const $checkboxes = $('input[name="remote-environments[]"]', $form).not(':disabled');
+        const $ul = $('ul', $form);
+        if ($checkboxes.length) {
+            const $checkAll = $('<input type="checkbox" id="all-env" title="'
+                + __('All active environments') + '">');
+
+            $checkAll.off('click').on('click', function (){
+                $checkboxes.prop('checked', $(this).prop('checked'));
+            });
+
+            $checkAll.insertBefore($ul);
+            $('<label for="all-env"><b>' + __('All active environments') + '</b></label>').insertBefore($ul);
+        }
+    };
+
+    const redeclarePublishBtn = function redeclarePublishBtn() {
+        const $publishBtn = $('#publish-to-remote');
+        const $form = $('#publish-remote');
+        const $treePublishButton = $('#delivery-remote-publish');
+
+        $form.on('submit', function (e) {
+            e.preventDefault();
+
+            loadingBar.start();
+            taskQueue.pollAllStop();
+            taskQueue
+                .create($form.prop('action'), $form.serializeArray())
+                .then(function(result) {
+                    const tasksCount = result['extra']['allTasks'].length + 1;
+                    const message = __('<strong> %s </strong> task(s) have been moved to the background.', tasksCount);
+
+                    feedback(null, {
+                        encodeHtml: false,
+                        timeout: { info: 8000 }
+                    }).info(message);
+
+                    // updating tasks in the background tasks
+                    taskQueue.pollAll(true);
+                    refreshTree($('#selected-delivery-uri').val());
+                    loadingBar.stop();
+                }).catch(function(err) {
+                //in case of error display it and continue task queue activity
+                taskQueue.pollAll();
+                loadingBar.stop();
+                //format and display error message to user
+                feedback().error(err.message);
+                // refreshTree();
+                $treePublishButton.click();
+            });
+
+            return false;
+        });
+        $publishBtn.removeClass('hidden');
+    };
+
     return {
         start: function start() {
-            const $publishBtn = $('#publish-to-remote');
-            const $form = $('#publish-remote');
-            const $treePublishButton = $('#delivery-remote-publish');
-
-            $form.on('submit', function (e) {
-                e.preventDefault();
-
-                loadingBar.start();
-                taskQueue.pollAllStop();
-                taskQueue
-                    .create($form.prop('action'), $form.serializeArray())
-                    .then(function(result) {
-                        const tasksCount = result['extra']['allTasks'].length + 1;
-                        const message = __('<strong> %s </strong> task(s) have been moved to the background.', tasksCount);
-
-                        feedback(null, {
-                            encodeHtml: false,
-                            timeout: { info: 8000 }
-                        }).info(message);
-
-                        // updating tasks in the background tasks
-                        taskQueue.pollAll(true);
-                        refreshTree($('#selected-delivery-uri').val());
-                        loadingBar.stop();
-                    }).catch(function(err) {
-                        //in case of error display it and continue task queue activity
-                        taskQueue.pollAll();
-                        loadingBar.stop();
-                        //format and display error message to user
-                        feedback().error(err.message);
-                        // refreshTree();
-                        $treePublishButton.click();
-                    });
-
-                return false;
-            });
-            $publishBtn.removeClass('hidden');
+            initCheckboxes();
+            redeclarePublishBtn();
         }
     }
 });

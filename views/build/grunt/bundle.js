@@ -31,7 +31,8 @@ module.exports = function(grunt) {
                     outputDir : 'loader',
                     bundles : [{
                         name : 'taoPublishing',
-                        default : true
+                        default : true,
+                        babel : true
                     }]
                 }
             }
