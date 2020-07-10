@@ -25,6 +25,8 @@ use common_exception_Error;
 use common_exception_MissingParameter;
 use common_report_Report;
 use core_kernel_classes_Resource;
+use GuzzleHttp\Exception\ConnectException;
+use League\Flysystem\FileNotFoundException;
 use oat\oatbox\action\Action;
 use oat\oatbox\filesystem\File;
 use oat\oatbox\filesystem\FileSystemService;
@@ -38,6 +40,7 @@ use oat\taoDeliveryRdf\controller\RestTest;
 use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
 use oat\taoPublishing\model\PlatformService;
 use oat\taoPublishing\model\publishing\delivery\PublishingDeliveryService;
+use oat\taoPublishing\model\publishing\exception\PublishingFailedException;
 use oat\taoPublishing\model\publishing\test\TestBackupService;
 use Zend\ServiceManager\ServiceLocatorAwareTrait;
 use Zend\ServiceManager\ServiceLocatorAwareInterface;
@@ -109,7 +112,7 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
                 if (isset($responseData['success']) && $responseData['success']) {
                     $remoteTaskId = $responseData['data']['reference_id'];
 
-                    /** @var QueueDispatcherInterface $queueDispatcher reference_id*/
+                    /** @var QueueDispatcherInterface $queueDispatcher reference_id */
                     $queueDispatcher = $this->getServiceLocator()->get(QueueDispatcherInterface::SERVICE_ID);
                     $queueDispatcher->createTask(
                         new RemoteTaskStatusSynchroniser(),
@@ -137,10 +140,15 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
                     )
                 );
             }
-        } catch (Exception $e) {
+        } catch (PublishingFailedException $e) {
             $report = new common_report_Report(
                 common_report_Report::TYPE_ERROR,
                 __('Remote publishing failed: %s', $e->getMessage())
+            );
+        } catch (Exception $e) {
+            $report = new common_report_Report(
+                common_report_Report::TYPE_ERROR,
+                __('Remote publishing failed.')
             );
         } finally {
             return $report;
@@ -157,7 +165,7 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
     {
         $packagePath = $delivery->getOnePropertyValue($this->getProperty(TestBackupService::PROPERTY_QTI_TEST_BACKUP_PATH));
         $packagePath = (string)  $packagePath;
-        
+
         return $this->getServiceLocator()
             ->get(FileSystemService::SERVICE_ID)
             ->getDirectory(TestBackupService::FILESYSTEM_ID)
@@ -179,35 +187,41 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
      */
     private function prepareRequestData(core_kernel_classes_Resource $delivery): array
     {
-        $qtiPackageFile = $this->getQtiTestPackageFile($delivery);
-        $streamData = [
-            [
-                'name' => RestTest::REST_FILE_NAME,
-                'filename' => RestTest::REST_FILE_NAME,
-                'contents' => $qtiPackageFile->readPsrStream(),
-            ],
-            [
-                'name' => RestTest::REST_IMPORTER_ID,
-                'contents' => 'taoQtiTest',
-            ],
-            [
-                'name' => RestTest::REST_DELIVERY_PARAMS,
-                'contents' => json_encode(
-                    [
-                        PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD => $delivery->getUri()
-                    ]
-                )
-            ]
-        ];
-
-        $deliveryClass = current($delivery->getTypes());
-        if ($deliveryClass->getUri() != DeliveryAssemblyService::CLASS_URI) {
-            $streamData[] = [
-                'name' => RestTest::REST_DELIVERY_CLASS_LABEL,
-                'contents' => $deliveryClass->getLabel()
+        try {
+            $qtiPackageFile = $this->getQtiTestPackageFile($delivery);
+            $requestData = [
+                [
+                    'name' => RestTest::REST_FILE_NAME,
+                    'filename' => RestTest::REST_FILE_NAME,
+                    'contents' => $qtiPackageFile->readPsrStream(),
+                ],
+                [
+                    'name' => RestTest::REST_IMPORTER_ID,
+                    'contents' => 'taoQtiTest',
+                ],
+                [
+                    'name' => RestTest::REST_DELIVERY_PARAMS,
+                    'contents' => json_encode(
+                        [
+                            PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD => $delivery->getUri()
+                        ]
+                    )
+                ]
             ];
+
+            $deliveryClass = current($delivery->getTypes());
+            if ($deliveryClass->getUri() != DeliveryAssemblyService::CLASS_URI) {
+                $requestData[] = [
+                    'name' => RestTest::REST_DELIVERY_CLASS_LABEL,
+                    'contents' => $deliveryClass->getLabel()
+                ];
+            }
+
+            return $requestData;
+        } catch (FileNotFoundException $e) {
+            $message = __(sprintf('QTI Test backup file not found for delivery "%s"', $delivery->getLabel()));
+            throw new PublishingFailedException($message);
         }
-        return $streamData;
     }
 
     /**
@@ -217,10 +231,15 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
      */
     private function callRemotePublishingApi(core_kernel_classes_Resource $env, array $requestData)
     {
-        $body = new MultipartStream($requestData);
-        $request = new Request('POST', '/taoDeliveryRdf/RestTest/compileDeferred');
-        $request = $request->withBody($body);
+        try {
+            $body = new MultipartStream($requestData);
+            $request = new Request('POST', '/taoDeliveryRdf/RestTest/compileDeferred');
+            $request = $request->withBody($body);
 
-        return $this->getServiceLocator()->get(PlatformService::class)->callApi($env->getUri(), $request);
+            return $this->getServiceLocator()->get(PlatformService::class)->callApi($env->getUri(), $request);
+        } catch (ConnectException $e) {
+            $message = __(sprintf('Remote environment "%s" is not reachable.', $env->getLabel()));
+            throw new PublishingFailedException($message);
+        }
     }
 }
