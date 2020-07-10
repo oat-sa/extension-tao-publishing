@@ -192,17 +192,8 @@ class Deliveries extends \tao_actions_RestController
                 throw new common_exception_NotImplemented('Only POST method is accepted to publish deliveries');
             }
             $requestData = $request->getParsedBody();
-            if (!array_key_exists(self::REST_DELIVERY_URI, $requestData)) {
-                throw new common_exception_RestApi(__('Missing required parameter: `%s`', self::REST_DELIVERY_URI), 400);
-            }
-            if (!array_key_exists(self::REST_REMOTE_ENVIRONMENTS, $requestData)) {
-                throw new common_exception_RestApi(__('Missing required parameter: `%s`', self::REST_REMOTE_ENVIRONMENTS), 400);
-            }
-            $deliveryUri = $requestData[self::REST_DELIVERY_URI];
-            $remoteEnvironmentUris = $requestData[self::REST_REMOTE_ENVIRONMENTS];
-            if (!is_array($remoteEnvironmentUris)) {
-                $remoteEnvironmentUris = [$remoteEnvironmentUris];
-            }
+            $deliveryUri = $this->getDeliveryParameter($requestData);
+            $remoteEnvironmentUris = $this->getRemoteEnvironmentsParameter($requestData);
 
             /** @var RemotePublishingService $remotePublishingService */
             $remotePublishingService = $this->getServiceLocator()->get(RemotePublishingService::class);
@@ -219,5 +210,34 @@ class Deliveries extends \tao_actions_RestController
         } catch (Exception $e) {
             $this->returnFailure($e);
         }
+    }
+
+    private function getDeliveryParameter(?array $requestData): string
+    {
+        if (!array_key_exists(self::REST_DELIVERY_URI, $requestData)) {
+            throw new common_exception_RestApi(__('Missing required parameter: `%s`', self::REST_DELIVERY_URI), 400);
+        }
+        if (empty($requestData[self::REST_DELIVERY_URI])) {
+            throw new common_exception_RestApi(__('Parameter `%s` should not be empty.', self::REST_DELIVERY_URI), 400);
+        }
+
+        return $requestData[self::REST_DELIVERY_URI];
+    }
+
+    private function getRemoteEnvironmentsParameter(?array $requestData): array
+    {
+        if (!array_key_exists(self::REST_REMOTE_ENVIRONMENTS, $requestData)) {
+            throw new common_exception_RestApi(__('Missing required parameter: `%s`', self::REST_REMOTE_ENVIRONMENTS), 400);
+        }
+        $environments = $requestData[self::REST_REMOTE_ENVIRONMENTS];
+        if (!is_array($environments)) {
+            $environments = [$environments];
+        }
+        $environments = array_filter($environments);
+        if (empty($environments)) {
+            throw new common_exception_RestApi(__('Parameter `%s` should not be empty.', self::REST_REMOTE_ENVIRONMENTS), 400);
+        }
+
+        return $environments;
     }
 }

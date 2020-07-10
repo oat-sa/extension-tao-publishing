@@ -63,16 +63,16 @@ class RemotePublishingService extends ConfigurableService
         $this->deliveryResource = $this->getDeliveryResource($deliveryUri);
         $this->testUri = $this->getOriginTestUri();
         $this->queueDispatcher = $this->getServiceLocator()->get(QueueDispatcherInterface::SERVICE_ID);
-        foreach ($environments as $environmentUri) {
+        $environments = $this->collectAndValidateEnvironmentResources($environments);
+        foreach ($environments as $environment) {
             try {
-                $environmentResource = $this->getResource($environmentUri);
-                $tasks[] = $this->publishToEnvironment($environmentResource);
+                $tasks[] = $this->publishToEnvironment($environment);
             } catch (Throwable $e) {
                 $this->logError(
                     sprintf(
                         '[REMOTE_PUBLISHING] Publishing of delivery %s to remote environment %s failed. Error:  %s',
                         $deliveryUri,
-                        $environmentUri,
+                        $environment->getUri(),
                         $e->getMessage()
                     )
                 );
@@ -107,9 +107,20 @@ class RemotePublishingService extends ConfigurableService
         return $testResource->getUri();
     }
 
+    private function collectAndValidateEnvironmentResources(array $environments): array
+    {
+        $results = [];
+        foreach ($environments as $environmentUri) {
+            $environmentResource = $this->getResource($environmentUri);
+            $this->validateRemoteEnvironment($environmentResource);
+            $results[] = $environmentResource;
+        }
+
+        return $results;
+    }
+
     private function publishToEnvironment(core_kernel_classes_Resource $environment): CallbackTaskInterface
     {
-        $this->validateRemoteEnvironment($environment);
         $params = [
             $this->testUri,
             $environment->getUri(),
