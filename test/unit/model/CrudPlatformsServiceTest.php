@@ -23,11 +23,11 @@ declare(strict_types=1);
 
 namespace oat\taoPublishing\test\unit\model;
 
+use core_kernel_classes_Literal;
 use common_exception_InvalidArgumentType;
 use common_exception_PreConditionFailure;
 use core_kernel_classes_Class;
 use core_kernel_classes_Resource;
-use oat\generis\test\OntologyMockTrait;
 use oat\generis\test\TestCase;
 use oat\taoPublishing\model\CrudPlatformsService;
 use oat\taoPublishing\model\entity\Platform;
@@ -69,19 +69,22 @@ class CrudPlatformsServiceTest extends TestCase
 
     public function testGet_WhenCorrectPlatformUriIsProvided_ThenPlatformEntityReturned(): void
     {
+        $platformUri = 'http://test/first.rdf#i1111111111111111';
         $this->subject->expects($this->once())->method('isInScope')->willReturn(true);
-        $this->subject->expects($this->once())->method('getResource')->willReturn(
-            new core_kernel_classes_Resource('http://test/first.rdf#i1111111111111111')
-        );
-        $result = $this->subject->get('http://test/first.rdf#i1111111111111111');
+        $resourceMock = $this->getPlatformResourceMock($platformUri);
+        $this->subject->expects($this->once())
+            ->method('getResource')
+            ->willReturn($resourceMock);
+
+        $result = $this->subject->get($platformUri);
         $this->assertInstanceOf(Platform::class, $result);
     }
 
     public function testGetAll_WhenRequested_ThenListOfPlatformEntitiesReturned(): void
     {
         $resources = [
-            new core_kernel_classes_Resource('http://test/first.rdf#i1111111111111111'),
-            new core_kernel_classes_Resource('http://test/second.rdf#i2222222222222222'),
+            $this->getPlatformResourceMock('http://test/first.rdf#i1111111111111111'),
+            $this->getPlatformResourceMock('http://test/second.rdf#i2222222222222222'),
         ];
         $classMock = $this->createMock(core_kernel_classes_Class::class);
         $classMock->method('getInstances')->willReturn($resources);
@@ -90,5 +93,26 @@ class CrudPlatformsServiceTest extends TestCase
         $result = $this->subject->getAll();
         $this->assertCount(2, $result);
         $this->assertInstanceOf(Platform::class, $result[0]);
+    }
+
+    /**
+     * @return core_kernel_classes_Resource|MockObject
+     */
+    private function getPlatformResourceMock(string $uri): core_kernel_classes_Resource
+    {
+        $resourceMock = $this->createMock(core_kernel_classes_Resource::class);
+        $resourceMock->method('getUri')
+            ->willReturn($uri);
+        $resourceProperties = [
+            'http://www.w3.org/2000/01/rdf-schema#label' => [new core_kernel_classes_Literal('DUMMY LABEL')],
+            'http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatformUrl' => [new core_kernel_classes_Literal('DUMMY ROOT URL')],
+            'http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatformSendingBoxId' => [new core_kernel_classes_Literal('DUMMY BOX ID')],
+            'http://www.tao.lu/Ontologies/TaoPlatform.rdf#PublishingEnabled' => [new core_kernel_classes_Literal(true)],
+            'http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatformAuthType' => [new core_kernel_classes_Literal('DUMMY AUTH TYPE')],
+        ];
+        $resourceMock->method('getPropertiesValues')
+            ->willReturn($resourceProperties);
+
+        return $resourceMock;
     }
 }
