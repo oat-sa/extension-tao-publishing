@@ -106,18 +106,34 @@ class RemoteTaskStatusSynchroniser implements Action,ServiceLocatorAwareInterfac
     private function prepareRemoteTaskExecutionReport(Report $remoteTaskReport): Report
     {
         if ($remoteTaskReport->containsError() || !$remoteTaskReport->hasChildren()) {
-            $message = __("Delivery publishing on remote environment failed.");
-            $report = new Report(Report::TYPE_ERROR, $message);
+            $report = $this->prepareErrorReport($remoteTaskReport);
         } else {
-            $remoteDeliveryId = $this->getRemoteDeliveryId($remoteTaskReport);
-            $message = $remoteDeliveryId === null
-                ? __('Report does not contain remote delivery ID.')
-                : sprintf(__("Remote delivery ID: %s."), $remoteDeliveryId);
-
-            $report = new Report(Report::TYPE_INFO, $message);
+            $report = $this->prepareSuccessReport($remoteTaskReport);
         }
 
         return $report;
+    }
+
+    private function prepareErrorReport(Report $remoteTaskReport): Report
+    {
+        $message = __('Delivery compilation or remote environment failed. ');
+        $remoteErrorReports = $remoteTaskReport->getErrors(true);
+        if (count($remoteErrorReports) > 0) {
+            $remoteErrorReport = current($remoteErrorReports);
+            $message .= sprintf(__('Reason: %s.'), $remoteErrorReport->getMessage());
+        }
+
+        return new Report(Report::TYPE_ERROR, $message);
+    }
+
+    private function prepareSuccessReport(Report $remoteTaskReport): Report
+    {
+        $remoteDeliveryId = $this->getRemoteDeliveryId($remoteTaskReport);
+        $message = $remoteDeliveryId === null
+            ? __('Report does not contain remote delivery ID.')
+            : sprintf(__("Remote delivery ID: %s."), $remoteDeliveryId);
+
+        return new Report(Report::TYPE_INFO, $message);
     }
 
     private function getRemoteDeliveryId(Report $remoteTaskReport): ?string
