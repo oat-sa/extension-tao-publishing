@@ -1,0 +1,17 @@
+{
+  "id": "DUMMY_REMOTE_TASK_ID",
+  "status": "finished",
+  "report": {
+    "type": "info",
+    "message": "Running task DUMMY_REMOTE_TASK_ID",
+    "data": null,
+    "children": [
+      {
+        "type": "error",
+        "message": "DUMMY REMOTE TASK EXECUTION ERROR MESSAGE",
+        "data": null,
+        "children": []
+      }
+    ]
+  }
+}
