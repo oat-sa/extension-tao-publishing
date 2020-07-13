@@ -151,7 +151,7 @@ class RemoteTaskStatusSynchroniser implements Action,ServiceLocatorAwareInterfac
 
         $responseBody = json_decode($response->getBody()->getContents(), true);
         if ($responseBody['success'] !== true || !isset($responseBody['data'])) {
-            new PublishingFailedException(__('API call execution failed on remote server.'));
+            new PublishingFailedException(__('API request execution failed on remote server.'));
         }
 
         return $responseBody;

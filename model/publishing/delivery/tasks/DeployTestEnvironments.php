@@ -23,7 +23,7 @@ namespace oat\taoPublishing\model\publishing\delivery\tasks;
 use Exception;
 use common_exception_Error;
 use common_exception_MissingParameter;
-use common_report_Report;
+use common_report_Report as Report;
 use core_kernel_classes_Resource;
 use GuzzleHttp\Exception\ConnectException;
 use League\Flysystem\FileNotFoundException;
@@ -42,6 +42,7 @@ use oat\taoPublishing\model\PlatformService;
 use oat\taoPublishing\model\publishing\delivery\PublishingDeliveryService;
 use oat\taoPublishing\model\publishing\exception\PublishingFailedException;
 use oat\taoPublishing\model\publishing\test\TestBackupService;
+use Psr\Http\Message\ResponseInterface;
 use Zend\ServiceManager\ServiceLocatorAwareTrait;
 use Zend\ServiceManager\ServiceLocatorAwareInterface;
 use oat\generis\model\OntologyAwareTrait;
@@ -58,9 +59,18 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
     use TaskAwareTrait;
     use ChildTaskAwareTrait;
 
+    /** @var core_kernel_classes_Resource */
+    private $test;
+
+    /** @var core_kernel_classes_Resource */
+    private $delivery;
+
+    /** @var core_kernel_classes_Resource */
+    private $environment;
+
     /**
      * @param array  $params
-     * @return common_report_Report
+     * @return Report
      * @throws common_exception_Error
      * @throws common_exception_MissingParameter
      */
@@ -69,88 +79,40 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
         if (count($params) != 3) {
             throw new common_exception_MissingParameter();
         }
-        list($testId, $environmentId, $deliveryId) = $params;
-        $test = $this->getResource($testId);
-        $env = $this->getResource($environmentId);
-        $delivery = $this->getResource($deliveryId);
+        $this->instantiateInputResources($params);
 
-        $this->getLoggerService()->logInfo('Deploying ' . $delivery->getLabel().' to '.$env->getLabel());
-        $report = new common_report_Report(
-            common_report_Report::TYPE_SUCCESS,
-            __(
-                'Requested publishing of delivery "%s" to "%s"',
-                $delivery->getLabel(),
-                $env->getLabel()
-            )
-        );
+        $message = sprintf(__('Requested publishing of delivery "%s" to "%s".'), $this->delivery->getLabel(), $this->environment->getLabel());
+        $this->getLoggerService()->logInfo($message);
+        $report = new Report(Report::TYPE_SUCCESS, $message);
         
-        $subReport = $this->compileTest($env, $test, $delivery);
+        $subReport = $this->compileTest();
         $report->add($subReport);
 
         return $report;
     }
 
     /**
-     * @param core_kernel_classes_Resource $env
-     * @param core_kernel_classes_Resource $test
-     * @param core_kernel_classes_Resource $delivery
-     * @return common_report_Report
+     * @return Report
      */
-    protected function compileTest(core_kernel_classes_Resource $env, core_kernel_classes_Resource $test, core_kernel_classes_Resource $delivery) {
+    protected function compileTest(): Report
+    {
         try {
-            $requestData = $this->prepareRequestData($delivery);
-            $message = sprintf(
-                'Requesting remote publishing of Delivery "%s" to environment "%s"',
-                $delivery->getLabel(),
-                $env->getLabel()
-            );
-            $this->getLoggerService()->logDebug($message);
-
-            $response = $this->callRemotePublishingApi($env, $requestData);
-            if ($response->getStatusCode() == 200) {
-                $responseData = json_decode($response->getBody()->getContents(), true);
-                if (isset($responseData['success']) && $responseData['success']) {
-                    $remoteTaskId = $responseData['data']['reference_id'];
-
-                    /** @var QueueDispatcherInterface $queueDispatcher reference_id */
-                    $queueDispatcher = $this->getServiceLocator()->get(QueueDispatcherInterface::SERVICE_ID);
-                    $queueDispatcher->createTask(
-                        new RemoteTaskStatusSynchroniser(),
-                        [$remoteTaskId, $env->getUri(), $delivery->getUri(), $test->getUri()],
-                        __('Status of publishing delivery "%s" on remote environment "%s"', $delivery->getLabel(), $env->getLabel()),
-                        $this->getTask()
-                    );
-                }
-
-                $report = new common_report_Report(
-                    common_report_Report::TYPE_SUCCESS,
-                    __(
-                        'Publishing of delivery "%s" on remote environment "%s" was successfully requested.',
-                        $delivery->getLabel(),
-                        $env->getLabel()
-                    )
-                );
-                $report->setData($delivery->getUri());
-            } else {
-                $report = new common_report_Report(
-                    common_report_Report::TYPE_ERROR,
-                    __(
-                        'Publishing request to remote environment failed with message: %s',
-                        $response->getBody()->getContents()
-                    )
-                );
-            }
+            $requestData = $this->prepareRequestData();
+            $response = $this->callRemotePublishingApi($requestData);
+            $report = $this->processApiResponse($response);
         } catch (PublishingFailedException $e) {
-            $report = new common_report_Report(
-                common_report_Report::TYPE_ERROR,
+            $report = new Report(
+                Report::TYPE_ERROR,
                 __('Remote publishing failed: %s', $e->getMessage())
             );
         } catch (Exception $e) {
-            $report = new common_report_Report(
-                common_report_Report::TYPE_ERROR,
+            $report = new Report(
+                Report::TYPE_ERROR,
                 __('Remote publishing failed.')
             );
         } finally {
+            $report->setData($this->delivery->getUri());
+
             return $report;
         }
 
@@ -181,14 +143,13 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
     }
 
     /**
-     * @param core_kernel_classes_Resource $delivery
      * @return array
      * @throws \core_kernel_persistence_Exception
      */
-    private function prepareRequestData(core_kernel_classes_Resource $delivery): array
+    private function prepareRequestData(): array
     {
         try {
-            $qtiPackageFile = $this->getQtiTestPackageFile($delivery);
+            $qtiPackageFile = $this->getQtiTestPackageFile($this->delivery);
             $requestData = [
                 [
                     'name' => RestTest::REST_FILE_NAME,
@@ -203,13 +164,13 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
                     'name' => RestTest::REST_DELIVERY_PARAMS,
                     'contents' => json_encode(
                         [
-                            PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD => $delivery->getUri()
+                            PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD => $this->delivery->getUri()
                         ]
                     )
                 ]
             ];
 
-            $deliveryClass = current($delivery->getTypes());
+            $deliveryClass = current($this->delivery->getTypes());
             if ($deliveryClass->getUri() != DeliveryAssemblyService::CLASS_URI) {
                 $requestData[] = [
                     'name' => RestTest::REST_DELIVERY_CLASS_LABEL,
@@ -219,27 +180,86 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
 
             return $requestData;
         } catch (FileNotFoundException $e) {
-            $message = __(sprintf('QTI Test backup file not found for delivery "%s"', $delivery->getLabel()));
+            $message = __(sprintf('QTI Test backup file not found for delivery "%s"', $this->delivery->getLabel()));
             throw new PublishingFailedException($message);
         }
     }
 
     /**
-     * @param core_kernel_classes_Resource $env
      * @param array $requestData
      * @return mixed
      */
-    private function callRemotePublishingApi(core_kernel_classes_Resource $env, array $requestData)
+    private function callRemotePublishingApi(array $requestData)
     {
         try {
             $body = new MultipartStream($requestData);
             $request = new Request('POST', '/taoDeliveryRdf/RestTest/compileDeferred');
             $request = $request->withBody($body);
 
-            return $this->getServiceLocator()->get(PlatformService::class)->callApi($env->getUri(), $request);
+            return $this->getServiceLocator()->get(PlatformService::class)->callApi($this->environment->getUri(), $request);
         } catch (ConnectException $e) {
-            $message = __(sprintf('Remote environment "%s" is not reachable.', $env->getLabel()));
+            $message = __('Remote environment "%s" is not reachable.', $this->environment->getLabel());
             throw new PublishingFailedException($message);
         }
+    }
+
+    /**
+     * @param ResponseInterface $response
+     * @return Report
+     */
+    private function processApiResponse(ResponseInterface $response): Report
+    {
+        if ($response->getStatusCode() !== 200) {
+            return Report::createFailure(__('Request failed with message: %s', $response->getBody()->getContents()));
+        }
+
+        $responseData = json_decode($response->getBody()->getContents(), true);
+        if (!isset($responseData['success'], $responseData['data']['reference_id']) || $responseData['success'] !== true) {
+            return Report::createFailure(__('API request execution failed on remote server.'));
+        }
+
+        $remoteTaskId = $responseData['data']['reference_id'];
+        $this->createRemoteTaskStatusSynchroniser($remoteTaskId);
+        $reportMassage = __(
+            'Publishing of delivery "%s" on remote environment "%s" was successfully requested.',
+            $this->delivery->getLabel(),
+            $this->environment->getLabel()
+        );
+
+        return Report::createSuccess($reportMassage);
+    }
+
+    /**
+     * @param $remoteTaskId
+     */
+    private function createRemoteTaskStatusSynchroniser($remoteTaskId): void
+    {
+        /** @var QueueDispatcherInterface $queueDispatcher reference_id */
+        $queueDispatcher = $this->getServiceLocator()->get(QueueDispatcherInterface::SERVICE_ID);
+        $taskTitle = sprintf(
+            __('Status of publishing delivery "%s" on remote environment "%s"'),
+            $this->delivery->getLabel(),
+            $this->environment->getLabel()
+        );
+
+        $task = $queueDispatcher->createTask(
+            new RemoteTaskStatusSynchroniser(),
+            [$remoteTaskId, $this->environment->getUri(), $this->delivery->getUri(), $this->test->getUri()],
+            $taskTitle,
+            $this->getTask()
+        );
+
+        $this->addChildId($task->getId());
+    }
+
+    /**
+     * @param $params
+     */
+    private function instantiateInputResources($params): void
+    {
+        list($testId, $environmentId, $deliveryId) = $params;
+        $this->test = $this->getResource($testId);
+        $this->delivery = $this->getResource($deliveryId);
+        $this->environment = $this->getResource($environmentId);
     }
 }
