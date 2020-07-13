@@ -6,6 +6,11 @@ define(function(){
                 'addInstanceForm': 'controller/PlatformAdmin/editor',
                 'editInstance': 'controller/PlatformAdmin/editor'
             }
+        },
+        'Publish': {
+            'actions': {
+                'selectRemoteEnvironments': 'controller/Publish/selectRemoteEnvironments',
+            }
         }
     };
 });

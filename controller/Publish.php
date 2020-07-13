@@ -21,6 +21,11 @@
 
 namespace oat\taoPublishing\controller;
 
+use Exception;
+use common_exception_ClientException;
+use oat\tao\model\taskQueue\TaskLogActionTrait;
+use oat\taoPublishing\model\entity\Platform;
+use oat\taoPublishing\model\publishing\exception\PublishingInvalidArgumentException;
 use tao_helpers_Uri;
 use core_kernel_classes_Resource;
 use GuzzleHttp\Psr7\ServerRequest;
@@ -43,7 +48,11 @@ use oat\oatbox\task\Queue;
 class Publish extends \tao_actions_CommonModule {
 
     use OntologyAwareTrait;
-    
+    use TaskLogActionTrait;
+
+    const PARAM_DELIVERY_URI = 'delivery-uri';
+    const PARAM_REMOTE_ENVIRONMENTS = 'remote-environments';
+
     public function wizard()
     {
             try {
@@ -75,10 +84,7 @@ class Publish extends \tao_actions_CommonModule {
             tao_helpers_Uri::decode($this->getRequestParameter('uri'))
         );
 
-        $environments = $this->getServiceLocator()
-            ->get(PublishingService::SERVICE_ID)
-            ->getEnvironments();
-
+        $environments = $this->getEnvironmentsEntities();
         $submitUrl = $this->getServiceLocator()
             ->get(UrlHelper::class)
             ->buildUrl('publishToRemoteEnvironment', 'Publish', 'taoPublishing');
@@ -90,20 +96,66 @@ class Publish extends \tao_actions_CommonModule {
         $this->setView('PublishToRemote/index.tpl');
     }
 
+    /**
+     * @param ServerRequest $request
+     * @return mixed
+     */
     public function publishToRemoteEnvironment(ServerRequest $request)
     {
-        $requestData = $request->getParsedBody();
-        $deliveryUri = $requestData['delivery-uri'] ?? '';
-        $environments = $requestData['remote-environments'] ?? [];
+        try {
+            if ($request->getMethod() !== 'POST') {
+                throw new PublishingInvalidArgumentException(__('Only POST method is supported.'));
+            }
+            $requestData = $request->getParsedBody();
+            $deliveryUri = $requestData[self::PARAM_DELIVERY_URI] ?? '';
+            $environments = $requestData[self::PARAM_REMOTE_ENVIRONMENTS] ?? [];
 
-        /** @var RemotePublishingService $remotePublishingService */
-        $remotePublishingService = $this->getServiceLocator()->get(RemotePublishingService::class);
-        $tasks = $remotePublishingService->publishDeliveryToEnvironments($deliveryUri, $environments);
+            if (!count($environments)) {
+                throw new PublishingInvalidArgumentException(__('Environment(s) must be selected.'));
+            }
 
-        $returnUrl = $this->getServiceLocator()
-            ->get(UrlHelper::class)
-            ->buildUrl('editDelivery', 'DeliveryMgmt', 'taoDeliveryRdf', ['uri' => $deliveryUri]);
+            /** @var RemotePublishingService $remotePublishingService */
+            $remotePublishingService = $this->getServiceLocator()->get(RemotePublishingService::class);
+            $tasks = $remotePublishingService->publishDeliveryToEnvironments($deliveryUri, $environments);
 
-        return $this->redirect($returnUrl);
+            $task = array_shift($tasks);
+            $self = $this;
+            $allTasks = array_map(static function ($task) use ($self) {
+                return $self->getTaskLogReturnData($task->getId());
+            }, $tasks);
+
+            return $this->returnTaskJson($task, ['allTasks' => $allTasks]);
+        } catch (common_exception_ClientException $e) {
+            $this->returnJson(
+                [
+                    'success' => false,
+                    'message' => $e->getMessage(),
+                ]
+            );
+        } catch (Exception $e) {
+            $this->returnJson(
+                [
+                    'success' => false,
+                    'message' => __('Publishing to remote environments failed.'),
+                ]
+            );
+        }
+
+    }
+
+    /**
+     * @return Platform[]
+     */
+    private function getEnvironmentsEntities(): array
+    {
+        $environments = [];
+
+        /** @var PublishingService $publishingService */
+        $publishingService = $this->getServiceLocator()->get(PublishingService::SERVICE_ID);
+        foreach ($publishingService->getEnvironments() as $environment) {
+            $environments[] = new Platform($environment);
+        }
+
+        return $environments;
     }
 }

@@ -24,7 +24,7 @@ return array(
 	'label' => 'Test Publishing',
 	'description' => 'An extension to publish tests to a delivery environment',
     'license' => 'GPL-2.0',
-    'version' => '2.4.0',
+    'version' => '3.0.2',
     'author' => 'Open Assessment Technologies SA',
     'requires' => array(
         'taoDeliveryRdf' => '>=12.0.0',
@@ -38,6 +38,7 @@ return array(
     'install' => array(
         'rdf' => array(
             __DIR__. '/model/ontology/platform.rdf',
+            __DIR__. '/model/ontology/taodelivery.rdf',
             __DIR__. '/model/ontology/taotest.rdf',
             __DIR__. '/model/ontology/indexation.rdf'
         ),
@@ -51,6 +52,7 @@ return array(
     'uninstall' => array(
     ),
     'routes' => array(
+        '/taoPublishing/api' => ['class' => \oat\taoPublishing\model\routing\ApiRoute::class],
         '/taoPublishing' => 'oat\\taoPublishing\\controller'
     ),
     'update' => 'oat\\taoPublishing\\scripts\\update\\Updater',
