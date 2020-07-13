@@ -39,7 +39,7 @@ class RemoteDeliveryCreatedEvent extends AbstractDeliveryEvent implements Webhoo
     private $remoteDeliveryUri;
 
     /**
-     * RemotePublishingDeliveryCreatedEvent constructor.
+     * RemoteDeliveryCreatedEvent constructor.
      * @param string $deliveryUri
      * @param string $testUri
      * @param string $remoteDeliveryUri
