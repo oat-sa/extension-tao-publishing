@@ -81,15 +81,19 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
             throw new common_exception_MissingParameter();
         }
         $this->instantiateInputResources($params);
-
-        $message = sprintf(__('Requested publishing of delivery "%s" to "%s".'), $this->delivery->getLabel(), $this->environment->getLabel());
-        $this->getLoggerService()->logInfo($message);
-        $report = new Report(Report::TYPE_SUCCESS, $message);
         
-        $subReport = $this->compileTest();
-        $report->add($subReport);
+        return $this->compileTest();
+    }
 
-        return $report;
+    /**
+     * @param $params
+     */
+    private function instantiateInputResources($params): void
+    {
+        list($testId, $environmentId, $deliveryId) = $params;
+        $this->test = $this->getResource($testId);
+        $this->delivery = $this->getResource($deliveryId);
+        $this->environment = $this->getResource($environmentId);
     }
 
     /**
@@ -97,26 +101,44 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
      */
     protected function compileTest(): Report
     {
+        $message = sprintf(__('Requested publishing of delivery "%s" to "%s".'), $this->delivery->getLabel(), $this->environment->getLabel());
+        $this->getLoggerService()->logInfo($message);
+        $report = new Report(Report::TYPE_SUCCESS, $message);
+
         try {
+            $this->validateResources();
             $requestData = $this->prepareRequestData();
             $response = $this->callRemotePublishingApi($requestData);
-            $report = $this->processApiResponse($response);
+            $compilationRequestReport = $this->processApiResponse($response);
         } catch (PublishingFailedException $e) {
-            $report = new Report(
+            $compilationRequestReport = new Report(
                 Report::TYPE_ERROR,
                 __('Remote publishing failed: %s', $e->getMessage())
             );
         } catch (Exception $e) {
-            $report = new Report(
+            $compilationRequestReport = new Report(
                 Report::TYPE_ERROR,
                 __('Remote publishing failed.')
             );
         } finally {
-            $report->setData($this->delivery->getUri());
+            $compilationRequestReport->setData($this->delivery->getUri());
+            $report->add($compilationRequestReport);
 
             return $report;
         }
+    }
 
+    private function validateResources(): void
+    {
+        if (!$this->delivery->exists()) {
+            $message = sprintf(__('Delivery with URI "%s" does not exist.'), $this->delivery->getUri());
+            throw new PublishingFailedException($message);
+        }
+
+        if (!$this->environment->exists()) {
+            $message = sprintf(__('Remote environment with URI "%s" does not exist.'), $this->delivery->getUri());
+            throw new PublishingFailedException($message);
+        }
     }
 
     /**
@@ -181,7 +203,7 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
 
             return $requestData;
         } catch (FileNotFoundException $e) {
-            $message = __(sprintf('QTI Test backup file not found for delivery "%s"', $this->delivery->getLabel()));
+            $message = sprintf(__('QTI Test backup file not found for delivery "%s"'), $this->delivery->getLabel());
             throw new PublishingFailedException($message);
         }
     }
@@ -242,7 +264,7 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
     /**
      * @param $remoteTaskId
      */
-    private function createRemoteTaskStatusSynchroniser($remoteTaskId): void
+    private function createRemoteTaskStatusSynchroniser(string $remoteTaskId): void
     {
         /** @var QueueDispatcherInterface $queueDispatcher reference_id */
         $queueDispatcher = $this->getServiceLocator()->get(QueueDispatcherInterface::SERVICE_ID);
@@ -260,16 +282,5 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
         );
 
         $this->addChildId($task->getId());
-    }
-
-    /**
-     * @param $params
-     */
-    private function instantiateInputResources($params): void
-    {
-        list($testId, $environmentId, $deliveryId) = $params;
-        $this->test = $this->getResource($testId);
-        $this->delivery = $this->getResource($deliveryId);
-        $this->environment = $this->getResource($environmentId);
     }
 }
