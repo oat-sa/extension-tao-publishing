@@ -116,6 +116,7 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
                 __('Remote publishing failed: %s', $e->getMessage())
             );
         } catch (Exception $e) {
+            $this->getLoggerService()->logError($e->getMessage(), [$e->__toString()]);
             $compilationRequestReport = new Report(
                 Report::TYPE_ERROR,
                 __('Remote publishing failed.')
@@ -203,6 +204,7 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
 
             return $requestData;
         } catch (FileNotFoundException $e) {
+            $this->getLoggerService()->logError($e->getMessage(), [$e->__toString()]);
             $message = sprintf(__('QTI Test backup file not found for delivery "%s"'), $this->delivery->getLabel());
             throw new PublishingFailedException($message);
         }
@@ -221,9 +223,13 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
 
             return $this->getServiceLocator()->get(PlatformService::class)->callApi($this->environment->getUri(), $request);
         } catch (ConnectException $e) {
+            $this->getLoggerService()->logError($e->getMessage(), [$e->__toString()]);
+
             $message = __('Remote environment "%s" is not reachable.', $this->environment->getLabel());
             throw new PublishingFailedException($message);
         } catch (ClientException $e) {
+            $this->getLoggerService()->logError($e->getMessage(), [$e->__toString()]);
+
             $response = $e->getResponse();
             $message = __('Bad request.');
             if ($response instanceof ResponseInterface && $response->getStatusCode() === 401) {

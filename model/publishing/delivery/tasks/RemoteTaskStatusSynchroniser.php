@@ -2,10 +2,12 @@
 
 namespace oat\taoPublishing\model\publishing\delivery\tasks;
 
+use Exception;
 use common_report_Report as Report;
 use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\action\Action;
 use oat\oatbox\event\EventManager;
+use oat\oatbox\log\LoggerService;
 use oat\tao\model\taskQueue\Task\RemoteTaskSynchroniserInterface;
 use oat\tao\model\taskQueue\TaskLog\CategorizedStatus;
 use oat\taoPublishing\model\PlatformService;
@@ -51,23 +53,29 @@ class RemoteTaskStatusSynchroniser implements Action,ServiceLocatorAwareInterfac
         $this->remoteTaskId = $remoteTaskId;
         $this->remoteEnvironmentId = $envId;
 
-        $this->status = $this->fetchRemoteTaskStatus();
-        if (!$this->isTaskFinished($this->status)) {
-            return Report::createInfo(__('Remote task is still running.'));
+        try {
+            $this->status = $this->fetchRemoteTaskStatus();
+            if (!$this->isTaskFinished($this->status)) {
+                return Report::createInfo(__('Remote task is still running.'));
+            }
+
+            $remoteTaskData = $this->getRemoteTaskDetails();
+            $report = new Report(Report::TYPE_SUCCESS, __('Remote task was completed.'), $remoteTaskData);
+
+            $remoteReport = Report::jsonUnserialize($remoteTaskData['report']);
+            if (!$remoteReport instanceof Report) {
+                $report->add(Report::createFailure(__('Remote task does not have a report.')));
+            }
+            $report->add($this->prepareRemoteTaskExecutionReport($remoteReport));
+
+            /** @var EventManager $eventManager */
+            $remoteDeliveryId = $this->getRemoteDeliveryId($remoteReport);
+            $this->triggerRemoteDeliveryCreatedEvent($remoteDeliveryId, $deliveryUri, $testUri);
+        } catch (Exception $e) {
+            $this->getLoggerService()->logError($e->getMessage(), [$e->__toString()]);
+            $report = Report::createFailure(__('Checking remote task status failed.'));
         }
 
-        $remoteTaskData = $this->getRemoteTaskDetails();
-        $report = new Report(Report::TYPE_SUCCESS, __('Remote task was completed.'), $remoteTaskData);
-
-        $remoteReport = Report::jsonUnserialize($remoteTaskData['report']);
-        if (!$remoteReport instanceof Report) {
-            $report->add(Report::createFailure(__('Remote task does not have a report.')));
-        }
-        $report->add($this->prepareRemoteTaskExecutionReport($remoteReport));
-
-        /** @var EventManager $eventManager */
-        $remoteDeliveryId = $this->getRemoteDeliveryId($remoteReport);
-        $this->triggerRemoteDeliveryCreatedEvent($remoteDeliveryId, $deliveryUri, $testUri);
 
         return $report;
     }
@@ -184,5 +192,13 @@ class RemoteTaskStatusSynchroniser implements Action,ServiceLocatorAwareInterfac
             $eventManager = $this->getServiceLocator()->get(EventManager::SERVICE_ID);
             $eventManager->trigger(new RemoteDeliveryCreatedEvent($deliveryUri, $testUri, $remoteDeliveryId));
         }
+    }
+
+    /**
+     * @return LoggerService
+     */
+    private function getLoggerService(): LoggerService
+    {
+        return $this->getServiceLocator()->get(LoggerService::SERVICE_ID);
     }
 }
