@@ -2,13 +2,15 @@
 
 namespace oat\taoPublishing\model\publishing\delivery\tasks;
 
-use common_report_Report;
+use common_report_Report as Report;
 use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\action\Action;
 use oat\oatbox\event\EventManager;
 use oat\tao\model\taskQueue\Task\RemoteTaskSynchroniserInterface;
+use oat\tao\model\taskQueue\TaskLog\CategorizedStatus;
 use oat\taoPublishing\model\PlatformService;
 use oat\taoPublishing\model\publishing\event\RemoteDeliveryCreatedEvent;
+use oat\taoPublishing\model\publishing\exception\PublishingFailedException;
 use Zend\ServiceManager\ServiceLocatorAwareTrait;
 use Zend\ServiceManager\ServiceLocatorAwareInterface;
 use GuzzleHttp\Psr7\Request;
@@ -24,6 +26,9 @@ class RemoteTaskStatusSynchroniser implements Action,ServiceLocatorAwareInterfac
 
     private $status;
 
+    private $remoteTaskId;
+    private $remoteEnvironmentId;
+
     private $remoteDeliveryId = null;
 
     public function getRemoteStatus()
@@ -33,7 +38,7 @@ class RemoteTaskStatusSynchroniser implements Action,ServiceLocatorAwareInterfac
 
     /**
      * @param $params
-     * @return common_report_Report
+     * @return Report
      * @throws \common_exception_Error
      * @throws \common_exception_MissingParameter
      */
@@ -43,52 +48,79 @@ class RemoteTaskStatusSynchroniser implements Action,ServiceLocatorAwareInterfac
             throw new \common_exception_MissingParameter();
         }
         list ($remoteTaskId, $envId, $deliveryUri, $testUri) = $params;
+        $this->remoteTaskId = $remoteTaskId;
+        $this->remoteEnvironmentId = $envId;
 
-        $url = '/tao/TaskQueue/get';
-        $request = new Request('GET', trim($url, '/').'?'.http_build_query(['id' => $remoteTaskId]));
-        $response = $this->getServiceLocator()->get(PlatformService::class)->callApi($envId, $request);
-
-        $success = 200;
-        if ($response->getStatusCode() == $success) {
-            $body = json_decode($response->getBody()->getContents(), true);
-            if ($body['success'] == true && isset($body['data'])) {
-                $remoteTaskData = $body['data'];
-                $this->status = $remoteTaskData['status'];
-                $remoteReport = common_report_Report::jsonUnserialize($remoteTaskData['report']);
-                $report = new common_report_Report(common_report_Report::TYPE_SUCCESS, __('Remote task was completed.'), $remoteTaskData);
-                $report->add($this->prepareRemoteTaskExecutionReport($remoteReport));
-
-                /** @var EventManager $eventManager */
-                $remoteDeliveryId = $this->getRemoteDeliveryId($remoteReport);
-                $this->triggerRemoteDeliveryCreatedEvent($remoteDeliveryId, $deliveryUri, $testUri);
-            } else {
-                $report = new common_report_Report(common_report_Report::TYPE_ERROR, __('Remote task execution failed.'));
-            }
-
-        } else {
-            $report = new common_report_Report(common_report_Report::TYPE_ERROR, __('Request to check remote task status failed.'));
+        $this->status = $this->fetchRemoteTaskStatus();
+        if (!$this->isTaskFinished($this->status)) {
+            return Report::createInfo(__('Remote task is still running.'));
         }
+
+        $remoteTaskData = $this->getRemoteTaskDetails();
+        $report = new Report(Report::TYPE_SUCCESS, __('Remote task was completed.'), $remoteTaskData);
+
+        $remoteReport = Report::jsonUnserialize($remoteTaskData['report']);
+        if (!$remoteReport instanceof Report) {
+            $report->add(Report::createFailure(__('Remote task does not have a report.')));
+        }
+        $report->add($this->prepareRemoteTaskExecutionReport($remoteReport));
+
+        /** @var EventManager $eventManager */
+        $remoteDeliveryId = $this->getRemoteDeliveryId($remoteReport);
+        $this->triggerRemoteDeliveryCreatedEvent($remoteDeliveryId, $deliveryUri, $testUri);
+
         return $report;
     }
 
-    private function prepareRemoteTaskExecutionReport(common_report_Report $remoteTaskReport): common_report_Report
+    private function fetchRemoteTaskStatus(): string
+    {
+        $response = $this->callRemoteApi('/tao/TaskQueue/getStatus');
+
+        return $response['data'];
+    }
+
+    /**
+     * @return mixed
+     * @throws PublishingFailedException
+     */
+    private function getRemoteTaskDetails()
+    {
+        $response = $this->callRemoteApi('/tao/TaskQueue/get');
+
+        return $response['data'];
+    }
+
+    private function isTaskFinished(string $status): bool
+    {
+        return in_array(
+            $status,
+            [
+                CategorizedStatus::STATUS_COMPLETED,
+                CategorizedStatus::STATUS_CANCELLED,
+                CategorizedStatus::STATUS_FAILED,
+                CategorizedStatus::STATUS_ARCHIVED
+            ]
+        );
+    }
+
+    private function prepareRemoteTaskExecutionReport(Report $remoteTaskReport): Report
     {
         if ($remoteTaskReport->containsError() || !$remoteTaskReport->hasChildren()) {
-            $message = __("Delivery publishing on remote environment failed");
-            $report = new common_report_Report(common_report_Report::TYPE_ERROR, $message);
+            $message = __("Delivery publishing on remote environment failed.");
+            $report = new Report(Report::TYPE_ERROR, $message);
         } else {
             $remoteDeliveryId = $this->getRemoteDeliveryId($remoteTaskReport);
             $message = $remoteDeliveryId === null
                 ? __('Report does not contain remote delivery ID.')
-                : __(sprintf("Remote delivery ID: %", $remoteDeliveryId));
+                : sprintf(__("Remote delivery ID: %s."), $remoteDeliveryId);
 
-            $report = new common_report_Report(common_report_Report::TYPE_INFO, $message);
+            $report = new Report(Report::TYPE_INFO, $message);
         }
 
         return $report;
     }
 
-    private function getRemoteDeliveryId(common_report_Report $remoteTaskReport): ?string
+    private function getRemoteDeliveryId(Report $remoteTaskReport): ?string
     {
         if ($this->remoteDeliveryId === null) {
             $deliveryCompilationReport = current($remoteTaskReport->getChildren());
@@ -98,6 +130,31 @@ class RemoteTaskStatusSynchroniser implements Action,ServiceLocatorAwareInterfac
         }
 
         return $this->remoteDeliveryId;
+    }
+
+    /**
+     * @param string $url
+     * @return array
+     * @throws PublishingFailedException
+     */
+    private function callRemoteApi(string $url): array
+    {
+        $request = new Request('GET', trim($url, '/') . '?' . http_build_query(['id' => $this->remoteTaskId]));
+        $response = $this->getServiceLocator()->get(PlatformService::class)->callApi(
+            $this->remoteEnvironmentId,
+            $request
+        );
+
+        if ($response->getStatusCode() !== 200) {
+            throw new PublishingFailedException(__('Call to remote environment failed.'));
+        }
+
+        $responseBody = json_decode($response->getBody()->getContents(), true);
+        if ($responseBody['success'] !== true || !isset($responseBody['data'])) {
+            new PublishingFailedException(__('API call execution failed on remote server.'));
+        }
+
+        return $responseBody;
     }
 
     /**
