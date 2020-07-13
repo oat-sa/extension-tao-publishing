@@ -25,6 +25,7 @@ use common_exception_Error;
 use common_exception_MissingParameter;
 use common_report_Report as Report;
 use core_kernel_classes_Resource;
+use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ConnectException;
 use League\Flysystem\FileNotFoundException;
 use oat\oatbox\action\Action;
@@ -187,9 +188,9 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
 
     /**
      * @param array $requestData
-     * @return mixed
+     * @return ResponseInterface
      */
-    private function callRemotePublishingApi(array $requestData)
+    private function callRemotePublishingApi(array $requestData): ResponseInterface
     {
         try {
             $body = new MultipartStream($requestData);
@@ -200,6 +201,15 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
         } catch (ConnectException $e) {
             $message = __('Remote environment "%s" is not reachable.', $this->environment->getLabel());
             throw new PublishingFailedException($message);
+        } catch (ClientException $e) {
+            $response = $e->getResponse();
+            $message = __('Bad request.');
+            if ($response instanceof ResponseInterface && $response->getStatusCode() === 401) {
+                $responseBody = json_decode($response->getBody()->getContents(), true);
+                $message = $responseBody['errorMsg'] ?? $response->getReasonPhrase();
+            }
+
+            throw new PublishingFailedException($message, $e->getCode());
         }
     }
 
