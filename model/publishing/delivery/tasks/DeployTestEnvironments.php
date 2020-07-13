@@ -1,22 +1,22 @@
 <?php
-/**  
+/**
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; under version 2
  * of the License (non-upgradable).
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- * 
+ *
  * Copyright (c) 2017 (original work) Open Assessment Technologies SA;
- *               
- * 
+ *
+ *
  */
 namespace oat\taoPublishing\model\publishing\delivery\tasks;
 
@@ -73,7 +73,7 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
         $delivery = $this->getResource($deliveryId);
         $this->getLoggerService()->logInfo('Deploying '.$test->getLabel().' to '.$env->getLabel());
         $report = new common_report_Report(common_report_Report::TYPE_SUCCESS, __('Deployed %s to %s', $test->getLabel(), $env->getLabel()));
-        
+
         $subReport = $this->compileTest($env, $test, $delivery);
         $report->add($subReport);
         return $report;
@@ -100,11 +100,7 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
                 ],
                 [
                     'name' => RestTest::REST_DELIVERY_PARAMS,
-                    'contents' => json_encode(
-                        [
-                            PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD => $delivery->getUri()
-                        ]
-                    )
+                    'contents' => json_encode($this->getDeliveryPropertyList($delivery))
                 ]
             ];
 
@@ -160,11 +156,26 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
     {
         $packagePath = $delivery->getOnePropertyValue($this->getProperty(TestBackupService::PROPERTY_QTI_TEST_BACKUP_PATH));
         $packagePath = (string)  $packagePath;
-        
+
         return $this->getServiceLocator()
             ->get(FileSystemService::SERVICE_ID)
             ->getDirectory(TestBackupService::FILESYSTEM_ID)
             ->getFile($packagePath);
+    }
+
+    private function getDeliveryPropertyList(\core_kernel_classes_Resource $delivery): array
+    {
+        $propertyList = [];
+        foreach ($this->getPublishingDeliveryService()->getSyncFields() as $deliveryProperty) {
+            $value = $delivery->getOnePropertyValue($this->getProperty($deliveryProperty));
+            if ($value instanceof \core_kernel_classes_Resource) {
+                $value = $value->getUri();
+            }
+            $propertyList[$deliveryProperty] = (string) $value;
+        }
+        $propertyList[PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD] = $delivery->getUri();
+
+        return $propertyList;
     }
 
     /**
@@ -173,5 +184,10 @@ class DeployTestEnvironments implements Action, ServiceLocatorAwareInterface, Ch
     private function getLoggerService(): LoggerService
     {
         return $this->getServiceLocator()->get(LoggerService::SERVICE_ID);
+    }
+
+    private function getPublishingDeliveryService(): PublishingDeliveryService
+    {
+        return $this->getServiceLocator()->get(PublishingDeliveryService::SERVICE_ID);
     }
 }
