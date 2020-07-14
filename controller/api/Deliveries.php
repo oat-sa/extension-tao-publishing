@@ -192,7 +192,7 @@ class Deliveries extends \tao_actions_RestController
                 throw new common_exception_NotImplemented('Only POST method is accepted to publish deliveries');
             }
             $requestData = $request->getParsedBody();
-            $deliveryUri = $this->getDeliveryParameter($requestData);
+            $deliveryUri = $this->getDeliveryUriParameter($requestData);
             $remoteEnvironmentUris = $this->getRemoteEnvironmentsParameter($requestData);
 
             /** @var RemotePublishingService $remotePublishingService */
@@ -212,9 +212,9 @@ class Deliveries extends \tao_actions_RestController
         }
     }
 
-    private function getDeliveryParameter(?array $requestData): string
+    private function getDeliveryUriParameter(?array $requestData): string
     {
-        if (!array_key_exists(self::REST_DELIVERY_URI, $requestData)) {
+        if (!is_array($requestData) || !array_key_exists(self::REST_DELIVERY_URI, $requestData)) {
             throw new common_exception_RestApi(__('Missing required parameter: `%s`', self::REST_DELIVERY_URI), 400);
         }
         if (empty($requestData[self::REST_DELIVERY_URI])) {
@@ -226,7 +226,7 @@ class Deliveries extends \tao_actions_RestController
 
     private function getRemoteEnvironmentsParameter(?array $requestData): array
     {
-        if (!array_key_exists(self::REST_REMOTE_ENVIRONMENTS, $requestData)) {
+        if (!is_array($requestData) || !array_key_exists(self::REST_REMOTE_ENVIRONMENTS, $requestData)) {
             throw new common_exception_RestApi(__('Missing required parameter: `%s`', self::REST_REMOTE_ENVIRONMENTS), 400);
         }
         $environments = $requestData[self::REST_REMOTE_ENVIRONMENTS];
