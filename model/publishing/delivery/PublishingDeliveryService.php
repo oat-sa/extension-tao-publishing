@@ -19,9 +19,7 @@
 
 namespace oat\taoPublishing\model\publishing\delivery;
 
-use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
-use oat\oatbox\log\LoggerAwareTrait;
 
 /**
  * Class PublishingDeliveryService
@@ -30,14 +28,11 @@ use oat\oatbox\log\LoggerAwareTrait;
  */
 class PublishingDeliveryService extends ConfigurableService
 {
-    use LoggerAwareTrait;
-    use OntologyAwareTrait;
+    public const SERVICE_ID = 'taoPublishing/PublishingDeliveryService';
+    public const ORIGIN_DELIVERY_ID_FIELD = 'http://www.tao.lu/Ontologies/TAOPublisher.rdf#OriginDeliveryID';
+    public const ORIGIN_TEST_ID_FIELD = 'http://www.tao.lu/Ontologies/TAOPublisher.rdf#OriginTestID';
+    public const DELIVERY_REMOTE_SYNC_FIELD = 'http://www.tao.lu/Ontologies/TAOPublisher.rdf#RemoteSync';
+    public const DELIVERY_REMOTE_SYNC_COMPILE_ENABLED = 'http://www.tao.lu/Ontologies/TAODelivery.rdf#ComplyEnabled';
 
-    const SERVICE_ID = 'taoPublishing/PublishingDeliveryService';
-    const ORIGIN_DELIVERY_ID_FIELD = 'http://www.tao.lu/Ontologies/TAOPublisher.rdf#OriginDeliveryID';
-    const ORIGIN_TEST_ID_FIELD = 'http://www.tao.lu/Ontologies/TAOPublisher.rdf#OriginTestID';
-    const DELIVERY_REMOTE_SYNC_FIELD = 'http://www.tao.lu/Ontologies/TAOPublisher.rdf#RemoteSync';
-    const DELIVERY_REMOTE_SYNC_COMPILE_ENABLED = 'http://www.tao.lu/Ontologies/TAODelivery.rdf#ComplyEnabled';
-
-    const DELIVERY_REMOTE_SYNC_REST_OPTION = 'remote-publish';
+    public const DELIVERY_REMOTE_SYNC_REST_OPTION = 'remote-publish';
 }

@@ -75,18 +75,18 @@ class RemoteDeliveryPublishingTask implements Action, ServiceLocatorAwareInterfa
      */
     public function __invoke($params) {
 
-        if (count($params) != 3) {
+        if (!is_array($params) || count($params) != 3) {
             throw new common_exception_MissingParameter();
         }
         $this->instantiateInputResources($params);
 
-        return $this->compileTest();
+        return $this->publishToRemoteEnvironment();
     }
 
     /**
-     * @param $params
+     * @param array $params
      */
-    private function instantiateInputResources($params): void
+    private function instantiateInputResources(array $params): void
     {
         list($testId, $environmentId, $deliveryId) = $params;
         $this->test = $this->getResource($testId);
@@ -97,7 +97,7 @@ class RemoteDeliveryPublishingTask implements Action, ServiceLocatorAwareInterfa
     /**
      * @return Report
      */
-    protected function compileTest(): Report
+    protected function publishToRemoteEnvironment(): Report
     {
         $message = sprintf(__('Requested publishing of delivery "%s" to "%s".'), $this->delivery->getLabel(), $this->environment->getLabel());
         $this->getLoggerService()->logInfo($message);
@@ -230,7 +230,7 @@ class RemoteDeliveryPublishingTask implements Action, ServiceLocatorAwareInterfa
 
             $response = $e->getResponse();
             $message = __('Bad request.');
-            if ($response instanceof ResponseInterface && $response->getStatusCode() === 401) {
+            if ($response->getStatusCode() === 401) {
                 $responseBody = json_decode($response->getBody()->getContents(), true);
                 $message = $responseBody['errorMsg'] ?? $response->getReasonPhrase();
             }
