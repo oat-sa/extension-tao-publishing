@@ -26,11 +26,16 @@ class RemoteTaskStatusSynchroniser implements Action,ServiceLocatorAwareInterfac
     use ServiceLocatorAwareTrait;
     use OntologyAwareTrait;
 
-    private $status;
+    private const FINAL_TASK_STATUSES = [
+        CategorizedStatus::STATUS_COMPLETED,
+        CategorizedStatus::STATUS_CANCELLED,
+        CategorizedStatus::STATUS_FAILED,
+        CategorizedStatus::STATUS_ARCHIVED
+    ];
 
+    private $status;
     private $remoteTaskId;
     private $remoteEnvironmentId;
-
     private $remoteDeliveryId = null;
 
     public function getRemoteStatus()
@@ -100,15 +105,7 @@ class RemoteTaskStatusSynchroniser implements Action,ServiceLocatorAwareInterfac
 
     private function isTaskFinished(string $status): bool
     {
-        return in_array(
-            $status,
-            [
-                CategorizedStatus::STATUS_COMPLETED,
-                CategorizedStatus::STATUS_CANCELLED,
-                CategorizedStatus::STATUS_FAILED,
-                CategorizedStatus::STATUS_ARCHIVED
-            ]
-        );
+        return in_array($status, self::FINAL_TASK_STATUSES);
     }
 
     private function prepareRemoteTaskExecutionReport(Report $remoteTaskReport): Report
