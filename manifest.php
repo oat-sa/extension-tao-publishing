@@ -27,7 +27,7 @@ return array(
     'version' => '3.0.3',
     'author' => 'Open Assessment Technologies SA',
     'requires' => array(
-        'taoDeliveryRdf' => '>=12.0.0',
+        'taoDeliveryRdf' => '>=12.2.1',
         'tao' => '>=31.6.0',
         'taoQtiTest' => '>=38.13.0',
     ),
