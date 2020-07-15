@@ -24,7 +24,6 @@ declare(strict_types=1);
 namespace oat\taoPublishing\controller\api;
 
 use common_exception_BadRequest;
-use common_exception_MissingParameter;
 use common_exception_NotImplemented;
 use common_exception_RestApi;
 use Exception;
