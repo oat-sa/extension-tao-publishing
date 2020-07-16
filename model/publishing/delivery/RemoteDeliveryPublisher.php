@@ -104,9 +104,7 @@ class RemoteDeliveryPublisher extends ConfigurableService
                 ],
                 [
                     'name' => RestTest::REST_DELIVERY_PARAMS,
-                    'contents' => json_encode(
-                        $this->getPublishingDeliveryService()->getSynchronizedDeliveryProperties($this->delivery)
-                    ),
+                    'contents' => json_encode($this->getSynchronizedDeliveryProperties($this->delivery)),
                 ]
             ];
 
@@ -140,6 +138,26 @@ class RemoteDeliveryPublisher extends ConfigurableService
             ->get(FileSystemService::SERVICE_ID)
             ->getDirectory(TestBackupService::FILESYSTEM_ID)
             ->getFile($packagePath);
+    }
+
+    /**
+     * @param core_kernel_classes_Resource $delivery
+     * @return array
+     * @throws core_kernel_persistence_Exception
+     */
+    private function getSynchronizedDeliveryProperties(core_kernel_classes_Resource $delivery): array
+    {
+        $propertyList = [];
+        foreach ($this->getPublishingDeliveryService()->getSyncFields() as $deliveryProperty) {
+            $value = $delivery->getOnePropertyValue($this->getProperty($deliveryProperty));
+            if ($value instanceof core_kernel_classes_Resource) {
+                $value = $value->getUri();
+            }
+            $propertyList[$deliveryProperty] = (string) $value;
+        }
+        $propertyList[PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD] = $delivery->getUri();
+
+        return $propertyList;
     }
 
     /**

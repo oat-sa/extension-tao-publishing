@@ -45,22 +45,7 @@ class PublishingDeliveryService extends ConfigurableService
 
     public const DELIVERY_REMOTE_SYNC_REST_OPTION = 'remote-publish';
 
-    public function getSynchronizedDeliveryProperties(core_kernel_classes_Resource $delivery): array
-    {
-        $propertyList = [];
-        foreach ($this->collectSynchronizedDeliveryFields() as $deliveryProperty) {
-            $value = $delivery->getOnePropertyValue($this->getProperty($deliveryProperty));
-            if ($value instanceof core_kernel_classes_Resource) {
-                $value = $value->getUri();
-            }
-            $propertyList[$deliveryProperty] = (string) $value;
-        }
-        $propertyList[self::ORIGIN_DELIVERY_ID_FIELD] = $delivery->getUri();
-
-        return $propertyList;
-    }
-
-    private function collectSynchronizedDeliveryFields(): array
+    public function getSyncFields(): array
     {
         $deliveryFieldsOptions = $this->getOption(PublishingService::OPTIONS_FIELDS);
         $deliveryExcludedFieldsOptions = $this->hasOption(PublishingService::OPTIONS_EXCLUDED_FIELDS)
