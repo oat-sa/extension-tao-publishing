@@ -105,10 +105,8 @@ class RemoteDeliveryPublisher extends ConfigurableService
                 [
                     'name' => RestTest::REST_DELIVERY_PARAMS,
                     'contents' => json_encode(
-                        [
-                            PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD => $this->delivery->getUri()
-                        ]
-                    )
+                        $this->getPublishingDeliveryService()->getSynchronizedDeliveryProperties($this->delivery)
+                    ),
                 ]
             ];
 
@@ -178,6 +176,11 @@ class RemoteDeliveryPublisher extends ConfigurableService
     private function getPlatformService(): PlatformService
     {
         return $this->getServiceLocator()->get(PlatformService::class);
+    }
+
+    private function getPublishingDeliveryService(): PublishingDeliveryService
+    {
+        return $this->getServiceLocator()->get(PublishingDeliveryService::SERVICE_ID);
     }
 
     /**
