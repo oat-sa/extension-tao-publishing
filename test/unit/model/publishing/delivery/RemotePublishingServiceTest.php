@@ -144,7 +144,7 @@ class RemotePublishingServiceTest extends TestCase
         $testResourceMock = $this->getTestResourceMock($testUri);
         $deliveryExists = true;
         $deliveryResourceMock = $this->getDeliveryResourceMock($testResourceMock, $deliveryExists);
-        $environmentMock = $this->createMock(core_kernel_classes_Resource::class);
+        $environmentMock = $this->getRemoteEnvironmentMock(true, true);
 
         $this->ontologyMock
             ->method('getResource')
@@ -162,12 +162,11 @@ class RemotePublishingServiceTest extends TestCase
         self::assertCount(0, $tasks, 'Method must return correct number of created tasks.');
     }
 
-    public function testPublishDeliveryToEnvironments_EnvironmentDoesNotExist(): void
+    public function testPublishDeliveryToEnvironments_EnvironmentDoesNotExist_ThrowsException(): void
     {
         $deliveryUri = 'FAKE_DELIVERY_URI';
         $testUri = 'FAKE_TEST_URI';
         $environments = ['FAKE_ENVIRONMENT_URI_1', 'FAKE_ENVIRONMENT_URI_2'];
-        $expectedTasksAmount = 1;
 
         $testResourceMock = $this->getTestResourceMock($testUri);
         $deliveryExists = true;
@@ -175,30 +174,23 @@ class RemotePublishingServiceTest extends TestCase
 
         $environmentExists = true;
         $publishingEnabled = true;
-        $environmentMock1 = $this->getRemoteEnvironmentMock(false, $publishingEnabled);
-        $environmentMock2 = $this->getRemoteEnvironmentMock($environmentExists, $publishingEnabled);
+        $environmentMock1 = $this->getRemoteEnvironmentMock($environmentExists, $publishingEnabled);
+        $environmentMock2 = $this->getRemoteEnvironmentMock(false, $publishingEnabled);
 
         $this->ontologyMock
             ->method('getResource')
             ->willReturnOnConsecutiveCalls($deliveryResourceMock, $environmentMock1, $environmentMock2);
 
-        $task1 = $this->createMock(CallbackTaskInterface::class);
-        $this->queueDispatcherMock
-            ->method('createTask')
-            ->willReturnOnConsecutiveCalls($task1);
+        self::expectException(PublishingInvalidArgumentException::class);
 
-        $tasks = $this->subject->publishDeliveryToEnvironments($deliveryUri, $environments);
-
-        self::assertCount($expectedTasksAmount, $tasks, 'Method must return expected number of created tasks.');
-        self::assertInstanceOf(CallbackTaskInterface::class, $tasks[0]);
+        $this->subject->publishDeliveryToEnvironments($deliveryUri, $environments);
     }
 
-    public function testPublishDeliveryToEnvironments_PublishingToEnvironmentDisabled(): void
+    public function testPublishDeliveryToEnvironments_PublishingToEnvironmentDisabled_ThrowsException(): void
     {
         $deliveryUri = 'FAKE_DELIVERY_URI';
         $testUri = 'FAKE_TEST_URI';
         $environments = ['FAKE_ENVIRONMENT_URI_1', 'FAKE_ENVIRONMENT_URI_2'];
-        $expectedTasksAmount = 1;
 
         $testResourceMock = $this->getTestResourceMock($testUri);
         $deliveryExists = true;
@@ -213,15 +205,9 @@ class RemotePublishingServiceTest extends TestCase
             ->method('getResource')
             ->willReturnOnConsecutiveCalls($deliveryResourceMock, $environmentMock1, $environmentMock2);
 
-        $task1 = $this->createMock(CallbackTaskInterface::class);
-        $this->queueDispatcherMock
-            ->method('createTask')
-            ->willReturnOnConsecutiveCalls($task1);
+        self::expectException(PublishingInvalidArgumentException::class);
 
-        $tasks = $this->subject->publishDeliveryToEnvironments($deliveryUri, $environments);
-
-        self::assertCount($expectedTasksAmount, $tasks, 'Method must return expected number of created tasks.');
-        self::assertInstanceOf(CallbackTaskInterface::class, $tasks[0]);
+        $this->subject->publishDeliveryToEnvironments($deliveryUri, $environments);
     }
 
     /**
