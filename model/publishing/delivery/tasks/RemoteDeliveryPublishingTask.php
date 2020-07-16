@@ -131,13 +131,10 @@ class RemoteDeliveryPublishingTask implements Action, ServiceLocatorAwareInterfa
             $this->environment->getLabel()
         );
 
-        $task = $queueDispatcher->createTask(
+        $queueDispatcher->createTask(
             new RemoteTaskStatusSynchroniser(),
             [$remoteTaskId, $this->environment->getUri(), $this->delivery->getUri(), $this->test->getUri()],
-            $taskTitle,
-            $this->getTask()
+            $taskTitle
         );
-
-        $this->addChildId($task->getId());
     }
 }
