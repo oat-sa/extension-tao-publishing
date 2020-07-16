@@ -55,28 +55,20 @@ class RemoteDeliveryPublisherTest extends TestCase
     /** @var PlatformService|MockObject */
     private $platformServiceMock;
 
-    /** @var core_kernel_classes_Resource */
-    private $delivery;
-
-    /** @var core_kernel_classes_Resource */
-    private $environment;
-
-    /** @var core_kernel_classes_Resource */
-    private $test;
-
     protected function setUp(): void
     {
         parent::setUp();
         $this->ontologyMock = $this->createMock(Ontology::class);
         $this->fileSystemServiceMock = $this->createMock(FileSystemService::class);
         $this->platformServiceMock = $this->createMock(PlatformService::class);
+        $publishingDeliveryServiceMock = $this->createMock(PublishingDeliveryService::class);
 
         $loggerMock = $this->createMock(LoggerInterface::class);
         $serviceLocatorMock = $this->getServiceLocatorMock(
             [
                 FileSystemService::SERVICE_ID => $this->fileSystemServiceMock,
                 PlatformService::class => $this->platformServiceMock,
-                PublishingDeliveryService::SERVICE_ID => $this->createMock(PublishingDeliveryService::class)
+                PublishingDeliveryService::SERVICE_ID => $publishingDeliveryServiceMock,
             ]
         );
 
@@ -98,6 +90,8 @@ class RemoteDeliveryPublisherTest extends TestCase
             ->willReturn($label);
         $resourceMock->method('exists')
             ->willReturn($resourceExists);
+        $resourceMock->method('getPropertiesValues')
+            ->willReturn([]);
 
         return $resourceMock;
     }

@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace oat\taoPublishing\model\publishing\delivery;
 
+use common_exception_InvalidArgumentType;
 use core_kernel_classes_Resource;
 use core_kernel_persistence_Exception;
 use GuzzleHttp\Exception\ClientException;
@@ -143,17 +144,18 @@ class RemoteDeliveryPublisher extends ConfigurableService
     /**
      * @param core_kernel_classes_Resource $delivery
      * @return array
-     * @throws core_kernel_persistence_Exception
+     * @throws common_exception_InvalidArgumentType
      */
     private function getSynchronizedDeliveryProperties(core_kernel_classes_Resource $delivery): array
     {
         $propertyList = [];
-        foreach ($this->getPublishingDeliveryService()->getSyncFields() as $deliveryProperty) {
-            $value = $delivery->getOnePropertyValue($this->getProperty($deliveryProperty));
+        $propertyValues = $delivery->getPropertiesValues($this->getPublishingDeliveryService()->getSyncFields());
+        foreach ($propertyValues as $propertyKey => $values) {
+            $value = reset($values);
             if ($value instanceof core_kernel_classes_Resource) {
                 $value = $value->getUri();
             }
-            $propertyList[$deliveryProperty] = (string) $value;
+            $propertyList[$propertyKey] = (string) $value;
         }
         $propertyList[PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD] = $delivery->getUri();
 
