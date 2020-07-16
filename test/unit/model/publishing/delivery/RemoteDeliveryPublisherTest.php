@@ -33,6 +33,7 @@ use oat\oatbox\filesystem\Directory;
 use oat\oatbox\filesystem\File;
 use oat\oatbox\filesystem\FileSystemService;
 use oat\taoPublishing\model\PlatformService;
+use oat\taoPublishing\model\publishing\delivery\PublishingDeliveryService;
 use oat\taoPublishing\model\publishing\delivery\RemoteDeliveryPublisher;
 use oat\taoPublishing\model\publishing\exception\PublishingFailedException;
 use Psr\Http\Message\RequestInterface;
@@ -74,7 +75,8 @@ class RemoteDeliveryPublisherTest extends TestCase
         $serviceLocatorMock = $this->getServiceLocatorMock(
             [
                 FileSystemService::SERVICE_ID => $this->fileSystemServiceMock,
-                PlatformService::class => $this->platformServiceMock
+                PlatformService::class => $this->platformServiceMock,
+                PublishingDeliveryService::SERVICE_ID => $this->createMock(PublishingDeliveryService::class)
             ]
         );
 
