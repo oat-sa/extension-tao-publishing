@@ -22,6 +22,7 @@ declare(strict_types=1);
 namespace oat\taoPublishing\model\publishing\delivery;
 
 use oat\taoPublishing\model\PlatformService;
+use oat\taoPublishing\model\publishing\delivery\tasks\RemoteDeliveryPublishingTask;
 use oat\taoPublishing\model\publishing\exception\PublishingInvalidArgumentException;
 use Throwable;
 use core_kernel_classes_Resource;
@@ -30,7 +31,6 @@ use oat\oatbox\service\ConfigurableService;
 use oat\tao\model\taskQueue\QueueDispatcherInterface;
 use oat\tao\model\taskQueue\Task\CallbackTaskInterface;
 use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
-use oat\taoPublishing\model\publishing\delivery\tasks\DeployTestEnvironments;
 use oat\taoPublishing\model\publishing\exception\PublishingFailedException;
 
 class RemotePublishingService extends ConfigurableService
@@ -126,9 +126,13 @@ class RemotePublishingService extends ConfigurableService
             $environment->getUri(),
             $this->deliveryUri
         ];
-        $message = __("Publishing %s to remote env %s", $this->deliveryResource->getLabel(), $environment->getLabel());
+        $message = __(
+            'Publishing delivery "%s" to remote environment "%s"',
+            $this->deliveryResource->getLabel(),
+            $environment->getLabel()
+        );
 
-        return $this->queueDispatcher->createTask(new DeployTestEnvironments(), $params, $message);
+        return $this->queueDispatcher->createTask(new RemoteDeliveryPublishingTask(), $params, $message);
     }
 
     private function validateRemoteEnvironment(core_kernel_classes_Resource $environment): void

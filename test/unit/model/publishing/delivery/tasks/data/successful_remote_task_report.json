@@ -1,0 +1,19 @@
+{
+  "id": "DUMMY_REMOTE_TASK_ID",
+  "status": "finished",
+  "report": {
+    "type": "info",
+    "message": "Running task DUMMY_REMOTE_TASK_ID",
+    "data": null,
+    "children": [
+      {
+        "type": "success",
+        "message": "IMS QTI Test Package successfully imported.",
+        "data": {
+          "delivery-uri": "DUMMY_REMOTE_DELIVERY_ID"
+        },
+        "children": []
+      }
+    ]
+  }
+}
