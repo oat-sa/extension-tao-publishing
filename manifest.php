@@ -24,10 +24,10 @@ return array(
 	'label' => 'Test Publishing',
 	'description' => 'An extension to publish tests to a delivery environment',
     'license' => 'GPL-2.0',
-    'version' => '3.0.1',
+    'version' => '4.0.1',
     'author' => 'Open Assessment Technologies SA',
     'requires' => array(
-        'taoDeliveryRdf' => '>=12.0.0',
+        'taoDeliveryRdf' => '>=12.2.1',
         'tao' => '>=31.6.0',
         'taoQtiTest' => '>=38.13.0',
     ),

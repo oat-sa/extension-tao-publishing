@@ -22,6 +22,7 @@ declare(strict_types=1);
 namespace oat\taoPublishing\model\publishing\delivery;
 
 use oat\taoPublishing\model\PlatformService;
+use oat\taoPublishing\model\publishing\delivery\tasks\RemoteDeliveryPublishingTask;
 use oat\taoPublishing\model\publishing\exception\PublishingInvalidArgumentException;
 use Throwable;
 use core_kernel_classes_Resource;
@@ -30,7 +31,6 @@ use oat\oatbox\service\ConfigurableService;
 use oat\tao\model\taskQueue\QueueDispatcherInterface;
 use oat\tao\model\taskQueue\Task\CallbackTaskInterface;
 use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
-use oat\taoPublishing\model\publishing\delivery\tasks\DeployTestEnvironments;
 use oat\taoPublishing\model\publishing\exception\PublishingFailedException;
 
 class RemotePublishingService extends ConfigurableService
@@ -63,16 +63,16 @@ class RemotePublishingService extends ConfigurableService
         $this->deliveryResource = $this->getDeliveryResource($deliveryUri);
         $this->testUri = $this->getOriginTestUri();
         $this->queueDispatcher = $this->getServiceLocator()->get(QueueDispatcherInterface::SERVICE_ID);
-        foreach ($environments as $environmentUri) {
+        $environments = $this->collectAndValidateEnvironmentResources($environments);
+        foreach ($environments as $environment) {
             try {
-                $environmentResource = $this->getResource($environmentUri);
-                $tasks[] = $this->publishToEnvironment($environmentResource);
+                $tasks[] = $this->publishToEnvironment($environment);
             } catch (Throwable $e) {
                 $this->logError(
                     sprintf(
                         '[REMOTE_PUBLISHING] Publishing of delivery %s to remote environment %s failed. Error:  %s',
                         $deliveryUri,
-                        $environmentUri,
+                        $environment->getUri(),
                         $e->getMessage()
                     )
                 );
@@ -107,17 +107,32 @@ class RemotePublishingService extends ConfigurableService
         return $testResource->getUri();
     }
 
+    private function collectAndValidateEnvironmentResources(array $environments): array
+    {
+        $results = [];
+        foreach ($environments as $environmentUri) {
+            $environmentResource = $this->getResource($environmentUri);
+            $this->validateRemoteEnvironment($environmentResource);
+            $results[] = $environmentResource;
+        }
+
+        return $results;
+    }
+
     private function publishToEnvironment(core_kernel_classes_Resource $environment): CallbackTaskInterface
     {
-        $this->validateRemoteEnvironment($environment);
         $params = [
             $this->testUri,
             $environment->getUri(),
             $this->deliveryUri
         ];
-        $message = __("Publishing %s to remote env %s", $this->deliveryResource->getLabel(), $environment->getLabel());
+        $message = __(
+            'Publishing delivery "%s" to remote environment "%s"',
+            $this->deliveryResource->getLabel(),
+            $environment->getLabel()
+        );
 
-        return $this->queueDispatcher->createTask(new DeployTestEnvironments(), $params, $message);
+        return $this->queueDispatcher->createTask(new RemoteDeliveryPublishingTask(), $params, $message);
     }
 
     private function validateRemoteEnvironment(core_kernel_classes_Resource $environment): void
