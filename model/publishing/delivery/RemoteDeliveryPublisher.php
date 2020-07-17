@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace oat\taoPublishing\model\publishing\delivery;
 
+use common_exception_InvalidArgumentType;
 use core_kernel_classes_Resource;
 use core_kernel_persistence_Exception;
 use GuzzleHttp\Exception\ClientException;
@@ -104,11 +105,7 @@ class RemoteDeliveryPublisher extends ConfigurableService
                 ],
                 [
                     'name' => RestTest::REST_DELIVERY_PARAMS,
-                    'contents' => json_encode(
-                        [
-                            PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD => $this->delivery->getUri()
-                        ]
-                    )
+                    'contents' => json_encode($this->getSynchronizedDeliveryProperties($this->delivery)),
                 ]
             ];
 
@@ -145,6 +142,27 @@ class RemoteDeliveryPublisher extends ConfigurableService
     }
 
     /**
+     * @param core_kernel_classes_Resource $delivery
+     * @return array
+     * @throws common_exception_InvalidArgumentType
+     */
+    private function getSynchronizedDeliveryProperties(core_kernel_classes_Resource $delivery): array
+    {
+        $propertyList = [];
+        $propertyValues = $delivery->getPropertiesValues($this->getPublishingDeliveryService()->getSyncFields());
+        foreach ($propertyValues as $propertyKey => $values) {
+            $value = reset($values);
+            if ($value instanceof core_kernel_classes_Resource) {
+                $value = $value->getUri();
+            }
+            $propertyList[$propertyKey] = (string) $value;
+        }
+        $propertyList[PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD] = $delivery->getUri();
+
+        return $propertyList;
+    }
+
+    /**
      * @param array $requestData
      * @return ResponseInterface
      */
@@ -178,6 +196,11 @@ class RemoteDeliveryPublisher extends ConfigurableService
     private function getPlatformService(): PlatformService
     {
         return $this->getServiceLocator()->get(PlatformService::class);
+    }
+
+    private function getPublishingDeliveryService(): PublishingDeliveryService
+    {
+        return $this->getServiceLocator()->get(PublishingDeliveryService::SERVICE_ID);
     }
 
     /**
