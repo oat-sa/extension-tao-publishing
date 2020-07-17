@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: TAO 3.4.0-sprint131\n"
-"PO-Revision-Date: 2020-07-03T10:06:00\n"
+"Project-Id-Version: TAO 3.4.0-sprint132\n"
+"PO-Revision-Date: 2020-07-17T11:23:26\n"
 "Last-Translator: TAO Translation Team <translation@tao.lu>\n"
 "MIME-Version: 1.0\n"
 "Language: en-US\n"
@@ -23,7 +23,19 @@ msgstr ""
 msgid "All active environments"
 msgstr ""
 
+msgid "API request execution failed on remote server."
+msgstr ""
+
 msgid "Auth type"
+msgstr ""
+
+msgid "Bad request."
+msgstr ""
+
+msgid "Call to remote environment failed."
+msgstr ""
+
+msgid "Checking remote task status failed."
 msgstr ""
 
 msgid "Create instance"
@@ -40,10 +52,13 @@ msgstr ""
 msgid "Delivery available: %s"
 msgstr ""
 
-msgid "Delivery has been updated as %s"
+msgid "Delivery compilation or remote environment failed. "
 msgstr ""
 
 msgid "Delivery not available as LTI"
+msgstr ""
+
+msgid "Delivery with URI \"%s\" does not exist."
 msgstr ""
 
 msgid "Deployed %s as %s"
@@ -59,12 +74,6 @@ msgid "Environment(s) must be selected."
 msgstr ""
 
 msgid "Failed to compile %s"
-msgstr ""
-
-msgid "Failed to compile %s with message: %s"
-msgstr ""
-
-msgid "Failed to updated %s on remote env with message: %s"
 msgstr ""
 
 #, tao-public
@@ -86,6 +95,9 @@ msgstr ""
 msgid "Only POST method is supported."
 msgstr ""
 
+msgid "Parameter `%s` should not be empty."
+msgstr ""
+
 #, tao-public
 msgid "Properties"
 msgstr ""
@@ -103,16 +115,28 @@ msgstr ""
 msgid "Publish To Remote"
 msgstr ""
 
-msgid "Publishing %s to remote env %s"
+msgid "Publishing auth configuration can not be loaded"
 msgstr ""
 
-msgid "Publishing auth configuration can not be loaded"
+msgid "Publishing of delivery \"%s\" on remote environment \"%s\" was successfully requested."
 msgstr ""
 
 msgid "Publishing to remote environments failed."
 msgstr ""
 
-msgid "Recheck is failed"
+msgid "QTI Test backup file not found for delivery \"%s"
+msgstr ""
+
+msgid "Reason: %s."
+msgstr ""
+
+msgid "Remote delivery ID: %s."
+msgstr ""
+
+msgid "Remote environment \"%s\" is not reachable."
+msgstr ""
+
+msgid "Remote environment with URI \"%s\" does not exist."
 msgstr ""
 
 msgid "Remote environment(s)"
@@ -122,14 +146,35 @@ msgstr ""
 msgid "Remote environments"
 msgstr ""
 
-msgid "Remote status synchronisation for %s from %s"
+msgid "Remote publishing failed."
+msgstr ""
+
+msgid "Remote publishing failed: %s"
+msgstr ""
+
+msgid "Remote task does not have a report."
+msgstr ""
+
+msgid "Remote task is still running."
+msgstr ""
+
+msgid "Remote task was completed."
+msgstr ""
+
+msgid "Report does not contain remote delivery ID."
+msgstr ""
+
+msgid "Request failed with message: %s"
+msgstr ""
+
+msgid "Requesting publishing of delivery \"%s\" to \"%s\"."
 msgstr ""
 
 #, tao-public
 msgid "Settings"
 msgstr ""
 
-msgid "Status from remote successfully received."
+msgid "Status of publishing delivery \"%s\" on remote environment \"%s"
 msgstr ""
 
 msgid "Tao Environments"
@@ -142,8 +187,5 @@ msgid "Unable to deploy $1%s, server response: $2%s"
 msgstr ""
 
 msgid "Undefined Instance can not be saved"
-msgstr ""
-
-msgid "Updating %s to remote env %s"
 msgstr ""
 
