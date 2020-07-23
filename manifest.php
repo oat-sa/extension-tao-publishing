@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,16 +20,23 @@
  *
  */
 
+use oat\taoPublishing\model\routing\ApiRoute;
+use oat\taoPublishing\scripts\install\RegisterDeliveryEventsListener;
+use oat\taoPublishing\scripts\install\RegisterGenerisSearch;
+use oat\taoPublishing\scripts\install\RegisterPublishingFileSystem;
+use oat\taoPublishing\scripts\install\UpdateConfigDeliveryFactoryService;
+use oat\taoPublishing\scripts\update\Updater;
+
 return array(
     'name' => 'taoPublishing',
 	'label' => 'Test Publishing',
 	'description' => 'An extension to publish tests to a delivery environment',
     'license' => 'GPL-2.0',
-    'version' => '4.0.1',
+    'version' => '5.0.0',
     'author' => 'Open Assessment Technologies SA',
     'requires' => array(
         'taoDeliveryRdf' => '>=12.2.1',
-        'tao' => '>=31.6.0',
+        'tao' => '>=45.0.0',
         'taoQtiTest' => '>=38.13.0',
     ),
 	'managementRole' => 'http://www.tao.lu/Ontologies/generis.rdf#taoPublishingManager',
@@ -43,22 +51,22 @@ return array(
             __DIR__. '/model/ontology/indexation.rdf'
         ),
         'php' => array(
-            \oat\taoPublishing\scripts\install\UpdateConfigDeliveryFactoryService::class,
-            \oat\taoPublishing\scripts\install\RegisterGenerisSearch::class,
-            \oat\taoPublishing\scripts\install\RegisterDeliveryEventsListener::class,
-            \oat\taoPublishing\scripts\install\RegisterPublishingFileSystem::class,
+            UpdateConfigDeliveryFactoryService::class,
+            RegisterGenerisSearch::class,
+            RegisterDeliveryEventsListener::class,
+            RegisterPublishingFileSystem::class,
         )
     ),
     'uninstall' => array(
     ),
     'routes' => array(
-        '/taoPublishing/api' => ['class' => \oat\taoPublishing\model\routing\ApiRoute::class],
+        '/taoPublishing/api' => ['class' => ApiRoute::class],
         '/taoPublishing' => 'oat\\taoPublishing\\controller'
     ),
-    'update' => 'oat\\taoPublishing\\scripts\\update\\Updater',
+    'update' => Updater::class,
 	'constants' => array(
 	    # views directory
-	    "DIR_VIEWS" => dirname(__FILE__).DIRECTORY_SEPARATOR."views".DIRECTORY_SEPARATOR,
+	    "DIR_VIEWS" => __DIR__ .DIRECTORY_SEPARATOR."views".DIRECTORY_SEPARATOR,
 
 		#BASE URL (usually the domain root)
 		'BASE_URL' => ROOT_URL.'taoPublishing/',
@@ -67,6 +75,6 @@ return array(
 	    'BASE_WWW' => ROOT_URL.'taoPublishing/views/'
 	),
     'extra' => array(
-        'structures' => dirname(__FILE__).DIRECTORY_SEPARATOR.'controller'.DIRECTORY_SEPARATOR.'structures.xml',
+        'structures' => __DIR__ .DIRECTORY_SEPARATOR.'controller'.DIRECTORY_SEPARATOR.'structures.xml',
     )
 );
