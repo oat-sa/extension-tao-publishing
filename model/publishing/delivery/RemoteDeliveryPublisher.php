@@ -86,8 +86,11 @@ class RemoteDeliveryPublisher extends ConfigurableService
     }
 
     /**
-     * @return array
+     * @throws PublishingFailedException
+     * @throws common_exception_InvalidArgumentType
      * @throws core_kernel_persistence_Exception
+     *
+     * @return array
      */
     private function prepareRequestData(): array
     {
@@ -110,18 +113,34 @@ class RemoteDeliveryPublisher extends ConfigurableService
             ];
 
             $deliveryClass = current($this->delivery->getTypes());
-            if ($deliveryClass->getUri() != DeliveryAssemblyService::CLASS_URI) {
+
+            if ($deliveryClass->getUri() !== DeliveryAssemblyService::CLASS_URI) {
+                $labels = [];
+
+                foreach ($deliveryClass->getParentClasses(true) as $parentClass) {
+                    if ($parentClass->getUri() === DeliveryAssemblyService::CLASS_URI) {
+                        break;
+                    }
+
+                    $labels[] = $parentClass->getLabel();
+                }
+
+                $labels[] = $deliveryClass->getLabel();
+
                 $requestData[] = [
-                    'name' => RestTest::REST_DELIVERY_CLASS_LABEL,
-                    'contents' => $deliveryClass->getLabel()
+                    'name' => RestTest::REST_DELIVERY_CLASS_LABELS,
+                    'contents' => json_encode($labels),
                 ];
             }
 
             return $requestData;
         } catch (FileNotFoundException $e) {
             $this->logError($e->getMessage(), [$e->__toString()]);
-            $message = sprintf(__('QTI Test backup file not found for delivery "%s"'), $this->delivery->getLabel());
-            throw new PublishingFailedException($message);
+
+            throw new PublishingFailedException(sprintf(
+                __('QTI Test backup file not found for delivery "%s"'),
+                $this->delivery->getLabel()
+            ));
         }
     }
 
