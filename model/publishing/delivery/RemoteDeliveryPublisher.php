@@ -90,7 +90,7 @@ class RemoteDeliveryPublisher extends ConfigurableService
             $labels[] = $parentClass->getLabel();
         }
 
-        return $labels;
+        return array_reverse($labels);
     }
 
     private function validateResources(): void
