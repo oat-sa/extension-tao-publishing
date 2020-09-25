@@ -72,7 +72,15 @@ class RemoteDeliveryPublisherTest extends TestCase
             ]
         );
 
-        $this->subject = new RemoteDeliveryPublisher();
+
+
+        $this->subject = $this->getMockBuilder(RemoteDeliveryPublisher::class)
+            ->onlyMethods(['getParentLabels'])
+            ->getMock();
+        $this->subject
+            ->expects(self::atMost(1))
+            ->method('getParentLabels')
+            ->willReturn([]);
         $this->subject->setModel($this->ontologyMock);
         $this->subject->setLogger($loggerMock);
         $this->subject->setServiceLocator($serviceLocatorMock);
