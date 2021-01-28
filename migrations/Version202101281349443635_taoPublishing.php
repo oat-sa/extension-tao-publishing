@@ -27,6 +27,7 @@ use oat\oatbox\event\EventManager;
 use oat\tao\scripts\tools\migrations\AbstractMigration;
 use oat\taoDeliveryRdf\model\DataStore\DeliveryMetadataListener;
 use oat\taoDeliveryRdf\model\event\DeliveryCreatedEvent;
+use oat\taoPublishing\model\publishing\event\RemoteDeliveryCreatedEvent;
 
 /**
  * Auto-generated Migration: Please modify to your needs!
@@ -43,7 +44,7 @@ final class Version202101281349443635_taoPublishing extends AbstractMigration
     {
         $eventManager = $this->getEventManger();
         $eventManager->attach(
-            DeliveryCreatedEvent::class,
+            RemoteDeliveryCreatedEvent::class,
             [DeliveryMetadataListener::class, 'whenDeliveryIsPublished']
         );
     }
@@ -52,7 +53,7 @@ final class Version202101281349443635_taoPublishing extends AbstractMigration
     {
         $eventManager = $this->getEventManger();
         $eventManager->detach(
-            DeliveryCreatedEvent::class,
+            RemoteDeliveryCreatedEvent::class,
             [DeliveryMetadataListener::class, 'whenDeliveryIsPublished']
         );
     }
