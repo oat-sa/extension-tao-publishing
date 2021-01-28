@@ -20,6 +20,7 @@
  */
 
 use oat\taoPublishing\model\routing\ApiRoute;
+use oat\taoPublishing\scripts\install\RegisterDataStoreServices;
 use oat\taoPublishing\scripts\install\RegisterDeliveryEventsListener;
 use oat\taoPublishing\scripts\install\RegisterGenerisSearch;
 use oat\taoPublishing\scripts\install\RegisterPublishingFileSystem;
@@ -54,6 +55,7 @@ return array(
             RegisterGenerisSearch::class,
             RegisterDeliveryEventsListener::class,
             RegisterPublishingFileSystem::class,
+            RegisterDataStoreServices::class
         )
     ),
     'uninstall' => array(),

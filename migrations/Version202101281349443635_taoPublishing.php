@@ -26,7 +26,6 @@ use Doctrine\DBAL\Schema\Schema;
 use oat\oatbox\event\EventManager;
 use oat\tao\scripts\tools\migrations\AbstractMigration;
 use oat\taoDeliveryRdf\model\DataStore\DeliveryMetadataListener;
-use oat\taoDeliveryRdf\model\event\DeliveryCreatedEvent;
 use oat\taoPublishing\model\publishing\event\RemoteDeliveryCreatedEvent;
 
 /**
@@ -47,6 +46,8 @@ final class Version202101281349443635_taoPublishing extends AbstractMigration
             RemoteDeliveryCreatedEvent::class,
             [DeliveryMetadataListener::class, 'whenDeliveryIsPublished']
         );
+
+        $this->getServiceManager()->register(EventManager::SERVICE_ID, $eventManager);
     }
 
     public function down(Schema $schema): void
@@ -56,6 +57,8 @@ final class Version202101281349443635_taoPublishing extends AbstractMigration
             RemoteDeliveryCreatedEvent::class,
             [DeliveryMetadataListener::class, 'whenDeliveryIsPublished']
         );
+
+        $this->getServiceManager()->register(EventManager::SERVICE_ID, $eventManager);
     }
 
     private function getEventManger(): EventManager
