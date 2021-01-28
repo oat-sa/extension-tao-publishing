@@ -39,7 +39,7 @@ class RegisterDataStoreServices extends InstallAction
         );
         $eventManager->attach(
             RemoteDeliveryCreatedEvent::class,
-            [DeliveryMetadataListener::class, 'whenDeliveryIsPublished']
+            [RemoteDeliveryCreatedEvent::class, 'whenDeliveryIsPublished']
         );
     }
 
