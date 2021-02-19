@@ -22,7 +22,6 @@ declare(strict_types=1);
 
 namespace oat\taoPublishing\scripts\tools;
 
-
 use Exception;
 use oat\oatbox\event\EventManager;
 use oat\oatbox\extension\script\ScriptAction;
@@ -46,6 +45,7 @@ class RegisterPublishedDeliveryWebhook extends ScriptAction
         'POST',
         self::DEFAULT_HTTP_METHOD
     ];
+
     /** @var Report */
     private $report;
 
