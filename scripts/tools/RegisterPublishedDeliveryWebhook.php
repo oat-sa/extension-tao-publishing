@@ -49,7 +49,7 @@ class RegisterPublishedDeliveryWebhook extends ScriptAction
     /** @var Report */
     private $report;
 
-    protected function provideOptions(): array
+    protected function provideOptions()
     {
         return [
             'simpleRosterUrl' => [
@@ -68,12 +68,12 @@ class RegisterPublishedDeliveryWebhook extends ScriptAction
         ];
     }
 
-    protected function provideDescription(): string
+    protected function provideDescription()
     {
         return 'Script will register webhook with a defined url';
     }
 
-    protected function run(): Report
+    protected function run()
     {
         $this->report = Report::createInfo('Registering webhook');
 
