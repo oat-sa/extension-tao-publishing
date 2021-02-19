@@ -39,16 +39,17 @@ class RegisterPublishedDeliveryWebhook extends ScriptAction
 {
     use ServiceManagerAwareTrait;
 
+    private const MAX_RETRY = 5;
     private const DEFAULT_HTTP_METHOD = 'GET';
 
-    const ACCEPTED_HTTP_METHOD = [
+    private const ACCEPTED_HTTP_METHOD = [
         'POST',
         self::DEFAULT_HTTP_METHOD
     ];
     /** @var Report */
     private $report;
 
-    protected function provideOptions()
+    protected function provideOptions(): array
     {
         return [
             'simpleRosterUrl' => [
@@ -67,7 +68,7 @@ class RegisterPublishedDeliveryWebhook extends ScriptAction
         ];
     }
 
-    protected function provideDescription()
+    protected function provideDescription(): string
     {
         return 'Script will register webhook with a defined url';
     }
@@ -117,13 +118,13 @@ class RegisterPublishedDeliveryWebhook extends ScriptAction
         return $method;
     }
 
-    private function createWebHook()
+    private function createWebHook(): Webhook
     {
         return new Webhook(
             'remoteDeliveryWebHook',
             $this->getOption('simpleRosterUrl'),
             $this->getHttpMethod(),
-            5,
+            self::MAX_RETRY,
             null,
             false
         );
