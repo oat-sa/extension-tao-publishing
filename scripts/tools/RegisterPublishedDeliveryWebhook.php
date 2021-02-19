@@ -108,7 +108,7 @@ class RegisterPublishedDeliveryWebhook extends ScriptAction
     private function getHttpMethod(): string
     {
         $method = $this->getOption('httpMethod') ?? self::DEFAULT_HTTP_METHOD;
-        if (!in_array($method, self::ACCEPTED_HTTP_METHOD)) {
+        if (!in_array($method, self::ACCEPTED_HTTP_METHOD, true)) {
             $this->report->add(
                 Report::createWarning(sprintf("Used illegal method %s. Falling back to default method", $method))
             );
