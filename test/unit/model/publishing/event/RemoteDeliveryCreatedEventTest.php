@@ -30,14 +30,16 @@ class RemoteDeliveryCreatedEventTest extends TestCase
         $deliveryUri = 'DUMMY_DELIVERY_URI';
         $testUri = 'DUMMY_TEST_URI';
         $remoteDeliveryUri = 'DUMMY_REMOTE_DELIVERY_URI';
+        $alias = 'DUMMY_ALIAS';
 
-        $event = new RemoteDeliveryCreatedEvent($deliveryUri, $testUri, $remoteDeliveryUri);
+        $event = new RemoteDeliveryCreatedEvent($deliveryUri, $testUri, $remoteDeliveryUri, $alias);
         $serialisedEvent = $event->jsonSerialize();
 
         self::assertIsArray($serialisedEvent, 'Serialization method must return an array.');
         self::assertArrayHasKey('deliveryId', $serialisedEvent, 'Serialised event must contain delivery ID.');
         self::assertArrayHasKey('testId', $serialisedEvent, 'Serialised event must contain test ID.');
         self::assertArrayHasKey('remoteDeliveryId', $serialisedEvent, 'Serialised event must contain remote delivery ID.');
+        self::assertArrayHasKey('alias', $serialisedEvent, 'Serialised event must contain alias.');
     }
 }
 

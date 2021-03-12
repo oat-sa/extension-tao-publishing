@@ -38,17 +38,15 @@ class RemoteDeliveryCreatedEvent extends AbstractDeliveryEvent implements Webhoo
      */
     private $remoteDeliveryUri;
 
-    /**
-     * RemoteDeliveryCreatedEvent constructor.
-     * @param string $deliveryUri
-     * @param string $testUri
-     * @param string $remoteDeliveryUri
-     */
-    public function __construct(string $deliveryUri, string $testUri, string $remoteDeliveryUri)
+    /** @var string|null */
+    private $alias;
+
+    public function __construct(string $deliveryUri, string $testUri, string $remoteDeliveryUri, string $alias = null)
     {
         $this->deliveryUri = $deliveryUri;
         $this->testUri = $testUri;
         $this->remoteDeliveryUri = $remoteDeliveryUri;
+        $this->alias = $alias;
     }
 
     /**
@@ -78,6 +76,7 @@ class RemoteDeliveryCreatedEvent extends AbstractDeliveryEvent implements Webhoo
             'deliveryId' => $this->deliveryUri,
             'testId' => $this->testUri,
             'remoteDeliveryId' => $this->remoteDeliveryUri,
+            'alias' => $this->alias
         ];
     }
 }

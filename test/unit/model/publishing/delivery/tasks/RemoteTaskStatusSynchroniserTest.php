@@ -22,6 +22,8 @@ namespace oat\taoPublishing\test\unit\model\publishing\delivery;
 
 use common_report_Report;
 use common_exception_MissingParameter;
+use core_kernel_classes_Property;
+use core_kernel_classes_Resource;
 use oat\generis\model\data\Ontology;
 use oat\generis\test\MockObject;
 use oat\generis\test\TestCase;
@@ -51,6 +53,12 @@ class RemoteTaskStatusSynchroniserTest extends TestCase
 
     private $dataPath = __DIR__ . '/data/';
 
+    /** @var core_kernel_classes_Resource|MockObject */
+    private $deliveryResourceMock;
+
+    /** @var core_kernel_classes_Property|MockObject */
+    private $propertyMock;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -58,6 +66,9 @@ class RemoteTaskStatusSynchroniserTest extends TestCase
         $this->platformServiceMock = $this->createMock(PlatformService::class);
         $this->eventManagerMock = $this->createMock(EventManager::class);
         $this->loggerMock = $this->createMock(LoggerService::class);
+        $this->deliveryResourceMock = $this->createMock(core_kernel_classes_Resource::class);
+        $this->propertyMock = $this->createMock(core_kernel_classes_Property::class);
+
         $serviceLocatorMock = $this->getServiceLocatorMock(
             [
                 PlatformService::class => $this->platformServiceMock,
@@ -65,6 +76,15 @@ class RemoteTaskStatusSynchroniserTest extends TestCase
                 LoggerService::SERVICE_ID => $this->loggerMock
             ]
         );
+
+        $this->ontologyMock
+            ->method('getResource')
+            ->with('DUMMY_DELIVERY_ID')
+            ->willReturn($this->deliveryResourceMock);
+
+        $this->ontologyMock
+            ->method('getProperty')
+            ->willReturn($this->propertyMock);
 
         $this->subject = new RemoteTaskStatusSynchroniser();
         $this->subject->setServiceLocator($serviceLocatorMock);
@@ -91,6 +111,10 @@ class RemoteTaskStatusSynchroniserTest extends TestCase
                 $statusResponseMock,
                 $taskDataResponseMock
             );
+
+        $this->deliveryResourceMock
+            ->method('getPropertyValues')
+            ->willReturn(['alias']);
 
         $report = $this->subject->__invoke($params);
 
@@ -155,7 +179,7 @@ class RemoteTaskStatusSynchroniserTest extends TestCase
         $report = $this->subject->__invoke($params);
 
         self::assertInstanceOf(common_report_Report::class, $report, 'Method must return report instance.');
-        self::assertSame(common_report_Report::TYPE_ERROR, $report->getType(),'Task report must have error type when request failed.');
+        self::assertSame(common_report_Report::TYPE_ERROR, $report->getType(), 'Task report must have error type when request failed.');
     }
 
     public function testInvoke_WhenRemoteTaskNotFinished_ReturnsInfoReport()
@@ -177,7 +201,7 @@ class RemoteTaskStatusSynchroniserTest extends TestCase
 
         self::assertSame('in_progress', $this->subject->getRemoteStatus(), 'Remote task status must be as expected.');
         self::assertInstanceOf(common_report_Report::class, $report, 'Method must return report instance.');
-        self::assertSame(common_report_Report::TYPE_INFO, $report->getType(),'Task report must have info type when remote task not finished yet.');
+        self::assertSame(common_report_Report::TYPE_INFO, $report->getType(), 'Task report must have info type when remote task not finished yet.');
     }
 
     /**
