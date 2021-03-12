@@ -209,7 +209,7 @@ class RemoteTaskStatusSynchroniser implements Action,ServiceLocatorAwareInterfac
     private function getDeliveryAlias($deliveryUri): ?string
     {
         $alias = $this->getResource($deliveryUri)->getPropertyValues($this->getProperty(DeliveryAssemblyService::PROPERTY_ASSESSMENT_PROJECT_ID));
-        if (count($alias) === 1) {
+        if (is_array($alias) && count($alias) === 1) {
             return reset($alias);
         }
 
