@@ -10,6 +10,7 @@ use oat\oatbox\event\EventManager;
 use oat\oatbox\log\LoggerService;
 use oat\tao\model\taskQueue\Task\RemoteTaskSynchroniserInterface;
 use oat\tao\model\taskQueue\TaskLog\CategorizedStatus;
+use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
 use oat\taoPublishing\model\PlatformService;
 use oat\taoPublishing\model\publishing\event\RemoteDeliveryCreatedEvent;
 use oat\taoPublishing\model\publishing\exception\PublishingFailedException;
@@ -75,7 +76,13 @@ class RemoteTaskStatusSynchroniser implements Action,ServiceLocatorAwareInterfac
 
             /** @var EventManager $eventManager */
             $remoteDeliveryId = $this->getRemoteDeliveryId($remoteReport);
-            $this->triggerRemoteDeliveryCreatedEvent($remoteDeliveryId, $deliveryUri, $testUri);
+            $this->triggerRemoteDeliveryCreatedEvent(
+                $remoteDeliveryId,
+                $deliveryUri,
+                $testUri,
+                $this->getDeliveryAlias($deliveryUri)
+            );
+
         } catch (Exception $e) {
             $this->getLoggerService()->logError($e->getMessage(), [$e->__toString()]);
             $report = Report::createFailure(__('Checking remote task status failed.'));
@@ -183,11 +190,11 @@ class RemoteTaskStatusSynchroniser implements Action,ServiceLocatorAwareInterfac
      * @param string $deliveryUri
      * @param string $testUri
      */
-    private function triggerRemoteDeliveryCreatedEvent(?string $remoteDeliveryId, string $deliveryUri, string $testUri): void
+    private function triggerRemoteDeliveryCreatedEvent(?string $remoteDeliveryId, string $deliveryUri, string $testUri, ?string $alias): void
     {
         if ($remoteDeliveryId !== null) {
             $eventManager = $this->getServiceLocator()->get(EventManager::SERVICE_ID);
-            $eventManager->trigger(new RemoteDeliveryCreatedEvent($deliveryUri, $testUri, $remoteDeliveryId));
+            $eventManager->trigger(new RemoteDeliveryCreatedEvent($deliveryUri, $testUri, $remoteDeliveryId, $alias));
         }
     }
 
@@ -197,5 +204,15 @@ class RemoteTaskStatusSynchroniser implements Action,ServiceLocatorAwareInterfac
     private function getLoggerService(): LoggerService
     {
         return $this->getServiceLocator()->get(LoggerService::SERVICE_ID);
+    }
+
+    private function getDeliveryAlias($deliveryUri): ?string
+    {
+        $alias = $this->getResource($deliveryUri)->getPropertyValues($this->getProperty(DeliveryAssemblyService::PROPERTY_ASSESSMENT_PROJECT_ID));
+        if (count($alias) === 1) {
+            return reset($alias);
+        }
+
+        return null;
     }
 }
