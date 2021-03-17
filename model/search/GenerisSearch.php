@@ -51,7 +51,10 @@ class GenerisSearch extends OriginGenerisSearch
         ]);
         $ids = array();
         foreach ($results as $resource) {
-            $ids[] = $resource->getUri();
+            $ids[] = [
+                'id' => $resource->getUri(),
+                'label' => $resource->getLabel(),
+            ];
         }
 
         return new ResultSet($ids, $this->getTotalCount($queryString, $rootClass));
