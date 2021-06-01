@@ -45,7 +45,10 @@ final class Version202106011349443635_taoPublishing extends AbstractMigration
         $generisSearch = $searchProxy->getOption(SearchProxy::OPTION_DEFAULT_SEARCH_CLASS);
 
         if ($generisSearch instanceof OriginalGenerisSearch) {
-            $searchProxy->setOption(SearchProxy::OPTION_DEFAULT_SEARCH_CLASS, new GenerisSearch($generisSearch->getOptions()));
+            $searchProxy->setOption(
+                SearchProxy::OPTION_DEFAULT_SEARCH_CLASS,
+                new GenerisSearch($generisSearch->getOptions())
+            );
 
             $this->getServiceManager()->register(Search::SERVICE_ID, $searchProxy);
         }
