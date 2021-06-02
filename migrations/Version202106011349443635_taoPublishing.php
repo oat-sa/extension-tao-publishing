@@ -23,11 +23,10 @@ declare(strict_types=1);
 namespace oat\taoPublishing\migrations;
 
 use Doctrine\DBAL\Schema\Schema;
-use oat\tao\model\search\Search;
-use oat\tao\model\search\SearchProxy;
-use oat\tao\model\search\strategy\GenerisSearch as OriginalGenerisSearch;
 use oat\tao\scripts\tools\migrations\AbstractMigration;
 use oat\taoPublishing\model\search\GenerisSearch as TaoPublishingGenerisSearch;
+use oat\taoPublishing\scripts\install\RegisterGenerisSearch;
+use oat\taoPublishing\scripts\install\UnRegisterGenerisSearch;
 
 final class Version202106011349443635_taoPublishing extends AbstractMigration
 {
@@ -38,28 +37,13 @@ final class Version202106011349443635_taoPublishing extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        /** @var SearchProxy $searchProxy */
-        $searchProxy = $this->getServiceManager()->get(SearchProxy::SERVICE_ID);
-
-        /** @var OriginalGenerisSearch $generisSearch */
-        $generisSearch = $searchProxy->getOption(SearchProxy::OPTION_DEFAULT_SEARCH_CLASS);
-
-        if ($generisSearch instanceof OriginalGenerisSearch) {
-            $searchProxy->setOption(
-                SearchProxy::OPTION_DEFAULT_SEARCH_CLASS,
-                new TaoPublishingGenerisSearch($generisSearch->getOptions())
-            );
-
-            $this->getServiceManager()->register(Search::SERVICE_ID, $searchProxy);
-        }
+        $registerGenerisSearch = new RegisterGenerisSearch();
+        $registerGenerisSearch->__invoke([]);
     }
 
     public function down(Schema $schema): void
     {
-        /** @var SearchProxy $searchProxy */
-        $searchProxy = $this->getServiceManager()->get(SearchProxy::SERVICE_ID);
-        $searchProxy->setOption(SearchProxy::OPTION_DEFAULT_SEARCH_CLASS, OriginalGenerisSearch::class);
-
-        $this->getServiceManager()->register(SearchProxy::SERVICE_ID, $searchProxy);
+        $unRegisterGenerisSearch = new UnRegisterGenerisSearch();
+        $unRegisterGenerisSearch->__invoke([]);
     }
 }
