@@ -23,10 +23,11 @@ declare(strict_types=1);
 namespace oat\taoPublishing\scripts\install;
 
 use oat\oatbox\extension\InstallAction;
+use oat\oatbox\reporting\Report;
 use oat\tao\model\search\Search;
 use oat\tao\model\search\SearchProxy;
 use oat\tao\model\search\strategy\GenerisSearch as OriginalGenerisSearch;
-use oat\taoPublishing\model\search\GenerisSearch;
+use oat\taoPublishing\model\search\GenerisSearch as TaoPublishingGenerisSearch;
 
 class RegisterGenerisSearch extends InstallAction
 {
@@ -41,12 +42,12 @@ class RegisterGenerisSearch extends InstallAction
         if ($generisSearch instanceof OriginalGenerisSearch) {
             $searchProxy->setOption(
                 SearchProxy::OPTION_DEFAULT_SEARCH_CLASS,
-                new GenerisSearch($generisSearch->getOptions())
+                new TaoPublishingGenerisSearch($generisSearch->getOptions())
             );
 
             $this->getServiceManager()->register(Search::SERVICE_ID, $searchProxy);
         }
 
-        return new \common_report_Report(\common_report_Report::TYPE_SUCCESS, 'Generis search service registered');
+        return new Report(Report::TYPE_SUCCESS, 'Generis search service registered');
     }
 }

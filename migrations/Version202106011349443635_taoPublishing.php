@@ -27,13 +27,13 @@ use oat\tao\model\search\Search;
 use oat\tao\model\search\SearchProxy;
 use oat\tao\model\search\strategy\GenerisSearch as OriginalGenerisSearch;
 use oat\tao\scripts\tools\migrations\AbstractMigration;
-use oat\taoPublishing\model\search\GenerisSearch;
+use oat\taoPublishing\model\search\GenerisSearch as TaoPublishingGenerisSearch;
 
 final class Version202106011349443635_taoPublishing extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Registering listener for RemoteDeliveryCreatedEvent';
+        return 'Registering ' . TaoPublishingGenerisSearch::class;
     }
 
     public function up(Schema $schema): void
@@ -47,7 +47,7 @@ final class Version202106011349443635_taoPublishing extends AbstractMigration
         if ($generisSearch instanceof OriginalGenerisSearch) {
             $searchProxy->setOption(
                 SearchProxy::OPTION_DEFAULT_SEARCH_CLASS,
-                new GenerisSearch($generisSearch->getOptions())
+                new TaoPublishingGenerisSearch($generisSearch->getOptions())
             );
 
             $this->getServiceManager()->register(Search::SERVICE_ID, $searchProxy);
