@@ -37,13 +37,10 @@ class RegisterGenerisSearch extends InstallAction
         $searchProxy = $this->getServiceManager()->get(SearchProxy::SERVICE_ID);
 
         /** @var OriginalGenerisSearch $generisSearch */
-        $generisSearch = $searchProxy->getOption(SearchProxy::OPTION_DEFAULT_SEARCH_CLASS);
+        $generisSearch = $searchProxy->getDefaultSearch();
 
         if ($generisSearch instanceof OriginalGenerisSearch) {
-            $searchProxy->setOption(
-                SearchProxy::OPTION_DEFAULT_SEARCH_CLASS,
-                new TaoPublishingGenerisSearch($generisSearch->getOptions())
-            );
+            $searchProxy->withDefaultSearch(new TaoPublishingGenerisSearch($generisSearch->getOptions()));
 
             $this->getServiceManager()->register(Search::SERVICE_ID, $searchProxy);
         }
