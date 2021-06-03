@@ -29,7 +29,7 @@ use oat\tao\model\search\SearchProxy;
 use oat\tao\model\search\strategy\GenerisSearch as OriginalGenerisSearch;
 use oat\taoPublishing\model\search\GenerisSearch as TaoPublishingGenerisSearch;
 
-class RegisterGenerisSearch extends InstallAction
+class UnRegisterGenerisSearch extends InstallAction
 {
     public function __invoke($params)
     {
@@ -39,12 +39,12 @@ class RegisterGenerisSearch extends InstallAction
         /** @var OriginalGenerisSearch $generisSearch */
         $generisSearch = $searchProxy->getDefaultSearch();
 
-        if ($generisSearch instanceof OriginalGenerisSearch) {
-            $searchProxy->withDefaultSearch(new TaoPublishingGenerisSearch($generisSearch->getOptions()));
+        if ($generisSearch instanceof TaoPublishingGenerisSearch) {
+            $searchProxy->withDefaultSearch(new OriginalGenerisSearch($generisSearch->getOptions()));
 
             $this->getServiceManager()->register(Search::SERVICE_ID, $searchProxy);
         }
 
-        return new Report(Report::TYPE_SUCCESS, TaoPublishingGenerisSearch::class . 'registered');
+        return new Report(Report::TYPE_SUCCESS, OriginalGenerisSearch::class . ' registered');
     }
 }

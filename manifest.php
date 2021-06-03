@@ -24,6 +24,7 @@ use oat\taoPublishing\scripts\install\RegisterDataStoreServices;
 use oat\taoPublishing\scripts\install\RegisterDeliveryEventsListener;
 use oat\taoPublishing\scripts\install\RegisterGenerisSearch;
 use oat\taoPublishing\scripts\install\RegisterPublishingFileSystem;
+use oat\taoPublishing\scripts\install\UnRegisterGenerisSearch;
 use oat\taoPublishing\scripts\install\UpdateConfigDeliveryFactoryService;
 use oat\taoPublishing\scripts\update\Updater;
 
@@ -52,7 +53,9 @@ return array(
             RegisterDataStoreServices::class
         )
     ),
-    'uninstall' => array(),
+    'uninstall' => array(
+        UnRegisterGenerisSearch::class,
+    ),
     'routes' => array(
         '/taoPublishing/api' => ['class' => ApiRoute::class],
         '/taoPublishing' => 'oat\\taoPublishing\\controller'
