@@ -38,6 +38,11 @@
 						<icon id="icon-external"/>
 					</action>
 				</actions>
+				<actions>
+					<action id="class-remote-publish" name="Publish To Remote" url="/taoPublishing/Publish/selectBulkRemoteEnvironments" context="class" group="tree">
+						<icon id="icon-external"/>
+					</action>
+				</actions>
 			</section>
 		</sections>
 	</structure>

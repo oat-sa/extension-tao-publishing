@@ -10,6 +10,7 @@ define(function(){
         'Publish': {
             'actions': {
                 'selectRemoteEnvironments': 'controller/Publish/selectRemoteEnvironments',
+                'selectBulkRemoteEnvironments': 'controller/Publish/selectRemoteEnvironments',
             }
         }
     };
