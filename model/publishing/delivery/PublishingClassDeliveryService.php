@@ -42,6 +42,7 @@ class PublishingClassDeliveryService extends ConfigurableService
     use OntologyAwareTrait;
     use EnvironmentResourceValidatorTrait;
 
+    public const SERVICE_ID = 'taoPublishing/PublishingClassDeliveryService';
     public const OPTION_MAX_RESOURCE = 'maxResource';
 
     /**

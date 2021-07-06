@@ -22,7 +22,7 @@ final class Version202107060807163635_taoPublishing extends AbstractMigration
     public function up(Schema $schema): void
     {
         $this->getServiceManager()->register(
-            PublishingClassDeliveryService::class,
+            PublishingClassDeliveryService::SERVICE_ID,
             new PublishingClassDeliveryService([
                 PublishingClassDeliveryService::OPTION_MAX_RESOURCE => 50
             ])

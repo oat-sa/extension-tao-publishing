@@ -224,6 +224,6 @@ class Publish extends \tao_actions_CommonModule
 
     public function getPublishingClassDeliveryService(): PublishingClassDeliveryService
     {
-        return $this->getServiceLocator()->get(PublishingClassDeliveryService::class);
+        return $this->getServiceLocator()->get(PublishingClassDeliveryService::SERVICE_ID);
     }
 }
