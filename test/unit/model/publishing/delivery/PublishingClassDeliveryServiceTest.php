@@ -33,6 +33,7 @@ use oat\tao\model\taskQueue\QueueDispatcherInterface;
 use oat\tao\model\taskQueue\Task\CallbackTask;
 use oat\tao\model\taskQueue\Task\CallbackTaskInterface;
 use oat\taoPublishing\model\publishing\delivery\PublishingClassDeliveryService;
+use oat\taoPublishing\model\publishing\exception\ExceedingMaxResourceAmountException;
 use oat\taoPublishing\model\publishing\exception\PublishingInvalidArgumentException;
 
 class PublishingClassDeliveryServiceTest extends TestCase
@@ -71,7 +72,11 @@ class PublishingClassDeliveryServiceTest extends TestCase
         $this->containerMock = $this->createMock(core_kernel_classes_Container::class);
         $this->taskMock = $this->createMock(CallbackTaskInterface::class);
 
-        $this->subject = new PublishingClassDeliveryService();
+        $this->subject = new PublishingClassDeliveryService(
+            [
+                PublishingClassDeliveryService::OPTION_MAX_RESOURCE => 2
+            ]
+        );
         $this->subject->setServiceLocator(
             $this->getServiceLocatorMock(
                 [
@@ -141,6 +146,51 @@ class PublishingClassDeliveryServiceTest extends TestCase
             ->method('getOnePropertyValue')
             ->willReturn(false);
 
+
+        $this->subject->publish($this->classMock, ['envUri']);
+    }
+
+    public function testTooManyResources()
+    {
+        $this->expectException(ExceedingMaxResourceAmountException::class);
+
+        $this->resourceMock
+            ->method('exists')
+            ->willReturn(true);
+
+        $this->resourceMock
+            ->method('getOnePropertyValue')
+            ->willReturnOnConsecutiveCalls(
+                true,
+                $this->resourceMock
+            );
+
+        $this->resourceMock
+            ->method('getUri')
+            ->willReturn('someResourceUri');
+
+        $this->ontologyMock
+            ->method('getProperty')
+            ->willReturn($this->propertyMock);
+
+        $this->classMock
+            ->method('getInstanceCollection')
+            ->willReturn(
+                [
+                    [
+                        'subject' => 'someResourceUri'
+                    ],
+                    [
+                        'subject' => 'someResourceUri2'
+                    ],
+                    [
+                        'subject' => 'someResourceUri3'
+                    ],
+                    [
+                        'subject' => 'someResourceUri4'
+                    ],
+                ]
+            );
 
         $this->subject->publish($this->classMock, ['envUri']);
     }

@@ -33,6 +33,7 @@ use oat\tao\model\taskQueue\Task\TaskInterface;
 use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
 use oat\taoPublishing\model\publishing\delivery\tasks\RemoteDeliveryPublishingTask;
 use oat\taoPublishing\model\publishing\environment\EnvironmentResourceValidatorTrait;
+use oat\taoPublishing\model\publishing\exception\ExceedingMaxResourceAmountException;
 use oat\taoPublishing\model\publishing\exception\PublishingInvalidArgumentException;
 
 class PublishingClassDeliveryService extends ConfigurableService
@@ -40,6 +41,8 @@ class PublishingClassDeliveryService extends ConfigurableService
     use ServiceLocatorAwareTrait;
     use OntologyAwareTrait;
     use EnvironmentResourceValidatorTrait;
+
+    public const OPTION_MAX_RESOURCE = 'maxResource';
 
     /**
      * @return TaskInterface[]
@@ -61,7 +64,8 @@ class PublishingClassDeliveryService extends ConfigurableService
 
     /**
      * @return TaskInterface[]
-     * @throws \core_kernel_persistence_Exception
+     * @throws ExceedingMaxResourceAmountException
+     * @throws core_kernel_persistence_Exception
      */
     private function publishClassDeliveries(
         core_kernel_classes_Class $class,
@@ -69,7 +73,18 @@ class PublishingClassDeliveryService extends ConfigurableService
     ): array {
         $tasks = [];
 
-        foreach ($class->getInstanceCollection() as $instance) {
+        $resourceCollection = $class->getInstanceCollection();
+
+        if ($this->getOption(self::OPTION_MAX_RESOURCE) < count($resourceCollection)) {
+            throw new ExceedingMaxResourceAmountException(
+                sprintf(
+                    'You are not allowed publish class that contains more then %s resources',
+                    (string) $this->getOption(self::OPTION_MAX_RESOURCE)
+                )
+            );
+        }
+
+        foreach ($resourceCollection as $instance) {
             $deliveryResource = $this->getResource($instance['subject']);
             $testResource = $deliveryResource->getOnePropertyValue(
                 $this->getProperty(DeliveryAssemblyService::PROPERTY_ORIGIN)
