@@ -97,11 +97,21 @@ class Publish extends \tao_actions_CommonModule
     {
         $requestBody = $this->getPsrRequest()->getParsedBody();
 
-        if (!isset($requestBody['id'])) {
-            throw new HttpRequestException('Body has to contain id');
+        if (!isset($requestBody['id']) && !$this->getClass($requestBody['id'])->exists()) {
+            throw new HttpRequestException('Class under this id does not exist');
         }
 
+        $resourceLimit = $this->getPublishingClassDeliveryService()
+            ->getOption(PublishingClassDeliveryService::OPTION_MAX_RESOURCE);
+
         $this->selectEnvironmentsScreen($requestBody['id'], 'publishClassToRemoteEnvironment');
+
+        $this->setData(
+            'class-content-exceeded',
+            $this->getClass($requestBody['id'])->countInstances() > $resourceLimit
+        );
+
+        $this->setData('class-content-limit', $resourceLimit);
     }
 
     private function selectEnvironmentsScreen(string $subjectUri, string $methodName)

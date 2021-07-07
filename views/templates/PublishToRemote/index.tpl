@@ -9,6 +9,8 @@ use oat\tao\helpers\Template;
         <div class="xhtml_form">
             <form action="<?= get_data('submit-url'); ?>" id="publish-remote">
                 <input type="hidden" value="<?= get_data('subject-uri') ?>" name="subject-uri" id="selected-subject-uri">
+                <input type="hidden" value="<?= get_data('class-content-exceeded') ?>" name="class-content-exceeded" id="class-content-exceeded">
+                <input type="hidden" value="<?= get_data('class-content-limit') ?>" name="class-content-limit" id="class-content-limit">
                 <?php if (has_data('warning')) :?>
                 <div class='feedback-warning'>
                     <?= get_data('warning')?>

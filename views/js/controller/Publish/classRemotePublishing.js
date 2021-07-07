@@ -27,12 +27,13 @@ define(['jquery', 'i18n', 'ui/dialog/alert', 'taoPublishing/controller/Publish/s
     return {
         start: function start() {
             const uriResource = $('#selected-subject-uri').val();
-            const $taoTree = $('.taotree');
-            const $classNode = $taoTree.find(`[data-uri="${uriResource}"]`);
-            if ($classNode.find('ul li').length > 1) {
+            const exceedFlag = $('#class-content-exceeded').val() === '1';
+
+            if (exceedFlag) {
                 alertDialog(
                     __(
-                        "The class can't be published.<br/><br/>The selected class contains too many deliveries allowed for a single remote publication (maximum 50).<br/>Please reorganise the deliveries or publish a class with fever eliveries."
+                        "The class can't be published.<br/><br/>The selected class contains too many deliveries allowed for a single remote publication (maximum %s).<br/>Please reorganise the deliveries or publish a class with fever eliveries.",
+                        $('#class-content-limit').val()
                     )
                 );
             } else {
