@@ -108,6 +108,9 @@ class RemotePublishingService extends ConfigurableService
         return $testResource->getUri();
     }
 
+    /**
+     * @throws PublishingInvalidArgumentException
+     */
     private function collectAndValidateEnvironmentResources(array $environments): array
     {
         $results = [];

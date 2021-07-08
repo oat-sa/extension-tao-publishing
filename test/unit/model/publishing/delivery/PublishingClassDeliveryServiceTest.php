@@ -129,11 +129,7 @@ class PublishingClassDeliveryServiceTest extends TestCase
         $this->assertInstanceOf(CallbackTaskInterface::class, reset($results));
     }
 
-
-    /**
-     * @dataProvider environmentsDataset
-     */
-    public function testWrongEnvironments($existReturn)
+    public function testWrongEnvironments()
     {
         $this->expectException(PublishingInvalidArgumentException::class);
 
@@ -193,19 +189,5 @@ class PublishingClassDeliveryServiceTest extends TestCase
             );
 
         $this->subject->publish($this->classMock, ['envUri']);
-    }
-
-    public function environmentsDataset()
-    {
-        return [
-            'Enviroemtn does not exist' => [
-                false,
-                false
-            ],
-            'Enviroment publishing is not enabled' => [
-                true,
-                false
-            ]
-        ];
     }
 }

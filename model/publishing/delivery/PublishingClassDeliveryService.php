@@ -48,7 +48,7 @@ class PublishingClassDeliveryService extends ConfigurableService
     /**
      * @return TaskInterface[]
      * @throws PublishingInvalidArgumentException
-     * @throws core_kernel_persistence_Exception
+     * @throws core_kernel_persistence_Exception|ExceedingMaxResourceAmountException
      */
     public function publish(core_kernel_classes_Class $class, array $environments): array
     {
