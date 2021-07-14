@@ -32,7 +32,7 @@ define(['jquery', 'i18n', 'ui/dialog/alert', 'taoPublishing/controller/Publish/s
             if (exceedFlag) {
                 alertDialog(
                     __(
-                        "The class can't be published.<br/><br/>The selected class contains too many deliveries allowed for a single remote publication (maximum %s).<br/>Please reorganise the deliveries or publish a class with fever eliveries.",
+                        "The class can't be published.<br/><br/>The selected class contains too many deliveries allowed for a single remote publication (maximum %s).<br/>Please reorganize the deliveries or publish a class with fewer deliveries.",
                         $('#class-content-limit').val()
                     )
                 );
