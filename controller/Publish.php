@@ -1,33 +1,35 @@
 <?php
-/**  
+
+/**
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; under version 2
  * of the License (non-upgradable).
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- * 
- * Copyright (c) 2016 (original work) Open Assessment Technologies SA;
- *               
- * 
+ *
+ * Copyright (c) 2016-2021 (original work) Open Assessment Technologies SA;
  */
+
+declare(strict_types=1);
 
 namespace oat\taoPublishing\controller;
 
 use Exception;
 use common_exception_ClientException;
+use HttpRequestException;
+use oat\oatbox\reporting\Report;
 use oat\tao\model\taskQueue\TaskLogActionTrait;
 use oat\taoPublishing\model\entity\Platform;
+use oat\taoPublishing\model\publishing\delivery\PublishingClassDeliveryService;
 use oat\taoPublishing\model\publishing\exception\PublishingInvalidArgumentException;
-use tao_helpers_Uri;
-use core_kernel_classes_Resource;
 use GuzzleHttp\Psr7\ServerRequest;
 use oat\tao\helpers\UrlHelper;
 use oat\taoPublishing\model\publishing\delivery\RemotePublishingService;
@@ -37,6 +39,7 @@ use oat\taoPublishing\view\form\WizardForm;
 use oat\generis\model\OntologyAwareTrait;
 use oat\taoPublishing\model\DeployTest;
 use oat\oatbox\task\Queue;
+
 /**
  * Sample controller
  *
@@ -45,12 +48,13 @@ use oat\oatbox\task\Queue;
  * @license GPL-2.0
  *
  */
-class Publish extends \tao_actions_CommonModule {
+class Publish extends \tao_actions_CommonModule
+{
 
     use OntologyAwareTrait;
     use TaskLogActionTrait;
 
-    const PARAM_DELIVERY_URI = 'delivery-uri';
+    const PARAM_SUBJECT_URI = 'subject-uri';
     const PARAM_REMOTE_ENVIRONMENTS = 'remote-environments';
 
     public function wizard()
@@ -80,20 +84,89 @@ class Publish extends \tao_actions_CommonModule {
 
     public function selectRemoteEnvironments()
     {
-        $selectedDelivery = new core_kernel_classes_Resource(
-            tao_helpers_Uri::decode($this->getRequestParameter('uri'))
+        $requestBody = $this->getPsrRequest()->getParsedBody();
+
+        if (!isset($requestBody['id'])) {
+            throw new HttpRequestException('Body has to contain id parameter representing delivery');
+        }
+
+        $this->selectEnvironmentsScreen($requestBody['id'], 'publishToRemoteEnvironment');
+    }
+
+    public function selectClassRemoteEnvironments()
+    {
+        $requestBody = $this->getPsrRequest()->getParsedBody();
+
+        if (!isset($requestBody['id']) && !$this->getClass($requestBody['id'])->exists()) {
+            throw new HttpRequestException('Class under this id does not exist');
+        }
+
+        $resourceLimit = $this->getPublishingClassDeliveryService()
+            ->getOption(PublishingClassDeliveryService::OPTION_MAX_RESOURCE);
+
+        $this->selectEnvironmentsScreen($requestBody['id'], 'publishClassToRemoteEnvironment');
+
+        $this->setData(
+            'class-content-exceeded',
+            $this->getClass($requestBody['id'])->countInstances() > $resourceLimit
         );
 
-        $environments = $this->getEnvironmentsEntities();
+        $this->setData('class-content-limit', $resourceLimit);
+    }
+
+    private function selectEnvironmentsScreen(string $subjectUri, string $methodName)
+    {
+        $subjectResource = $this->getResource($subjectUri);
+
+        if (empty($subjectResource->getLabel())) {
+            throw new Exception('Resource does not exist');
+        }
+
         $submitUrl = $this->getServiceLocator()
             ->get(UrlHelper::class)
-            ->buildUrl('publishToRemoteEnvironment', 'Publish', 'taoPublishing');
+            ->buildUrl($methodName, 'Publish', 'taoPublishing');
 
+        $environments = $this->getEnvironmentsEntities();
         $this->setData('submit-url', $submitUrl);
-        $this->setData('delivery-uri', $selectedDelivery->getUri());
-        $this->setData('delivery-label', $selectedDelivery->getLabel());
+        $this->setData(self::PARAM_SUBJECT_URI, $subjectResource->getUri());
+        $this->setData('subject-label', $subjectResource->getLabel());
         $this->setData('remote-environments', array_values($environments));
         $this->setView('PublishToRemote/index.tpl');
+    }
+
+    public function publishClassToRemoteEnvironment(ServerRequest $request)
+    {
+        $requestData = $request->getParsedBody();
+        if (!isset($requestData[self::PARAM_SUBJECT_URI]) || !$this->getClass($requestData[self::PARAM_SUBJECT_URI])->isClass()) {
+            throw new Exception('This is not a class');
+        }
+
+        if (!count($requestData[self::PARAM_REMOTE_ENVIRONMENTS])) {
+            throw new PublishingInvalidArgumentException(__('Environment(s) must be selected.'));
+        }
+
+        $tasks = $this->getPublishingClassDeliveryService()
+            ->publish(
+                $this->getClass($requestData[self::PARAM_SUBJECT_URI]),
+                $requestData[self::PARAM_REMOTE_ENVIRONMENTS]
+            );
+
+        $report = Report::createInfo('Publishing tasks has been queued');
+
+        foreach ($tasks as $task) {
+            $log = $this->getTaskLogReturnData($task->getId());
+            $report->add(
+                Report::createInfo(
+                    sprintf(
+                        'Publishing task %s has been %s',
+                        $log['id'],
+                        $log['status']
+                    )
+                )
+            );
+        }
+
+        return $this->returnTaskJson(array_shift($tasks), ['allTasks' => $tasks]);
     }
 
     /**
@@ -107,7 +180,7 @@ class Publish extends \tao_actions_CommonModule {
                 throw new PublishingInvalidArgumentException(__('Only POST method is supported.'));
             }
             $requestData = $request->getParsedBody();
-            $deliveryUri = $requestData[self::PARAM_DELIVERY_URI] ?? '';
+            $deliveryUri = $requestData[self::PARAM_SUBJECT_URI] ?? '';
             $environments = $requestData[self::PARAM_REMOTE_ENVIRONMENTS] ?? [];
 
             if (!count($environments)) {
@@ -157,5 +230,10 @@ class Publish extends \tao_actions_CommonModule {
         }
 
         return $environments;
+    }
+
+    public function getPublishingClassDeliveryService(): PublishingClassDeliveryService
+    {
+        return $this->getServiceLocator()->get(PublishingClassDeliveryService::SERVICE_ID);
     }
 }
