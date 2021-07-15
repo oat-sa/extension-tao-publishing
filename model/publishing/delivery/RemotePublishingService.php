@@ -15,14 +15,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2020 (original work) Open Assessment Technologies SA ;
+ * Copyright (c) 2020-2021 (original work) Open Assessment Technologies SA ;
  */
 declare(strict_types=1);
 
 namespace oat\taoPublishing\model\publishing\delivery;
 
-use oat\taoPublishing\model\PlatformService;
 use oat\taoPublishing\model\publishing\delivery\tasks\RemoteDeliveryPublishingTask;
+use oat\taoPublishing\model\publishing\environment\EnvironmentResourceValidatorTrait;
 use oat\taoPublishing\model\publishing\exception\PublishingInvalidArgumentException;
 use Throwable;
 use core_kernel_classes_Resource;
@@ -36,6 +36,7 @@ use oat\taoPublishing\model\publishing\exception\PublishingFailedException;
 class RemotePublishingService extends ConfigurableService
 {
     use OntologyAwareTrait;
+    use EnvironmentResourceValidatorTrait;
 
     /** @var string */
     private $deliveryUri;
@@ -107,12 +108,15 @@ class RemotePublishingService extends ConfigurableService
         return $testResource->getUri();
     }
 
+    /**
+     * @throws PublishingInvalidArgumentException
+     */
     private function collectAndValidateEnvironmentResources(array $environments): array
     {
         $results = [];
         foreach ($environments as $environmentUri) {
             $environmentResource = $this->getResource($environmentUri);
-            $this->validateRemoteEnvironment($environmentResource);
+            $this->validateEnvironment($environmentResource);
             $results[] = $environmentResource;
         }
 
@@ -133,21 +137,5 @@ class RemotePublishingService extends ConfigurableService
         );
 
         return $this->queueDispatcher->createTask(new RemoteDeliveryPublishingTask(), $params, $message);
-    }
-
-    private function validateRemoteEnvironment(core_kernel_classes_Resource $environment): void
-    {
-        if (!$environment->exists()) {
-            throw new PublishingInvalidArgumentException(
-                __(sprintf('Remote environment with URI "%s" does not exist.', $environment->getUri()))
-            );
-        }
-
-        $publishingEnabled = (bool) $environment->getOnePropertyValue($this->getProperty(PlatformService::PROPERTY_IS_PUBLISHING_ENABLED));
-        if ($publishingEnabled === false) {
-            throw new PublishingInvalidArgumentException(
-                __(sprintf('Remote publishing is disabled for environment with URI "%s"', $environment->getUri()))
-            );
-        }
     }
 }
