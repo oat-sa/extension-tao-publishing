@@ -41,9 +41,8 @@ class GenerisSearchWhitelist extends InstallAction
             $options = $searchProxy->getOption(SearchProxy::OPTION_GENERIS_SEARCH_WHITELIST);
             $generisSearchWhitelist = array_merge($options, $generisSearchWhitelist);
         }
-        $searchProxy->setOption(SearchProxy::OPTION_GENERIS_SEARCH_WHITELIST, $generisSearchWhitelist);        
-        $this->getServiceManager()->register(
-            SearchProxy::SERVICE_ID, $searchProxy
-        );
+        $searchProxy->setOption(SearchProxy::OPTION_GENERIS_SEARCH_WHITELIST, $generisSearchWhitelist);
+
+        $this->getServiceManager()->register(SearchProxy::SERVICE_ID, $searchProxy);
     }
 }
