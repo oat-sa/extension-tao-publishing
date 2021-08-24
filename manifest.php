@@ -26,6 +26,7 @@ use oat\taoPublishing\scripts\install\RegisterGenerisSearch;
 use oat\taoPublishing\scripts\install\RegisterPublishingFileSystem;
 use oat\taoPublishing\scripts\install\UnRegisterGenerisSearch;
 use oat\taoPublishing\scripts\install\UpdateConfigDeliveryFactoryService;
+use oat\taoPublishing\scripts\install\GenerisSearchWhitelist;
 use oat\taoPublishing\scripts\update\Updater;
 
 return array(
@@ -50,7 +51,8 @@ return array(
             RegisterGenerisSearch::class,
             RegisterDeliveryEventsListener::class,
             RegisterPublishingFileSystem::class,
-            RegisterDataStoreServices::class
+            RegisterDataStoreServices::class,
+            GenerisSearchWhitelist::class
         )
     ),
     'uninstall' => array(
