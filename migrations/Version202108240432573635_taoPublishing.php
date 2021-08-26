@@ -11,7 +11,6 @@ use oat\taoPublishing\model\PlatformService;
 
 final class Version202108240432573635_taoPublishing extends AbstractMigration
 {
-
     public function getDescription(): string
     {
         return 'Register Remote Environment class URI to use generic search in ' . SearchProxy::class;
