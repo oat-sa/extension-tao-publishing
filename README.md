@@ -43,6 +43,12 @@ As a system administrator you can also install it through the TAO Extension Mana
 - Settings (the gears on the right hand side of the menu) -> Extension manager
 - Select _taoPublishing_ on the right hand side, check the box and hit _install_
 
+## Remote-publishing from test
+To enable set feature flag environment variable:
+```
+FEATURE_FLAG_REMOTE_PUBLISHING_FROM_TEST = true
+```
+
 ## Set up deliveries on TAO Platform
 
 To be able to synchronize, you need to set up the publication targets that you want to publish. You can do it by:
