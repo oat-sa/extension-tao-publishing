@@ -193,7 +193,7 @@ class RemoteDeliveryPublisher extends ConfigurableService
                 $value = $value->getUri();
             }
 
-            if (empty($value) && in_array($propertyKey, self::NOT_EMPTY_DELIVERY_PROPERTIES)) {
+            if (empty($value) && in_array($propertyKey, self::NOT_EMPTY_DELIVERY_PROPERTIES, true)) {
                 continue;
             }
 
