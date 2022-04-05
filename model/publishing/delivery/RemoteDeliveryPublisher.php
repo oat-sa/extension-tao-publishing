@@ -56,6 +56,11 @@ class RemoteDeliveryPublisher extends ConfigurableService
     /** @var core_kernel_classes_Resource */
     private $environment;
 
+    private const NOT_EMPTY_DELIVERY_PROPERTIES = [
+        DeliveryAssemblyService::PROPERTY_START,
+        DeliveryAssemblyService::PROPERTY_END
+    ];
+
     public function publish(
         core_kernel_classes_Resource $delivery,
         core_kernel_classes_Resource $environment,
@@ -187,6 +192,11 @@ class RemoteDeliveryPublisher extends ConfigurableService
             if ($value instanceof core_kernel_classes_Resource) {
                 $value = $value->getUri();
             }
+
+            if (empty($value) && in_array($propertyKey, self::NOT_EMPTY_DELIVERY_PROPERTIES, true)) {
+                continue;
+            }
+
             $propertyList[$propertyKey] = (string) $value;
         }
         $propertyList[PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD] = $delivery->getUri();
