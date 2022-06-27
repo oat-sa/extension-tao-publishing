@@ -13,6 +13,7 @@ return new oat\taoPublishing\model\publishing\delivery\PublishingDeliveryService
         \oat\taoDeliveryRdf\model\DeliveryAssemblyService::PROPERTY_ORIGIN,
         \oat\taoPublishing\model\publishing\delivery\PublishingDeliveryService::ORIGIN_DELIVERY_ID_FIELD,
         \oat\taoPublishing\model\publishing\delivery\PublishingDeliveryService::DELIVERY_REMOTE_SYNC_FIELD,
+        \oat\taoDeliveryRdf\model\DeliveryContainerService::PROPERTY_EXCLUDED_SUBJECTS,
 
         // Using strings for ignoring taoClientRestricted in require
         'http://www.tao.lu/Ontologies/TAODelivery.rdf#RestrictBrowserUsage',
