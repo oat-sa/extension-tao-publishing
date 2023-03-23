@@ -38,7 +38,8 @@ define([
             return $propertyContainer;
         }
         $propertyContainer  = $(authContainerTpl());
-        $('.content-block .form-toolbar').before($propertyContainer);
+        $('.content-block input[name="classUri"][value="http_2_www_0_tao_0_lu_1_Ontologies_1_TAO_0_rdf_3_TaoPlatform"]')
+            .before($propertyContainer);
         return $propertyContainer;
     }
 
