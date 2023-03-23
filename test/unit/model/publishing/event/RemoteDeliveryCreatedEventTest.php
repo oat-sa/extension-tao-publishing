@@ -21,6 +21,8 @@ declare(strict_types=1);
 namespace oat\taoPublishing\test\unit\model\publishing\event;
 
 use oat\generis\test\TestCase;
+use oat\tao\model\webhooks\configEntity\Webhook;
+use oat\tao\model\webhooks\configEntity\WebhookInterface;
 use oat\taoPublishing\model\publishing\event\RemoteDeliveryCreatedEvent;
 
 class RemoteDeliveryCreatedEventTest extends TestCase
@@ -40,6 +42,36 @@ class RemoteDeliveryCreatedEventTest extends TestCase
         self::assertArrayHasKey('testId', $serialisedEvent, 'Serialised event must contain test ID.');
         self::assertArrayHasKey('remoteDeliveryId', $serialisedEvent, 'Serialised event must contain remote delivery ID.');
         self::assertArrayHasKey('alias', $serialisedEvent, 'Serialised event must contain alias.');
+    }
+
+    public function testIsSatisfiedByTrue(): void
+    {
+        $deliveryUri = 'DUMMY_DELIVERY_URI';
+        $testUri = 'DUMMY_TEST_URI';
+        $remoteDeliveryUri = 'DUMMY_REMOTE_DELIVERY_URI';
+        $alias = 'DUMMY_ALIAS';
+        $webhookId = 'existed_webhook_id';
+
+        $event = new RemoteDeliveryCreatedEvent($deliveryUri, $testUri, $remoteDeliveryUri, $alias, $webhookId);
+
+        $webhook = new Webhook('existed_webhook_id', 'url', 'POST', 1);
+
+        self::assertTrue($event->isSatisfiedBy($webhook));
+    }
+
+    public function testIsSatisfiedByFalse(): void
+    {
+        $deliveryUri = 'DUMMY_DELIVERY_URI';
+        $testUri = 'DUMMY_TEST_URI';
+        $remoteDeliveryUri = 'DUMMY_REMOTE_DELIVERY_URI';
+        $alias = 'DUMMY_ALIAS';
+        $webhookId = 'existed_webhook_id';
+
+        $event = new RemoteDeliveryCreatedEvent($deliveryUri, $testUri, $remoteDeliveryUri, $alias, $webhookId);
+
+        $webhook = new Webhook('not_existed_webhook_id', 'url', 'POST', 1);
+
+        self::assertFalse($event->isSatisfiedBy($webhook));
     }
 }
 
