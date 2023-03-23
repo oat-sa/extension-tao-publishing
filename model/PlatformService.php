@@ -37,6 +37,8 @@ class PlatformService extends OntologyClassService
     public const PROPERTY_ROOT_URL = 'http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatformUrl';
     public const PROPERTY_SENDING_BOX_ID = 'http://www.tao.lu/Ontologies/TAO.rdf#TaoPlatformSendingBoxId';
     public const PROPERTY_IS_PUBLISHING_ENABLED = 'http://www.tao.lu/Ontologies/TaoPlatform.rdf#PublishingEnabled';
+    public const PROPERTY_SIMPLE_ROSTER_WEBHOOK = 'http://www.tao.lu/Ontologies/TaoPlatform.rdf#SimpleRosterWebhook';
+
 
     /**
      * return the group top level class
