@@ -46,7 +46,8 @@ define([
     return {
         start: function start() {
             var $container = getAuthContainer();
-            var $elId = $('#id');
+            var $elId = $('.content-block input[name="classUri"][value="http_2_www_0_tao_0_lu_1_Ontologies_1_TAO_0_rdf_3_TaoPlatform"]')
+                .siblings('#uri');
             var params = {};
 
             if($elId.length) {
