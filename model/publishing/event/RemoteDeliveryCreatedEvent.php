@@ -94,7 +94,6 @@ class RemoteDeliveryCreatedEvent extends AbstractDeliveryEvent implements Webhoo
 
     public function isSatisfiedBy(WebhookInterface $webhook): bool
     {
-        // the event won't be triggered if webhook is not set for a remote environment
         return $this->webhookId === $webhook->getId();
     }
 }
