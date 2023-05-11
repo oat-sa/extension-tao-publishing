@@ -59,7 +59,7 @@ class RemoteDeliveryPublishingTask implements Action, ServiceLocatorAwareInterfa
     private $environment;
 
     /** @var string|null */
-    private $webhookId;
+    private ?string $webhookId;
 
     /**
      * @param array  $params

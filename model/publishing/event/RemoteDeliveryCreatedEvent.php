@@ -44,7 +44,7 @@ class RemoteDeliveryCreatedEvent extends AbstractDeliveryEvent implements Webhoo
     private $alias;
 
     /** @var string|null */
-    private $webhookId;
+    private ?string $webhookId;
 
     public function __construct(
         string $deliveryUri,
