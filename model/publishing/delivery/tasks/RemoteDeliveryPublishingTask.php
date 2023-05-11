@@ -90,7 +90,7 @@ class RemoteDeliveryPublishingTask implements Action, ServiceLocatorAwareInterfa
         $this->environment = $this->getResource($environmentId);
 
         $webhook = $this->environment->getOnePropertyValue(
-            $this->getProperty(PlatformService::PROPERTY_SIMPLE_ROSTER_WEBHOOK)
+            $this->getProperty(PlatformService::PROPERTY_PUBLISHING_WEBHOOK)
         );
         if ($webhook) {
             $this->webhookId = $webhook->getUri();
