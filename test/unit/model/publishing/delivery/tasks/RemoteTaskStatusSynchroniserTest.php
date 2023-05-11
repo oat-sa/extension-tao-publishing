@@ -130,7 +130,7 @@ class RemoteTaskStatusSynchroniserTest extends TestCase
             'DUMMY_ENVIRONMENT_ID',
             'DUMMY_DELIVERY_ID',
             'DUMMY_TEST_ID',
-            'DUMMY_WEBHOOK_ID'
+            'DUMMY_WEBHOOK_ID',
         ];
 
         $expectedStatus = '"completed"';
@@ -156,7 +156,7 @@ class RemoteTaskStatusSynchroniserTest extends TestCase
         $params = [
             'DUMMY_REMOTE_TASK_ID',
             'DUMMY_ENVIRONMENT_ID',
-            'DUMMY_DELIVERY_ID'
+            'DUMMY_DELIVERY_ID',
         ];
 
         $this->expectException(common_exception_MissingParameter::class);
@@ -170,7 +170,7 @@ class RemoteTaskStatusSynchroniserTest extends TestCase
             'DUMMY_ENVIRONMENT_ID',
             'DUMMY_DELIVERY_ID',
             'DUMMY_TEST_ID',
-            'DUMMY_WEBHOOK_ID'
+            'DUMMY_WEBHOOK_ID',
         ];
 
         $expectedStatus = '"completed"';
@@ -192,7 +192,7 @@ class RemoteTaskStatusSynchroniserTest extends TestCase
             'DUMMY_ENVIRONMENT_ID',
             'DUMMY_DELIVERY_ID',
             'DUMMY_TEST_ID',
-            'DUMMY_WEBHOOK_ID'
+            'DUMMY_WEBHOOK_ID',
         ];
 
         $expectedStatus = '"in_progress"';
