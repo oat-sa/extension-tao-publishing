@@ -21,13 +21,15 @@ declare(strict_types=1);
 
 namespace oat\taoPublishing\model\publishing\event;
 
+use oat\tao\model\webhooks\configEntity\WebhookInterface;
+use oat\tao\model\webhooks\WebhookConditionalEventInterface;
 use oat\tao\model\webhooks\WebhookSerializableEventInterface;
 use oat\taoDeliveryRdf\model\event\AbstractDeliveryEvent;
 
 /**
  * Class RemoteDeliveryCreatedEvent
  */
-class RemoteDeliveryCreatedEvent extends AbstractDeliveryEvent implements WebhookSerializableEventInterface
+class RemoteDeliveryCreatedEvent extends AbstractDeliveryEvent implements WebhookSerializableEventInterface, WebhookConditionalEventInterface
 {
     /**
      * @var string
@@ -41,12 +43,21 @@ class RemoteDeliveryCreatedEvent extends AbstractDeliveryEvent implements Webhoo
     /** @var string|null */
     private $alias;
 
-    public function __construct(string $deliveryUri, string $testUri, string $remoteDeliveryUri, string $alias = null)
-    {
+    /** @var string|null */
+    private ?string $webhookId;
+
+    public function __construct(
+        string $deliveryUri,
+        string $testUri,
+        string $remoteDeliveryUri,
+        string $alias = null,
+        ?string $webhookId = null
+    ) {
         $this->deliveryUri = $deliveryUri;
         $this->testUri = $testUri;
         $this->remoteDeliveryUri = $remoteDeliveryUri;
         $this->alias = $alias;
+        $this->webhookId = $webhookId;
     }
 
     /**
@@ -76,7 +87,13 @@ class RemoteDeliveryCreatedEvent extends AbstractDeliveryEvent implements Webhoo
             'deliveryId' => $this->deliveryUri,
             'testId' => $this->testUri,
             'remoteDeliveryId' => $this->remoteDeliveryUri,
-            'alias' => $this->alias
+            'alias' => $this->alias,
+            'webhookId' => $this->webhookId
         ];
+    }
+
+    public function isSatisfiedBy(WebhookInterface $webhook): bool
+    {
+        return $this->webhookId === $webhook->getId();
     }
 }

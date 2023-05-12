@@ -4,6 +4,8 @@ namespace oat\taoPublishing\model\publishing\delivery\tasks;
 
 use Exception;
 use common_report_Report as Report;
+use Laminas\ServiceManager\ServiceLocatorAwareInterface;
+use Laminas\ServiceManager\ServiceLocatorAwareTrait;
 use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\action\Action;
 use oat\oatbox\event\EventManager;
@@ -14,8 +16,6 @@ use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
 use oat\taoPublishing\model\PlatformService;
 use oat\taoPublishing\model\publishing\event\RemoteDeliveryCreatedEvent;
 use oat\taoPublishing\model\publishing\exception\PublishingFailedException;
-use Zend\ServiceManager\ServiceLocatorAwareTrait;
-use Zend\ServiceManager\ServiceLocatorAwareInterface;
 use GuzzleHttp\Psr7\Request;
 
 /**
@@ -52,10 +52,10 @@ class RemoteTaskStatusSynchroniser implements Action,ServiceLocatorAwareInterfac
      */
     public function __invoke($params)
     {
-        if (count($params) != 4) {
+        if (count($params) !== 5) {
             throw new \common_exception_MissingParameter();
         }
-        list ($remoteTaskId, $envId, $deliveryUri, $testUri) = $params;
+        list ($remoteTaskId, $envId, $deliveryUri, $testUri, $webhookId) = $params;
         $this->remoteTaskId = $remoteTaskId;
         $this->remoteEnvironmentId = $envId;
 
@@ -80,7 +80,8 @@ class RemoteTaskStatusSynchroniser implements Action,ServiceLocatorAwareInterfac
                 $remoteDeliveryId,
                 $deliveryUri,
                 $testUri,
-                $this->getDeliveryAlias($deliveryUri)
+                $this->getDeliveryAlias($deliveryUri),
+                $webhookId
             );
 
         } catch (Exception $e) {
@@ -190,11 +191,18 @@ class RemoteTaskStatusSynchroniser implements Action,ServiceLocatorAwareInterfac
      * @param string $deliveryUri
      * @param string $testUri
      */
-    private function triggerRemoteDeliveryCreatedEvent(?string $remoteDeliveryId, string $deliveryUri, string $testUri, ?string $alias): void
-    {
+    private function triggerRemoteDeliveryCreatedEvent(
+        ?string $remoteDeliveryId,
+        string $deliveryUri,
+        string $testUri,
+        ?string $alias,
+        ?string $webhookId
+    ): void {
         if ($remoteDeliveryId !== null) {
             $eventManager = $this->getServiceLocator()->get(EventManager::SERVICE_ID);
-            $eventManager->trigger(new RemoteDeliveryCreatedEvent($deliveryUri, $testUri, $remoteDeliveryId, $alias));
+            $eventManager->trigger(
+                new RemoteDeliveryCreatedEvent($deliveryUri, $testUri, $remoteDeliveryId, $alias, $webhookId)
+            );
         }
     }
 

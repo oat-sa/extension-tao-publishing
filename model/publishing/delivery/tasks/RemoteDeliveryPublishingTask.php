@@ -21,6 +21,10 @@ declare(strict_types=1);
 
 namespace oat\taoPublishing\model\publishing\delivery\tasks;
 
+use core_kernel_persistence_Exception;
+use Laminas\ServiceManager\ServiceLocatorAwareInterface;
+use Laminas\ServiceManager\ServiceLocatorAwareTrait;
+use oat\taoPublishing\model\PlatformService;
 use Throwable;
 use common_report_Report as Report;
 use core_kernel_classes_Resource;
@@ -36,8 +40,6 @@ use oat\tao\model\taskQueue\Task\TaskAwareInterface;
 use oat\tao\model\taskQueue\Task\TaskAwareTrait;
 use oat\taoPublishing\model\publishing\delivery\RemoteDeliveryPublisher;
 use oat\taoPublishing\model\publishing\exception\PublishingFailedException;
-use Zend\ServiceManager\ServiceLocatorAwareInterface;
-use Zend\ServiceManager\ServiceLocatorAwareTrait;
 
 class RemoteDeliveryPublishingTask implements Action, ServiceLocatorAwareInterface, ChildTaskAwareInterface, TaskAwareInterface
 {
@@ -55,6 +57,9 @@ class RemoteDeliveryPublishingTask implements Action, ServiceLocatorAwareInterfa
 
     /** @var core_kernel_classes_Resource */
     private $environment;
+
+    /** @var string|null */
+    private ?string $webhookId;
 
     /**
      * @param array  $params
@@ -74,6 +79,8 @@ class RemoteDeliveryPublishingTask implements Action, ServiceLocatorAwareInterfa
 
     /**
      * @param array $params
+     *
+     * @throws core_kernel_persistence_Exception
      */
     private function instantiateInputResources(array $params): void
     {
@@ -81,6 +88,13 @@ class RemoteDeliveryPublishingTask implements Action, ServiceLocatorAwareInterfa
         $this->test = $this->getResource($testId);
         $this->delivery = $this->getResource($deliveryId);
         $this->environment = $this->getResource($environmentId);
+
+        $webhook = $this->environment->getOnePropertyValue(
+            $this->getProperty(PlatformService::PROPERTY_PUBLISHING_WEBHOOK)
+        );
+        if ($webhook) {
+            $this->webhookId = $webhook->getUri();
+        }
     }
 
     /**
@@ -133,7 +147,7 @@ class RemoteDeliveryPublishingTask implements Action, ServiceLocatorAwareInterfa
 
         $queueDispatcher->createTask(
             new RemoteTaskStatusSynchroniser(),
-            [$remoteTaskId, $this->environment->getUri(), $this->delivery->getUri(), $this->test->getUri()],
+            [$remoteTaskId, $this->environment->getUri(), $this->delivery->getUri(), $this->test->getUri(), $this->webhookId],
             $taskTitle
         );
     }
